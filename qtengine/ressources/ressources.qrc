@@ -1,0 +1,36 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icon_close.png</file>
+        <file>icon_splitter_horizontal.png</file>
+        <file>icon_splitter_vertical.png</file>
+
+        <file>theme/dark/style.qss</file>
+
+        <file>theme/orangedark/style.qss</file>
+
+        <file>theme/bluedark/icon_close.png</file>
+        <file>theme/bluedark/icon_restore.png</file>
+        <file>theme/bluedark/icon_undock.png</file>
+        <file>theme/bluedark/icon_branch_closed.png</file>
+        <file>theme/bluedark/icon_branch_end.png</file>
+        <file>theme/bluedark/icon_branch_more.png</file>
+        <file>theme/bluedark/icon_branch_open.png</file>
+        <file>theme/bluedark/icon_vline.png</file>
+        <file>theme/bluedark/icon_checkbox_checked.png</file>
+        <file>theme/bluedark/icon_checkbox_indeterminate.png</file>
+        <file>theme/bluedark/icon_checkbox_unchecked.png</file>
+        <file>theme/bluedark/icon_checkbox_checked_pressed.png</file>
+        <file>theme/bluedark/icon_checkbox_indeterminate_pressed.png</file>
+        <file>theme/bluedark/icon_checkbox_unchecked_pressed.png</file>
+        <file>theme/bluedark/icon_checkbox_checked_disabled.png</file>
+        <file>theme/bluedark/icon_checkbox_indeterminate_disabled.png</file>
+        <file>theme/bluedark/icon_checkbox_unchecked_disabled.png</file>
+        <file>theme/bluedark/icon_radiobutton_checked.png</file>
+        <file>theme/bluedark/icon_radiobutton_unchecked.png</file>
+        <file>theme/bluedark/icon_radiobutton_checked_pressed.png</file>
+        <file>theme/bluedark/icon_radiobutton_unchecked_pressed.png</file>
+        <file>theme/bluedark/icon_radiobutton_checked_disabled.png</file>
+        <file>theme/bluedark/icon_radiobutton_unchecked_disabled.png</file>
+        <file>theme/bluedark/style.qss</file>
+    </qresource>
+</RCC>

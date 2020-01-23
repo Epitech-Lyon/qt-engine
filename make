@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+cd build/ && cmake .. && make && cd .. || ./make_re

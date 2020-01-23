@@ -1,6 +1,6 @@
 /*
 ** EPITECH PROJECT, 2019
-** forward_coding_journey
+** qt-engine
 ** File description:
 ** NodeStyle
 */

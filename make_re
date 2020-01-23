@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+conan remote add --force connan-center https://api.bintray.com/conan/conan/conan-center
+conan remote add --force epitech-conan https://api.bintray.com/conan/epitech/public-conan
+conan remote add --force public-conan https://api.bintray.com/conan/bincrafters/public-conan
+
+rm -rf build
+mkdir build && cd build && conan install .. --build=missing -s compiler.libcxx=libstdc++11 && cmake .. -G "Unix Makefiles" && cmake --build .
