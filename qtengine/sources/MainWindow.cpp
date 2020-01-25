@@ -9,7 +9,6 @@
 
 #include "Manager.hpp"
 #include "LayoutPanelTabber.hpp"
-#include "BoxTheme.hpp"
 
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
@@ -21,10 +20,16 @@ qtengine::MainWindow::MainWindow(Manager *manager)
 {
 	setenv("FONTCONFIG_PATH", "/etc/fonts", 0);
 	setWindowTitle("Qt-Engine");
+	setAttribute(Qt::WA_DeleteOnClose);
 	statusBar()->showMessage("Status bar");
 
 	initMenuBar();
 	initInterface();
+}
+
+qtengine::MainWindow::~MainWindow()
+{
+	_manager->save();
 }
 
 void qtengine::MainWindow::initMenuBar()
@@ -38,7 +43,7 @@ void qtengine::MainWindow::initMenuBar()
 	menuFile->addAction("Exit", this, &QMainWindow::close, QKeySequence::Quit);
 
 	auto menuSettings = menuBar()->addMenu("Settings");
-	menuSettings->addAction("Theme", this, &MainWindow::onTheme);
+	menuSettings->addAction("Theme", _manager, &Manager::onTheme);
 
 	_menuLayouts = new QMenu(this);
 	_menuLayoutsSeparator = _menuLayouts->addSeparator();
@@ -57,11 +62,6 @@ void qtengine::MainWindow::initInterface()
 
 	layoutPanelBase->setChild(new LayoutPanelTabber(layoutPanelBase));
 	setCentralWidget(layoutPanelBase);
-}
-
-void qtengine::MainWindow::onTheme()
-{
-	BoxTheme(this).exec();
 }
 
 QAction *qtengine::MainWindow::createLayoutAction(const QString &layoutName)

@@ -14,15 +14,12 @@ namespace qtengine {
 	class MainWindow : public QMainWindow {
 	public:
 		MainWindow(Manager *);
-		~MainWindow() = default;
+		~MainWindow();
 
 	private:
 		void initMenuBar();
 		void initInterface();
 		Manager *_manager;
-
-	private slots:
-		void onTheme();
 
 	// Layout Management
 	private:

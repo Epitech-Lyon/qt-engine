@@ -14,12 +14,17 @@ namespace qtengine {
 	public:
 		BoxTheme(QWidget * = nullptr);
 
-	private:
+	public:
+		QString theme() const { return _theme; }
+
 		void applyTheme(const QString &);
 
+	private:
 		void themeLight();
 		void themeBlueDark();
 		void themeOrangeDark();
 		void themeDark();
+
+		QString _theme;
 	};
 }

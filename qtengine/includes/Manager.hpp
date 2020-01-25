@@ -15,13 +15,23 @@ namespace qtengine {
 
 	class Manager : public QObject {
 		Q_OBJECT
+
 	public:
-		~Manager();
+		~Manager() = default;
 		static Manager *instance();
+		void init();
+		void save();
 
 	private:
 		Manager();
 		MainWindow *_mainWindow;
+
+	// Theme
+	public slots:
+		void onTheme();
+	
+	private:
+		QString _theme;
 
 	// Project management
 	public:

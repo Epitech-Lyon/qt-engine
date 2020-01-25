@@ -33,11 +33,11 @@ qtengine::BoxTheme::BoxTheme(QWidget *parent)
 
 	auto btnOk = new QPushButton(tr("Ok"));
 	connect(btnOk, &QPushButton::released, [this, comboBox]() { applyTheme(comboBox->currentText()); });
-	connect(btnOk, &QPushButton::released, this, &BoxTheme::close);
+	connect(btnOk, &QPushButton::released, this, &QDialog::accept);
 	layout->addWidget(btnOk, 1, 0, 1, 1);
 
 	auto btnCancel = new QPushButton(tr("Cancel"));
-	connect(btnCancel, &QPushButton::released, this, &BoxTheme::close);
+	connect(btnCancel, &QPushButton::released, this, &QDialog::accept);
 	layout->addWidget(btnCancel, 1, 1, 1, 1);
 
 	auto btnApply = new QPushButton(tr("Apply"));
@@ -47,6 +47,7 @@ qtengine::BoxTheme::BoxTheme(QWidget *parent)
 
 void qtengine::BoxTheme::applyTheme(const QString &newTheme)
 {
+	_theme = newTheme;
 	if (newTheme == "Light")
 		themeLight();
 	else if (newTheme == "Blue dark")

@@ -9,7 +9,12 @@
 #include "Manager.hpp"
 
 #include "MainWindow.hpp"
+#include "BoxTheme.hpp"
 
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
+
+#include <QtWidgets/QApplication>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtCore/QDir>
@@ -20,11 +25,8 @@
 qtengine::Manager::Manager()
 	: _mainWindow(new MainWindow(this))
 {
+	init();
 	_mainWindow->showMaximized();
-}
-
-qtengine::Manager::~Manager()
-{
 }
 
 qtengine::Manager *qtengine::Manager::instance()
@@ -32,6 +34,39 @@ qtengine::Manager *qtengine::Manager::instance()
 	static Manager manager;
 
 	return &manager;
+}
+
+void qtengine::Manager::init()
+{
+	QFile file(qApp->applicationDirPath() + "/settings.ini");
+	if (file.open(QIODevice::ReadOnly)) {
+		QJsonObject json = QJsonDocument::fromJson(file.readAll()).object();
+
+		_theme = json["Theme"].toString();
+		BoxTheme().applyTheme(_theme);
+
+		file.close();
+	}
+}
+
+void qtengine::Manager::save()
+{
+	QJsonObject json;
+	json["Theme"] = _theme;
+
+	QFile file(qApp->applicationDirPath() + "/settings.ini");
+	if (file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+		file.write(QJsonDocument(json).toJson());
+		file.close();
+	}
+}
+
+void qtengine::Manager::onTheme()
+{
+	BoxTheme boxTheme(_mainWindow);
+	
+	if (boxTheme.exec() == QDialog::Accepted)
+		_theme = boxTheme.theme();
 }
 
 void qtengine::Manager::onNewProject()
