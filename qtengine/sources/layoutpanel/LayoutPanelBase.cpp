@@ -26,9 +26,10 @@ qtengine::LayoutPanelBase *qtengine::LayoutPanelBase::parentLayoutPanel()
 	return dynamic_cast<LayoutPanelBase*>(parent);
 }
 
-void qtengine::LayoutPanelBase::setChildPanel(LayoutPanelBase *layoutPanel)
+void qtengine::LayoutPanelBase::setChild(LayoutPanelBase *child)
 {
 	while (_mainLayout->count() > 0)
 		_mainLayout->removeItem(_mainLayout->itemAt(0));
-	_mainLayout->addWidget(layoutPanel);
+	_child = child;
+	_mainLayout->addWidget(_child);
 }

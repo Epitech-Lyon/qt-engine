@@ -10,20 +10,18 @@
 #include <QtWidgets/QMainWindow>
 
 namespace qtengine {
+	class Manager;
 	class MainWindow : public QMainWindow {
 	public:
-		MainWindow();
+		MainWindow(Manager *);
 		~MainWindow() = default;
 
 	private:
 		void initMenuBar();
 		void initInterface();
+		Manager *_manager;
 
 	private slots:
-		void onNewProject();
-		void onOpenProject();
-		void onSaveProject();
-		void onSaveProjectAs();
 		void onTheme();
 
 	// Layout Management

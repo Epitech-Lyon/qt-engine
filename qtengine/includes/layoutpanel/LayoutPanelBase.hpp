@@ -21,9 +21,11 @@ namespace qtengine {
 
 		virtual LayoutPanelBase *parentLayoutPanel();
 
-		void setChildPanel(LayoutPanelBase *);
+		LayoutPanelBase *child() const { return _child; }
+		void setChild(LayoutPanelBase *);
 
 	protected:
 		QVBoxLayout *_mainLayout;
+		LayoutPanelBase *_child;
 	};
 }

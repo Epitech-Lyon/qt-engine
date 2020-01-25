@@ -22,14 +22,10 @@ namespace qtengine {
 		ContentPanelBase *addTab(const QString &);
 		ContentPanelBase *setTab(const QString &);
 		ContentPanelBase *getPage(int) const;
-		void closeTab(int);
-
-	public slots:
-		void closeCurrentTab();
-		void splitVertical();
-		void splitHorizontal();
+		ContentPanelBase *closeTab(int);
 
 	private:
+		void split(Qt::Orientation);
 		void initButton();
 	};
 }

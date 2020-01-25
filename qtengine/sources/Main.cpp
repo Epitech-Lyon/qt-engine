@@ -6,13 +6,12 @@
 */
 
 #include <QtWidgets/QApplication>
-#include "MainWindow.hpp"
+#include "Manager.hpp"
 
 int main(int ac, char **av)
 {
     QApplication app(ac, av);
-    qtengine::MainWindow mainWindow;
+    qtengine::Manager::instance();
 
-    mainWindow.showMaximized();
 	return app.exec();
 }

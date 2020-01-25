@@ -15,8 +15,9 @@
 namespace qtengine {
 	class ContentPanelBase : public QWidget, public ISerializable {
 	public:
-		ContentPanelBase(const QString &, QWidget * = nullptr);
 		virtual ~ContentPanelBase() = default;
+
+		virtual void init();
 
 		virtual QJsonObject serialize() const override;
 		virtual void deserialize(const QJsonObject &) override;
@@ -24,6 +25,7 @@ namespace qtengine {
 		QString name() const { return _name; }
 
 	protected:
+		ContentPanelBase(const QString &, QWidget * = nullptr);
 		virtual QToolBar *initToolBar() { return nullptr; }
 
 		QVBoxLayout *_mainLayout;
@@ -31,4 +33,4 @@ namespace qtengine {
 	private:
 		QString _name;
 	};
-};
+}

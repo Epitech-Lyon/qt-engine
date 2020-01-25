@@ -7,6 +7,7 @@
 
 #include "LayoutPanelTabber.hpp"
 
+#include "LayoutPanelSplitter.hpp"
 #include "ContentPanelBase.hpp"
 #include "ContentPanelFactory.hpp"
 #include "TabWidget.hpp"
@@ -18,6 +19,7 @@ qtengine::LayoutPanelTabber::LayoutPanelTabber(QWidget *parent)
 {
 	_mainLayout->addWidget(_tabWidget);
 	_tabWidget->setDocumentMode(true);
+	addTab(ContentPanelFactory::create("Empty"));
 }
 
 QJsonObject qtengine::LayoutPanelTabber::serialize() const
@@ -48,7 +50,7 @@ void qtengine::LayoutPanelTabber::deserialize(const QJsonObject &jsonState)
 				ContentPanelBase *content = ContentPanelFactory::create(json["ContentPanelType"].toString());
 
 				content->deserialize(json);
-				addView(content);
+				addTab(content);
 			}
 		}
 	}
@@ -56,29 +58,39 @@ void qtengine::LayoutPanelTabber::deserialize(const QJsonObject &jsonState)
 		_tabWidget->setCurrentIndex(jsonState["CurrentTabberIndex"].toInt());
 }
 
-QWidget *qtengine::LayoutPanelTabber::currentView()
+int qtengine::LayoutPanelTabber::addTab(ContentPanelBase *contentPanel)
 {
-	return _tabWidget->currentWidget();
+	return _tabWidget->QTabWidget::addTab(contentPanel, contentPanel->name());
 }
 
-void qtengine::LayoutPanelTabber::setCurrentView(int index)
-{
-	_tabWidget->setCurrentIndex(index);
-}
-
-int qtengine::LayoutPanelTabber::insertView(const QPoint &pos, ContentPanelBase *contentPanel)
+int qtengine::LayoutPanelTabber::insertTab(const QPoint &pos, ContentPanelBase *contentPanel)
 {
 	int index = _tabWidget->tabAt(_tabWidget->mapFromGlobal(pos));
 
 	return _tabWidget->insertTab(index, contentPanel, contentPanel->name());
 }
 
-int qtengine::LayoutPanelTabber::addView(ContentPanelBase *contentPanel)
+void qtengine::LayoutPanelTabber::closeTab(int index)
 {
-	return _tabWidget->QTabWidget::addTab(contentPanel, contentPanel->name());
+	auto panel = _tabWidget->closeTab(index);
+
+	delete panel;
+	if (_tabWidget->count() > 0) { return; }
+	auto base = parentLayoutPanel();
+	auto splitter = dynamic_cast<LayoutPanelSplitter*>(base);
+
+	if (splitter)
+		splitter->removeTabber(this);
+	else if (base)
+		base->setChild(new LayoutPanelTabber(base));
 }
 
-void qtengine::LayoutPanelTabber::removeView(int index)
+QWidget *qtengine::LayoutPanelTabber::currentTab()
 {
-	_tabWidget->closeTab(index);
+	return _tabWidget->currentWidget();
+}
+
+void qtengine::LayoutPanelTabber::setCurrentTab(int index)
+{
+	_tabWidget->setCurrentIndex(index);
 }

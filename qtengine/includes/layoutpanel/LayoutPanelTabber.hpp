@@ -21,12 +21,12 @@ namespace qtengine {
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &) override;
 
-		int addView(ContentPanelBase *);
-		int insertView(const QPoint &, ContentPanelBase *);
-		void removeView(int index);
+		int addTab(ContentPanelBase *);
+		int insertTab(const QPoint &, ContentPanelBase *);
+		void closeTab(int index);
 
-		void setCurrentView(int index);
-		QWidget *currentView();
+		void setCurrentTab(int index);
+		QWidget *currentTab();
 
 		TabWidget *tabWidget() { return _tabWidget; }
 

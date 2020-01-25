@@ -7,8 +7,8 @@
 
 #include "MainWindow.hpp"
 
+#include "Manager.hpp"
 #include "LayoutPanelTabber.hpp"
-#include "ContentPanelBase.hpp"
 #include "BoxTheme.hpp"
 
 #include <QtWidgets/QMenuBar>
@@ -16,7 +16,8 @@
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QInputDialog>
 
-qtengine::MainWindow::MainWindow()
+qtengine::MainWindow::MainWindow(Manager *manager)
+	: _manager(manager)
 {
 	setenv("FONTCONFIG_PATH", "/etc/fonts", 0);
 	setWindowTitle("Qt-Engine");
@@ -29,10 +30,10 @@ qtengine::MainWindow::MainWindow()
 void qtengine::MainWindow::initMenuBar()
 {
 	auto menuFile = menuBar()->addMenu("File");
-	menuFile->addAction("New project", this, &MainWindow::onNewProject, QKeySequence::New);
-	menuFile->addAction("Open project", this, &MainWindow::onOpenProject, QKeySequence::Open);
-	menuFile->addAction("Save project", this, &MainWindow::onSaveProject, QKeySequence::Save);
-	menuFile->addAction("Save project as", this, &MainWindow::onSaveProjectAs, QKeySequence::SaveAs);
+	menuFile->addAction("New project", _manager, &Manager::onNewProject, QKeySequence::New);
+	menuFile->addAction("Open project", _manager, &Manager::onOpenProject, QKeySequence::Open);
+	menuFile->addAction("Save project", _manager, &Manager::onSaveProject, QKeySequence::Save);
+	menuFile->addAction("Save project as", _manager, &Manager::onSaveProjectAs, QKeySequence::SaveAs);
 	menuFile->addSeparator();
 	menuFile->addAction("Exit", this, &QMainWindow::close, QKeySequence::Quit);
 
@@ -52,28 +53,10 @@ void qtengine::MainWindow::initMenuBar()
 
 void qtengine::MainWindow::initInterface()
 {
-	auto layoutPanelbase = new LayoutPanelBase(this);
-	auto layoutPanelTabber = new LayoutPanelTabber(this);
+	auto layoutPanelBase = new LayoutPanelBase(this);
 
-	layoutPanelTabber->addView(new ContentPanelBase("empty", layoutPanelTabber));
-	layoutPanelbase->setChildPanel(layoutPanelTabber);
-	setCentralWidget(layoutPanelbase);
-}
-
-void qtengine::MainWindow::onNewProject()
-{
-}
-
-void qtengine::MainWindow::onOpenProject()
-{
-}
-
-void qtengine::MainWindow::onSaveProject()
-{
-}
-
-void qtengine::MainWindow::onSaveProjectAs()
-{
+	layoutPanelBase->setChild(new LayoutPanelTabber(layoutPanelBase));
+	setCentralWidget(layoutPanelBase);
 }
 
 void qtengine::MainWindow::onTheme()

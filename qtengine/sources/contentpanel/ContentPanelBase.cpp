@@ -9,9 +9,14 @@
 
 qtengine::ContentPanelBase::ContentPanelBase(const QString &name, QWidget *parent)
 	: QWidget(parent)
-	, _mainLayout(new QVBoxLayout(this))
+	, _mainLayout(nullptr)
 	, _name(name)
 {
+}
+
+void qtengine::ContentPanelBase::init()
+{
+	_mainLayout = new QVBoxLayout(this);
 	_mainLayout->setMargin(2);
 	setLayout(_mainLayout);
 

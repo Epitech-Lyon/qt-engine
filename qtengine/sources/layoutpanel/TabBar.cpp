@@ -70,8 +70,8 @@ void qtengine::TabBar::moveToWindow(LayoutPanelTabber *layoutPanelTabber, const 
 	if (tabWidget == layoutPanelTabber->tabWidget() && index == tabWidget->tabBar()->tabAt(tabWidget->mapFromGlobal(pos)))
 		return;
 	tabWidget->closeTab(index);
-	index = layoutPanelTabber->insertView(pos, tabWidget->getPage(index));
-	layoutPanelTabber->setCurrentView(index);
+	index = layoutPanelTabber->insertTab(pos, tabWidget->getPage(index));
+	layoutPanelTabber->setCurrentTab(index);
 	layoutPanelTabber->raise();
 	if (tabWidget->count() == 0) {
 		LayoutPanelTabber *parent = dynamic_cast<LayoutPanelTabber *>(tabWidget->parent());

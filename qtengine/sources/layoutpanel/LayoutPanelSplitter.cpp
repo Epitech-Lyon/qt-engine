@@ -8,18 +8,28 @@
 #include "LayoutPanelSplitter.hpp"
 #include "LayoutPanelTabber.hpp"
 
-qtengine::LayoutPanelSplitter::LayoutPanelSplitter(QWidget *parent)
+qtengine::LayoutPanelSplitter::LayoutPanelSplitter(LayoutPanelTabber *tabber, Qt::Orientation orientation, QWidget *parent)
 	: LayoutPanelBase(parent)
-	, _splitter(new QSplitter(this))
-	, _firstLayoutPanel(nullptr)
-	, _secondLayoutPanel(nullptr)
+	, _splitter(new QSplitter(orientation, this))
 {
+	_splitter->addWidget(tabber);
+	_splitter->addWidget(new LayoutPanelTabber(this));
+	_splitter->setHandleWidth(4);
+	_mainLayout->addWidget(_splitter);
+}
+
+qtengine::LayoutPanelSplitter::LayoutPanelSplitter(Qt::Orientation orientation, QWidget *parent)
+	: LayoutPanelBase(parent)
+	, _splitter(new QSplitter(orientation, this))
+{
+	_splitter->addWidget(new LayoutPanelTabber(this));
 	_splitter->setHandleWidth(4);
 	_mainLayout->addWidget(_splitter);
 }
 
 QJsonObject qtengine::LayoutPanelSplitter::serialize() const
 {
+	/*
 	QList<int> size = _splitter->sizes();
 	double handlePos = ((double)size[0]) / ((double)(size[0] + size[1]));
 	QString orientation = _splitter->orientation() == Qt::Orientation::Horizontal ? "Horizontal" : "Vertical";
@@ -34,10 +44,13 @@ QJsonObject qtengine::LayoutPanelSplitter::serialize() const
 	splitterObj["Type"] = "Splitter";
 	splitterObj["State"] = jsonState;
 	return splitterObj;
+	*/
+	return QJsonObject();
 }
 
-void qtengine::LayoutPanelSplitter::deserialize(const QJsonObject &jsonState)
+void qtengine::LayoutPanelSplitter::deserialize(const QJsonObject &)
 {
+	/*
 	{
 		QJsonObject firstLayoutPanelObject = jsonState["FirstLayoutPanel"].toObject();
 		QString type = firstLayoutPanelObject["Type"].toString();
@@ -69,52 +82,66 @@ void qtengine::LayoutPanelSplitter::deserialize(const QJsonObject &jsonState)
 
 	double handlePos = jsonState["HandlePos"].toDouble();
 	_splitter->setSizes({ (int)(handlePos * INT_MAX), (int)((1.0 - handlePos) * INT_MAX) });
+	*/
 }
 
-void qtengine::LayoutPanelSplitter::setChildrenPanel(LayoutPanelBase *firstLayoutPanel, LayoutPanelBase *secondLayoutPanel)
+void qtengine::LayoutPanelSplitter::removeTabber(LayoutPanelTabber *tabber)
 {
-	removeAllPanels();
-	_firstLayoutPanel = firstLayoutPanel;
-	_secondLayoutPanel = secondLayoutPanel;
-	_splitter->addWidget(_firstLayoutPanel);
-	_splitter->addWidget(_secondLayoutPanel);
-	_splitter->setSizes(QList<int>({ INT_MAX, INT_MAX }));
+	tabber->deleteLater();
+	if (_splitter->count() > 2) { return; }
+	auto base = parentLayoutPanel();
+	auto splitter = dynamic_cast<LayoutPanelSplitter*>(base);
+
+	if (splitter)
+		splitter->unsplit(tabber, this);
+	else if (base) {
+		LayoutPanelBase *saved;
+
+		for (auto widget : widgets())
+			if (widget != tabber)
+				saved = dynamic_cast<LayoutPanelBase *>(widget);
+		base->setChild(saved);
+		deleteLater();
+	}	
 }
 
-void qtengine::LayoutPanelSplitter::setChildPanel(int index, LayoutPanelBase *layoutPanel)
+void qtengine::LayoutPanelSplitter::split(Qt::Orientation orientation, LayoutPanelTabber *tabber)
 {
-	if (index == 0)
-		setFirstLayoutPanel(layoutPanel);
-	else if (index == 1)
-		setSecondLayoutPanel(layoutPanel);
+	if (orientation == _splitter->orientation())
+		_splitter->addWidget(new LayoutPanelTabber(this));
+	else {
+		auto index = _splitter->indexOf(tabber);
+
+		_splitter->insertWidget(index, new LayoutPanelSplitter(tabber, orientation, this));
+	}
 }
 
-void qtengine::LayoutPanelSplitter::setFirstLayoutPanel(LayoutPanelBase *layoutPanel)
+void qtengine::LayoutPanelSplitter::unsplit(LayoutPanelBase *deleted, LayoutPanelSplitter *splitter)
 {
-	_firstLayoutPanel = layoutPanel;
-	_firstLayoutPanel->setParent(this);
-	_splitter->replaceWidget(0, _firstLayoutPanel);
+	LayoutPanelBase *saved;
+
+	for (auto widget : splitter->widgets())
+		if (widget != deleted)
+			saved = dynamic_cast<LayoutPanelBase *>(widget);
+	_splitter->replaceWidget(_splitter->indexOf(splitter), saved);
+	splitter->deleteLater();
+
+	auto isSplitter = dynamic_cast<LayoutPanelSplitter*>(saved);
+	if (isSplitter && isSplitter->_splitter->orientation() == _splitter->orientation()) {
+		auto index = _splitter->indexOf(isSplitter);
+		auto widgets = isSplitter->widgets();
+
+		for (int i = 0; i < widgets.size(); i += 1)
+			_splitter->insertWidget(index + i, widgets[i]);
+		isSplitter->deleteLater();
+	}
 }
 
-void qtengine::LayoutPanelSplitter::setSecondLayoutPanel(LayoutPanelBase *layoutPanel)
+QVector<QWidget *> qtengine::LayoutPanelSplitter::widgets() const
 {
-	_secondLayoutPanel = layoutPanel;
-	_secondLayoutPanel->setParent(this);
-	_splitter->replaceWidget(1, _secondLayoutPanel);
-}
+	QVector<QWidget *> ret;
 
-void qtengine::LayoutPanelSplitter::setOrientation(Qt::Orientation orientation)
-{
-	_splitter->setOrientation(orientation);
-}
-
-int qtengine::LayoutPanelSplitter::indexOf(LayoutPanelBase *layoutPanel)
-{
-	return _splitter->indexOf(layoutPanel);
-}
-
-void qtengine::LayoutPanelSplitter::removeAllPanels()
-{
-	for (int i = 0; i < _splitter->count(); i++)
-		_splitter->widget(i)->setParent(nullptr);
+	for (int i = 0; i < _splitter->count(); i += 1)
+		ret << _splitter->widget(i);
+	return ret;
 }
