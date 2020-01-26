@@ -45,14 +45,13 @@ void qtengine::TabBar::mouseReleaseEvent(QMouseEvent *event)
 		QTabBar::mouseReleaseEvent(event);
 		return;
 	}
-
 	if (_isDragging) {
 		_isDragging = false;
 		auto tabBar = dynamic_cast<TabBar*>(QApplication::widgetAt(event->globalPos()));
 
 		if (tabBar) {
-			auto tabview = dynamic_cast<TabWidget*>(tabBar->parent());
-			auto layoutPanelTabber = dynamic_cast<LayoutPanelTabber*>(tabview->parent());
+			auto tabWidget = dynamic_cast<TabWidget*>(tabBar->parent());
+			auto layoutPanelTabber = dynamic_cast<LayoutPanelTabber*>(tabWidget->parent());
 
 			if (layoutPanelTabber)
 				moveToWindow(layoutPanelTabber, event->globalPos());
@@ -64,19 +63,11 @@ void qtengine::TabBar::mouseReleaseEvent(QMouseEvent *event)
 
 void qtengine::TabBar::moveToWindow(LayoutPanelTabber *layoutPanelTabber, const QPoint &pos)
 {
-	auto tabWidget = dynamic_cast<TabWidget*>(parent());
+	auto oldTabWidget = dynamic_cast<TabWidget*>(parent());
+	auto oldPanelTabber = dynamic_cast<LayoutPanelTabber*>(oldTabWidget->parent());
 	int index = _tabGhost->index();
 
-	if (tabWidget == layoutPanelTabber->tabWidget() && index == tabWidget->tabBar()->tabAt(tabWidget->mapFromGlobal(pos)))
+	if (oldPanelTabber == layoutPanelTabber && index == oldTabWidget->tabBar()->tabAt(oldTabWidget->mapFromGlobal(pos)))
 		return;
-	tabWidget->closeTab(index);
-	index = layoutPanelTabber->insertTab(pos, tabWidget->getPage(index));
-	layoutPanelTabber->setCurrentTab(index);
-	layoutPanelTabber->raise();
-	if (tabWidget->count() == 0) {
-		LayoutPanelTabber *parent = dynamic_cast<LayoutPanelTabber *>(tabWidget->parent());
-
-		if (parent && parent->parentWidget() == tabWidget->window())
-			tabWidget->window()->close();
-	}
+	layoutPanelTabber->setCurrentTab(layoutPanelTabber->insertTab(pos, oldPanelTabber->closeTab(index)));
 }

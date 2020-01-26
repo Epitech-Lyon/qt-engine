@@ -65,19 +65,20 @@ int qtengine::LayoutPanelTabber::insertTab(const QPoint &pos, ContentPanelBase *
 	return _tabWidget->insertTab(index, contentPanel, contentPanel->name());
 }
 
-void qtengine::LayoutPanelTabber::closeTab(int index)
+qtengine::ContentPanelBase *qtengine::LayoutPanelTabber::closeTab(int index)
 {
 	auto panel = _tabWidget->closeTab(index);
 
-	delete panel;
-	if (_tabWidget->count() > 0) { return; }
-	auto base = parentLayoutPanel();
-	auto splitter = dynamic_cast<LayoutPanelSplitter*>(base);
+	if (_tabWidget->count() == 0) {
+		auto base = parentLayoutPanel();
+		auto splitter = dynamic_cast<LayoutPanelSplitter*>(base);
 
-	if (splitter)
-		splitter->removeTabber(this);
-	else if (base)
-		base->setChild(new LayoutPanelTabber(base));
+		if (splitter)
+			splitter->removeTabber(this);
+		else if (base)
+			base->setChild(new LayoutPanelTabber(base));
+	}
+	return panel;
 }
 
 QWidget *qtengine::LayoutPanelTabber::currentTab()

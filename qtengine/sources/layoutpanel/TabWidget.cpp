@@ -37,7 +37,7 @@ void qtengine::TabWidget::initButton()
 	auto toolButton = new QToolButton(this);
 
 	auto mainMenu = new QMenu(toolButton);
-	mainMenu->addAction(QIcon(":icon_close"), "Close tab", [this]() { dynamic_cast<LayoutPanelTabber*>(parentWidget())->closeTab(currentIndex()); });
+	mainMenu->addAction(QIcon(":icon_close"), "Close tab", [this]() { delete dynamic_cast<LayoutPanelTabber*>(parentWidget())->closeTab(currentIndex()); });
 	mainMenu->addSeparator();
 	mainMenu->addAction(QIcon(":icon_splitter_vertical"), "Split vertical", [this]() { split(Qt::Vertical); });
 	mainMenu->addAction(QIcon(":icon_splitter_horizontal"), "Split horizontal", [this]() { split(Qt::Horizontal); });
@@ -80,10 +80,10 @@ qtengine::ContentPanelBase *qtengine::TabWidget::setTab(const QString &name)
 
 qtengine::ContentPanelBase *qtengine::TabWidget::closeTab(int index)
 {
-	auto widget = this->widget(index);
+	auto widget = dynamic_cast<ContentPanelBase *>(this->widget(index));
 
 	removeTab(index);
-	return dynamic_cast<ContentPanelBase *>(widget);
+	return widget;
 }
 
 void qtengine::TabWidget::split(Qt::Orientation orientation)

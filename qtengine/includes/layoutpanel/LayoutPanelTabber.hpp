@@ -23,7 +23,7 @@ namespace qtengine {
 
 		int addTab(ContentPanelBase *);
 		int insertTab(const QPoint &, ContentPanelBase *);
-		void closeTab(int index);
+		ContentPanelBase *closeTab(int index);
 
 		void setCurrentTab(int index);
 		QWidget *currentTab();
