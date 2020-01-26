@@ -55,7 +55,7 @@ void qtengine::Manager::save()
 	json["Theme"] = _theme;
 
 	QFile file(qApp->applicationDirPath() + "/settings.ini");
-	if (file.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::Truncate)) {
+	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
 		file.write(QJsonDocument(json).toJson());
 		file.close();
 	}
@@ -81,7 +81,7 @@ void qtengine::Manager::onNewProject()
 	// Create directory
 	QDir dir(selectedDirectory);
 	if (QFile(dir.path() + "/" + dir.dirName() + _projectExt).exists())
-		if (QMessageBox::warning(_mainWindow, "New project", dir.path() + "/" + dir.dirName() + _projectExt + " already exists, Do you want to replace it ?", QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes)
+		if (QMessageBox::warning(_mainWindow, "New project", dir.path() + "/" + dir.dirName() + _projectExt + " already exists, Do you want to replace it ?", QMessageBox::No, QMessageBox::Yes) == QMessageBox::No)
 			return;
 	dir.removeRecursively();
 	dir.mkpath(".");

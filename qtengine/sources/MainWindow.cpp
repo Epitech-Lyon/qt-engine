@@ -9,6 +9,7 @@
 
 #include "Manager.hpp"
 #include "LayoutPanelTabber.hpp"
+#include "LayoutPanelSplitter.hpp"
 
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
@@ -46,10 +47,19 @@ void qtengine::MainWindow::initMenuBar()
 	menuSettings->addAction("Theme", _manager, &Manager::onTheme);
 
 	_menuLayouts = new QMenu(this);
+
+	QFile file(qApp->applicationDirPath() + "/layouts.ini");
+	QJsonObject json;
+	if (file.open(QIODevice::ReadOnly)) {
+		json = QJsonDocument::fromJson(file.readAll()).object();
+		file.close();
+	}
+	for (auto key : json.keys())
+		_menuLayouts->addAction(createLayoutAction(key));
 	_menuLayoutsSeparator = _menuLayouts->addSeparator();
 	_menuLayouts->addAction("Save layout", this, &MainWindow::onSaveLayout);
 	_menuLayoutsBtnDelete = _menuLayouts->addAction("Delete layout", this, &MainWindow::onDeleteLayout);
-	_menuLayoutsBtnDelete->setEnabled(false);
+	_menuLayoutsBtnDelete->setEnabled(json.size() > 0);
 
 	auto btnLayouts = new QPushButton("Layouts", this);
 	btnLayouts->setMenu(_menuLayouts);
@@ -68,6 +78,28 @@ QAction *qtengine::MainWindow::createLayoutAction(const QString &layoutName)
 {
 	auto action = new QAction(layoutName, this);
 
+	connect(action, &QAction::triggered, [this, layoutName]() {
+		QFile file(qApp->applicationDirPath() + "/layouts.ini");
+		QJsonObject json;
+
+		if (file.open(QIODevice::ReadOnly)) {
+			json = QJsonDocument::fromJson(file.readAll()).object();
+			file.close();
+		}
+		json = json[layoutName].toObject();
+		auto type = json["Type"].toString();
+		LayoutPanelBase *base = nullptr;
+		
+		if (type == "Tabber")
+			base = new LayoutPanelTabber;
+		else if (type == "Splitter")
+			base = new LayoutPanelSplitter(Qt::Horizontal);
+		base->deserialize(json["State"].toObject());
+
+		auto centralWidget = dynamic_cast<LayoutPanelBase*>(this->centralWidget());
+		delete centralWidget->child();
+		centralWidget->setChild(base);
+	});
 	return action;
 }
 
@@ -116,11 +148,24 @@ void qtengine::MainWindow::onSaveLayout()
 	QString layoutName = QInputDialog::getText(this, "Save Layout", "Choose a name for your Layout", QLineEdit::Normal, "Name", &ok);
 
 	if (ok && !layoutName.isEmpty()) {
-		_menuLayouts->insertAction(_menuLayoutsSeparator, createLayoutAction(layoutName));
+		if (layoutsActionName.contains(layoutName) && QMessageBox::warning(this, "Save Layout", layoutName + " already exists, Do you want to replace it ?", QMessageBox::No, QMessageBox::Yes) == QMessageBox::No)
+			return;
+		if (!layoutsActionName.contains(layoutName))
+			_menuLayouts->insertAction(_menuLayoutsSeparator, createLayoutAction(layoutName));
 		_menuLayoutsBtnDelete->setEnabled(true);
 
-//		QJsonObject json; // serialize panel
-		// Save to file
+		QFile file(qApp->applicationDirPath() + "/layouts.ini");
+		QJsonObject json;
+
+		if (file.open(QIODevice::ReadOnly)) {
+			json = QJsonDocument::fromJson(file.readAll()).object();
+			file.close();
+		}
+		json[layoutName] = dynamic_cast<LayoutPanelBase*>(centralWidget())->child()->serialize();
+		if (file.open(QIODevice::WriteOnly)) {
+			file.write(QJsonDocument(json).toJson());
+			file.close();
+		}
 	}
 }
 
@@ -134,7 +179,19 @@ void qtengine::MainWindow::onDeleteLayout()
 		auto layoutActionToDel = getLayoutActionByName(layoutNameToDel);
 
 		_menuLayouts->removeAction(layoutActionToDel);
-		_menuLayoutsBtnDelete->setEnabled(!(layoutsActionName.size() - 1 == 0));
-		// Load json's layout and delete the section who concern the layout deleted.
+		_menuLayoutsBtnDelete->setEnabled(layoutsActionName.size() - 1 > 0);
+
+		QFile file(qApp->applicationDirPath() + "/layouts.ini");
+		QJsonObject json;
+
+		if (file.open(QIODevice::ReadOnly)) {
+			json = QJsonDocument::fromJson(file.readAll()).object();
+			file.close();
+		}
+		json.remove(layoutNameToDel);
+		if (file.open(QIODevice::WriteOnly)) {
+			file.write(QJsonDocument(json).toJson());
+			file.close();
+		}
 	}
 }

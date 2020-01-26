@@ -29,7 +29,7 @@ QJsonObject qtengine::LayoutPanelTabber::serialize() const
 		jsonStateTabs.append(dynamic_cast<ContentPanelBase *>(_tabWidget->widget(i))->serialize());
 
 	QJsonObject jsonState;
-	jsonState["CurrentTabIndex"] = _tabWidget->currentIndex();
+	jsonState["CurrentTabberIndex"] = _tabWidget->currentIndex();
 	jsonState["Tabs"] = jsonStateTabs;
 
 	QJsonObject json;
@@ -40,22 +40,17 @@ QJsonObject qtengine::LayoutPanelTabber::serialize() const
 
 void qtengine::LayoutPanelTabber::deserialize(const QJsonObject &jsonState)
 {
-	if (jsonState.contains("Tabs") && jsonState["Tabs"].isArray()) {
-		QJsonArray jsonStateTabs = jsonState["Tabs"].toArray();
+	for (int i = 0; i < _tabWidget->count(); i += 1)
+		delete _tabWidget->closeTab(i);
 
-		for (int i = 0; i < jsonStateTabs.size(); i += 1) {
-			QJsonObject json = jsonStateTabs[i].toObject();
+	for (auto jsonStateTabRef : jsonState["Tabs"].toArray()) {
+		QJsonObject jsonStateTab = jsonStateTabRef.toObject();
+		ContentPanelBase *content = ContentPanelFactory::create(jsonStateTab["ContentPanelType"].toString());
 
-			if (json.contains("ContentPanelType") && json["ContentPanelType"].isString())  {
-				ContentPanelBase *content = ContentPanelFactory::create(json["ContentPanelType"].toString());
-
-				content->deserialize(json);
-				addTab(content);
-			}
-		}
+		content->deserialize(jsonStateTab);
+		addTab(content);
 	}
-	if (jsonState.contains("CurrentTabberIndex") && jsonState["CurrentTabberIndex"].isDouble())
-		_tabWidget->setCurrentIndex(jsonState["CurrentTabberIndex"].toInt());
+	_tabWidget->setCurrentIndex(jsonState["CurrentTabberIndex"].toInt());
 }
 
 int qtengine::LayoutPanelTabber::addTab(ContentPanelBase *contentPanel)

@@ -29,60 +29,40 @@ qtengine::LayoutPanelSplitter::LayoutPanelSplitter(Qt::Orientation orientation, 
 
 QJsonObject qtengine::LayoutPanelSplitter::serialize() const
 {
-	/*
-	QList<int> size = _splitter->sizes();
-	double handlePos = ((double)size[0]) / ((double)(size[0] + size[1]));
-	QString orientation = _splitter->orientation() == Qt::Orientation::Horizontal ? "Horizontal" : "Vertical";
+	QJsonArray jsonStateLayoutPanels;
+	for (auto widget : widgets())
+		jsonStateLayoutPanels.append(dynamic_cast<LayoutPanelBase*>(widget)->serialize());
 
 	QJsonObject jsonState;
-	jsonState["HandlePos"] = handlePos;
-	jsonState["Orientation"] = orientation;
-	jsonState["FirstLayoutPanel"] = _firstLayoutPanel->serialize();
-	jsonState["SecondLayoutPanel"] = _secondLayoutPanel->serialize();
+	jsonState["Orientation"] = static_cast<int>(_splitter->orientation());
+	jsonState["HandleState"] = QString(_splitter->saveState());
+	jsonState["LayoutPanels"] = jsonStateLayoutPanels;
 
-	QJsonObject splitterObj;
-	splitterObj["Type"] = "Splitter";
-	splitterObj["State"] = jsonState;
-	return splitterObj;
-	*/
-	return QJsonObject();
+	QJsonObject json;
+	json["Type"] = "Splitter";
+	json["State"] = jsonState;
+	return json;
 }
 
-void qtengine::LayoutPanelSplitter::deserialize(const QJsonObject &)
+void qtengine::LayoutPanelSplitter::deserialize(const QJsonObject &jsonState)
 {
-	/*
-	{
-		QJsonObject firstLayoutPanelObject = jsonState["FirstLayoutPanel"].toObject();
-		QString type = firstLayoutPanelObject["Type"].toString();
-		if (type == "Splitter")
-			_firstLayoutPanel = new LayoutPanelSplitter(_splitter);
-		else if (type == "Tabber")
-			_firstLayoutPanel = new LayoutPanelTabber(_splitter);
-		//setUpLeftLayoutPanel(_firstLayoutPanel);
-		_firstLayoutPanel->deserialize(firstLayoutPanelObject["State"].toObject());
+	for (auto widget : widgets())
+		delete widget;
+
+	_splitter->setOrientation(static_cast<Qt::Orientation>(jsonState["Orientation"].toInt()));
+	for (auto jsonStateLayoutPanelRef : jsonState["LayoutPanels"].toArray()) {
+		auto jsonStateLayoutPanel = jsonStateLayoutPanelRef.toObject();
+		auto type = jsonStateLayoutPanel["Type"].toString();
+		LayoutPanelBase *base = nullptr;
+		
+		if (type == "Tabber")
+			base = new LayoutPanelTabber;
+		else if (type == "Splitter")
+			base = new LayoutPanelSplitter(Qt::Horizontal);
+		base->deserialize(jsonStateLayoutPanel["State"].toObject());
+		_splitter->addWidget(base);
 	}
-	{
-		QJsonObject secondLayoutPanelObject = jsonState["SecondLayoutPanel"].toObject();
-		QString type = secondLayoutPanelObject["Type"].toString();
-		if (type == "Splitter")
-			_secondLayoutPanel = new LayoutPanelSplitter(_splitter);
-		else if (type == "Tabber")
-			_secondLayoutPanel = new LayoutPanelTabber(_splitter);
-		//setUpLeftLayoutPanel(_secondLayoutPanel);
-		_secondLayoutPanel->deserialize(secondLayoutPanelObject["State"].toObject());
-	}
-
-	setChildrenPanel(_firstLayoutPanel, _secondLayoutPanel);
-
-	QString orientation = jsonState["Orientation"].toString();
-	if (orientation == "Vertical")
-		_splitter->setOrientation(Qt::Vertical);
-	else if (orientation == "Horizontal")
-		_splitter->setOrientation(Qt::Horizontal);
-
-	double handlePos = jsonState["HandlePos"].toDouble();
-	_splitter->setSizes({ (int)(handlePos * INT_MAX), (int)((1.0 - handlePos) * INT_MAX) });
-	*/
+	_splitter->restoreState(QByteArray::fromStdString(jsonState["Orientation"].toString().toStdString()));
 }
 
 void qtengine::LayoutPanelSplitter::removeTabber(LayoutPanelTabber *tabber)
