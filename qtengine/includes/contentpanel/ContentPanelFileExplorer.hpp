@@ -16,7 +16,5 @@ namespace qtengine {
 			~ContentPanelFileExplorer() = default;
 
 			void init() override;
-
-		private:
 	};
 }

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <QtCore/QJsonObject>
+#include <QtCore/QJsonArray>
 
 namespace qtengine {
 	class ISerializable {

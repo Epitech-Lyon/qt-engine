@@ -2,60 +2,50 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** Manager
+** ProjectManager
 */
 
 #pragma once
 
 #include <QtCore/QObject>
 #include <QtCore/QString>
+#include "ISerializable.hpp"
 
 namespace qtengine {
-	class MainWindow;
-
-	class Manager : public QObject {
+	class ProjectManager : public QObject, public ISerializable {
 		Q_OBJECT
 
 	public:
-		~Manager() = default;
-		static Manager *instance();
-		void init();
-		void save();
+		ProjectManager() = default;
+		~ProjectManager() = default;
 
-	private:
-		Manager();
-		MainWindow *_mainWindow;
+		QJsonObject serialize() const override;
+		void deserialize(const QJsonObject &) override;
 
-	// Theme
-	public slots:
-		void onTheme();
-	
-	private:
-		QString _theme;
-
-	// Project management
-	public:
 		QString projectDir() const { return _projectDir; }
 		QString projectPath() const { return _projectPath; }
 		QString projectName() const { return _projectName; }
+		QStringList recentsProject() const { return _recentsProject; }
+
+		void openProject(const QString &);
 
 	signals:
 		void projectChanged();
 		void projectDirChanged(const QString &);
 		void projectPathChanged(const QString &);
 		void projectNameChanged(const QString &);
+		void recentProjectsChanged(const QStringList &);
 
 	public slots:
 		void onNewProject();
 		void onOpenProject();
-		void onSaveProject();
-		void onSaveProjectAs();
 
 	private:
-		void openProject(const QString &);
 		const QString _projectExt = ".prj";
 		QString _projectDir;
 		QString _projectPath;
 		QString _projectName;
+		const int _maxRecentsProject = 5;
+		QStringList _recentsProject;
 	};
 }

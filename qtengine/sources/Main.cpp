@@ -7,11 +7,14 @@
 
 #include <QtWidgets/QApplication>
 #include "Manager.hpp"
+#include "MainWindow.hpp"
 
 int main(int ac, char **av)
 {
     QApplication app(ac, av);
-    qtengine::Manager::instance();
+    auto manager = qtengine::Manager::instance();
 
+    manager->init();
+    manager->mainWindow()->showMaximized();
 	return app.exec();
 }

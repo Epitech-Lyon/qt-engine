@@ -8,31 +8,21 @@
 #pragma once
 
 #include <QtWidgets/QMainWindow>
+#include "ISerializable.hpp"
 
 namespace qtengine {
 	class Manager;
-	class MainWindow : public QMainWindow {
+	class MainWindow : public QMainWindow, public ISerializable {
 	public:
 		MainWindow(Manager *);
 		~MainWindow();
+
+		QJsonObject serialize() const override;
+		void deserialize(const QJsonObject &) override;
 
 	private:
 		void initMenuBar();
 		void initInterface();
 		Manager *_manager;
-
-	// Layout Management
-	private:
-		QAction *createLayoutAction(const QString &);
-		QAction *getLayoutActionByName(const QString &) const;
-		QList<QAction *> getLayoutsAction() const;
-		QStringList getLayoutsActionName() const;
-		QMenu *_menuLayouts;
-		QAction *_menuLayoutsSeparator;
-		QAction *_menuLayoutsBtnDelete;
-
-	private slots:
-		void onSaveLayout();
-		void onDeleteLayout();
 	};
 }
