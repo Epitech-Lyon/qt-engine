@@ -27,15 +27,20 @@ qtengine::LayoutPanelSplitter::LayoutPanelSplitter(Qt::Orientation orientation, 
 	_mainLayout->addWidget(_splitter);
 }
 
+#include <QtCore/QDebug>
 QJsonObject qtengine::LayoutPanelSplitter::serialize() const
 {
 	QJsonArray jsonStateLayoutPanels;
 	for (auto widget : widgets())
 		jsonStateLayoutPanels.append(dynamic_cast<LayoutPanelBase*>(widget)->serialize());
 
+	QJsonArray jsonStateSizes;
+	for (auto size : _splitter->sizes())
+		jsonStateSizes.append(size);
+
 	QJsonObject jsonState;
 	jsonState["Orientation"] = static_cast<int>(_splitter->orientation());
-	jsonState["HandleState"] = QString(_splitter->saveState());
+	jsonState["Sizes"] = jsonStateSizes;
 	jsonState["LayoutPanels"] = jsonStateLayoutPanels;
 
 	QJsonObject json;
@@ -62,7 +67,11 @@ void qtengine::LayoutPanelSplitter::deserialize(const QJsonObject &jsonState)
 		base->deserialize(jsonStateLayoutPanel["State"].toObject());
 		_splitter->addWidget(base);
 	}
-	_splitter->restoreState(QByteArray::fromStdString(jsonState["Orientation"].toString().toStdString()));
+
+	QList<int> sizes;
+	for (auto sizeRef : jsonState["Sizes"].toArray())
+		sizes << sizeRef.toInt();
+	_splitter->setSizes(sizes);
 }
 
 void qtengine::LayoutPanelSplitter::removeTabber(LayoutPanelTabber *tabber)

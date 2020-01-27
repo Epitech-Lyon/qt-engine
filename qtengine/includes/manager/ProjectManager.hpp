@@ -22,10 +22,13 @@ namespace qtengine {
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &) override;
 
+		void setCurrentView(const QString &);
+
 		QString projectDir() const { return _projectDir; }
 		QString projectPath() const { return _projectPath; }
 		QString projectName() const { return _projectName; }
 		QStringList recentsProject() const { return _recentsProject; }
+		QString currentView() const { return _currentView; }
 
 		void openProject(const QString &);
 
@@ -35,6 +38,7 @@ namespace qtengine {
 		void projectPathChanged(const QString &);
 		void projectNameChanged(const QString &);
 		void recentProjectsChanged(const QStringList &);
+		void currentViewChanged(const QString &);
 
 	public slots:
 		void onNewProject();
@@ -47,5 +51,6 @@ namespace qtengine {
 		QString _projectName;
 		const int _maxRecentsProject = 5;
 		QStringList _recentsProject;
+		QString _currentView;
 	};
 }

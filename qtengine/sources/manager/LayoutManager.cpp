@@ -50,6 +50,7 @@ void qtengine::LayoutManager::onSaveLayout()
 		if (_json.contains(layoutName) && QMessageBox::warning(mainWindow, "Save Layout", layoutName + " already exists, Do you want to replace it ?", QMessageBox::No, QMessageBox::Yes) == QMessageBox::No)
 			return;
 		_json[layoutName] = mainWindow->serialize();
+		_layoutName = layoutName;
 		emit layoutsNameChanged(layoutsName());
 	}
 }

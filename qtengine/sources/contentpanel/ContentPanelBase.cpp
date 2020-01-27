@@ -12,17 +12,16 @@ qtengine::ContentPanelBase::ContentPanelBase(const QString &name, QWidget *paren
 	, _mainLayout(nullptr)
 	, _name(name)
 {
+	_mainLayout = new QVBoxLayout(this);
+	_mainLayout->setMargin(2);
+	setLayout(_mainLayout);
 }
 
 void qtengine::ContentPanelBase::init()
 {
-	_mainLayout = new QVBoxLayout(this);
-	_mainLayout->setMargin(2);
-	setLayout(_mainLayout);
-
 	auto toolBar = initToolBar();
 	if (toolBar)
-		_mainLayout->addWidget(toolBar);
+		_mainLayout->insertWidget(0, toolBar);
 }
 
 QJsonObject qtengine::ContentPanelBase::serialize() const

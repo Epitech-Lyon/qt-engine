@@ -330,7 +330,7 @@ QMainWindow::separator:hover
 QToolBar::handle
 {
      spacing: 3px; /* spacing between items in the tool bar */
-     background: url(:/images/handle.png);
+     /*background: url(:/images/handle.png);*/
 }
 
 QMenu::separator
