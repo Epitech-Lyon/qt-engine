@@ -22,13 +22,31 @@ namespace qtengine {
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &) override;
 
-		QString currentView() const { return _currentView; }
 		void openView(const QString &);
 
+		QString viewExtension() const { return _viewExt; }
+
+		QString viewPath() const { return _viewPath; }
+		QString viewName() const { return _viewName; }
+		QJsonObject viewObject() const { return _viewObject; }
+
+	public slots:
+		void onCreateView(const QString &);
+		void onSaveView(const QJsonObject &);
+		void onSaveViewAs(const QJsonObject &);
+
 	signals:
-		void currentViewChanged(const QString &);
+		void requestForSave();
+		void requestForSaveAs();
+
+		void viewPathChanged(const QString &);
+		void viewNameChanged(const QString &);
+		void viewObjectChanged(const QJsonObject &);
 
     private:
-		QString _currentView;
+		const QString _viewExt = ".view";
+		QString _viewPath;
+		QString _viewName;
+		QJsonObject _viewObject;
     };
 }

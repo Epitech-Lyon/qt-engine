@@ -9,6 +9,7 @@
 
 #include "Manager.hpp"
 #include "ProjectManager.hpp"
+#include "ViewManager.hpp"
 #include "LayoutManager.hpp"
 
 #include "LayoutPanelTabber.hpp"
@@ -36,13 +37,17 @@ qtengine::MainWindow::~MainWindow()
 void qtengine::MainWindow::initMenuBar()
 {
 	auto projectManager = _manager->projectManager();
+	auto viewManager = _manager->viewManager();
 	auto layoutManager = _manager->layoutManager();
 
 	auto menuFile = menuBar()->addMenu("File");
 	menuFile->addAction("New project", projectManager, &ProjectManager::onNewProject, QKeySequence::New);
 	menuFile->addAction("Open project", projectManager, &ProjectManager::onOpenProject, QKeySequence::Open);
-	menuFile->addSeparator();
 	auto menuFileRecents = menuFile->addMenu("Open recent project");
+	menuFile->addSeparator();
+	menuFile->addAction("Save view", [viewManager]() { emit viewManager->requestForSave(); }, QKeySequence::Save);
+	menuFile->addAction("Save view as", [viewManager]() { emit viewManager->requestForSaveAs(); }, QKeySequence::SaveAs);
+	menuFile->addSeparator();
 	menuFile->addAction("Exit", this, &QMainWindow::close, QKeySequence::Quit);
 
 	auto initMenuFileRecents = [projectManager, menuFileRecents](const QStringList &recentsProject) {

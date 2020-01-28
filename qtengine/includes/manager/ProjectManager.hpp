@@ -22,12 +22,12 @@ namespace qtengine {
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &) override;
 
+		void openProject(const QString &);
+
 		QString projectDir() const { return _projectDir; }
 		QString projectPath() const { return _projectPath; }
 		QString projectName() const { return _projectName; }
 		QStringList recentsProject() const { return _recentsProject; }
-
-		void openProject(const QString &);
 
 	signals:
 		void projectChanged();
