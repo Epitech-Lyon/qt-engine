@@ -13,6 +13,7 @@
 namespace qtengine {
 	class MainWindow;
 	class ProjectManager;
+	class ViewManager;
 	class LayoutManager;
 
 	class Manager : public QObject {
@@ -24,11 +25,13 @@ namespace qtengine {
 
 		MainWindow *mainWindow() const { return _mainWindow; }
 		ProjectManager *projectManager() const { return _projectManager; }
+		ViewManager *viewManager() const { return _viewManager; }
 		LayoutManager *layoutManager() const { return _layoutManager; }
 
 	private:
 		Manager();
 		ProjectManager *_projectManager;
+		ViewManager *_viewManager;
 		LayoutManager *_layoutManager;
 		MainWindow *_mainWindow;
 

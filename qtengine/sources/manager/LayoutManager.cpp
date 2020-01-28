@@ -14,23 +14,19 @@
 #include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMessageBox>
 
-qtengine::LayoutManager::LayoutManager()
-{
-}
-
-qtengine::LayoutManager::~LayoutManager()
-{
-}
-
 QJsonObject qtengine::LayoutManager::serialize() const
 {
-	return _json;
+	QJsonObject json;
+	json["Layouts"] = _json;
+	json["Current layout"] = _layoutName;
+	return json;
 }
 
 void qtengine::LayoutManager::deserialize(const QJsonObject &json)
 {
-	_json = json;
+	_json = json["Layouts"].toObject();
 	emit layoutsNameChanged(layoutsName());
+	openLayout(json["Current layout"].toString());
 }
 
 void qtengine::LayoutManager::openLayout(const QString &layoutName)

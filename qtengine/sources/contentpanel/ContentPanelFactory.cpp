@@ -10,12 +10,16 @@
 #include <QtCore/QDebug>
 
 #include "ContentPanelEmpty.hpp"
-#include "ContentPanelFileExplorer.hpp"
+#include "ContentPanelProjectExplorer.hpp"
+#include "ContentPanelViewsExplorer.hpp"
+#include "ContentPanelViewProperty.hpp"
 
 qtengine::ContentPanelFactory::ContentPanelFactory()
 {
 	_constructors[ContentPanelEmpty().name()] = [](QWidget *parent) { return new ContentPanelEmpty(parent); };
-	_constructors[ContentPanelFileExplorer().name()] = [](QWidget *parent) { return new ContentPanelFileExplorer(parent); };
+	_constructors[ContentPanelProjectExplorer().name()] = [](QWidget *parent) { return new ContentPanelProjectExplorer(parent); };
+	_constructors[ContentPanelViewsExplorer().name()] = [](QWidget *parent) { return new ContentPanelViewsExplorer(parent); };
+	_constructors[ContentPanelViewProperty().name()] = [](QWidget *parent) { return new ContentPanelViewProperty(parent); };
 }
 
 qtengine::ContentPanelFactory *qtengine::ContentPanelFactory::instance()

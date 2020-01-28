@@ -2,22 +2,23 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** ContentPanelFileExplorer
+** ContentPanelProjectExplorer
 */
 
-#include "ContentPanelFileExplorer.hpp"
+#include "ContentPanelProjectExplorer.hpp"
 
 #include "Manager.hpp"
 #include "ProjectManager.hpp"
+#include "ViewManager.hpp"
 
 #include <QtWidgets/QToolBar>
 
-qtengine::ContentPanelFileExplorer::ContentPanelFileExplorer(QWidget *parent)
-	: ContentPanelBase("File Explorer", parent)
+qtengine::ContentPanelProjectExplorer::ContentPanelProjectExplorer(QWidget *parent)
+	: ContentPanelBase("Project Explorer", parent)
 {
 }
 
-void qtengine::ContentPanelFileExplorer::init()
+void qtengine::ContentPanelProjectExplorer::init()
 {
 	_treeView = new QTreeView(this);
 	_fsModel = new QFileSystemModel(_treeView);
@@ -44,36 +45,36 @@ void qtengine::ContentPanelFileExplorer::init()
 	onProjectDirChanged(Manager::instance()->projectManager()->projectDir());
 	connect(Manager::instance()->projectManager(), &ProjectManager::projectDirChanged, onProjectDirChanged);
 
-	_treeView->setCurrentIndex(_fsModel->index(Manager::instance()->projectManager()->currentView()));
-	connect(_treeView, &QTreeView::clicked, this, &ContentPanelFileExplorer::onModelIndexClicked);
+	_treeView->setCurrentIndex(_fsModel->index(Manager::instance()->viewManager()->currentView()));
+	connect(_treeView, &QTreeView::clicked, this, &ContentPanelProjectExplorer::onModelIndexClicked);
 
 	ContentPanelBase::init();
 }
 
-QToolBar *qtengine::ContentPanelFileExplorer::initToolBar()
+QToolBar *qtengine::ContentPanelProjectExplorer::initToolBar()
 {
 	auto toolbar = new QToolBar(this);
 
 	toolbar->addAction(QIcon(":icon_collapse"), "", _treeView, &QTreeView::collapseAll);
 	toolbar->addAction(QIcon(":icon_expand"), "", _treeView, &QTreeView::expandAll);
 	toolbar->addSeparator();
-	toolbar->addAction(QIcon(":icon_create"), "", this, &ContentPanelFileExplorer::onCreateFile);
-	toolbar->addAction(QIcon(":icon_rename"), "", this, &ContentPanelFileExplorer::onRenameFile);
-	toolbar->addAction(QIcon(":icon_delete"), "", this, &ContentPanelFileExplorer::onDeleteFile);
+	toolbar->addAction(QIcon(":icon_create"), "", this, &ContentPanelProjectExplorer::onCreateFile);
+	toolbar->addAction(QIcon(":icon_rename"), "", this, &ContentPanelProjectExplorer::onRenameFile);
+	toolbar->addAction(QIcon(":icon_delete"), "", this, &ContentPanelProjectExplorer::onDeleteFile);
 	return toolbar;
 }
 
-void qtengine::ContentPanelFileExplorer::onModelIndexClicked(const QModelIndex &modelIndex)
+void qtengine::ContentPanelProjectExplorer::onModelIndexClicked(const QModelIndex &modelIndex)
 {
-	Manager::instance()->projectManager()->setCurrentView(_fsModel->filePath(modelIndex));
+	Manager::instance()->viewManager()->openView(_fsModel->filePath(modelIndex));
 }
 
-void qtengine::ContentPanelFileExplorer::onCreateFile()
+void qtengine::ContentPanelProjectExplorer::onCreateFile()
 {
 	// Ask for create file based on QWidget/QDialog
 }
 
-void qtengine::ContentPanelFileExplorer::onRenameFile()
+void qtengine::ContentPanelProjectExplorer::onRenameFile()
 {
 	auto index = _treeView->currentIndex();
 
@@ -81,7 +82,7 @@ void qtengine::ContentPanelFileExplorer::onRenameFile()
 		_treeView->edit(index);
 }
 
-void qtengine::ContentPanelFileExplorer::onDeleteFile()
+void qtengine::ContentPanelProjectExplorer::onDeleteFile()
 {
 	auto index = _treeView->currentIndex();
 

@@ -47,7 +47,10 @@ void qtengine::LayoutPanelTabber::deserialize(const QJsonObject &jsonState)
 		QJsonObject jsonStateTab = jsonStateTabRef.toObject();
 		ContentPanelBase *content = ContentPanelFactory::create(jsonStateTab["ContentPanelType"].toString());
 
-		content->deserialize(jsonStateTab);
+		if (!content)
+			content = ContentPanelFactory::create("Empty");
+		else
+			content->deserialize(jsonStateTab);
 		addTab(content);
 	}
 	_tabWidget->setCurrentIndex(jsonState["CurrentTabberIndex"].toInt());

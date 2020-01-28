@@ -16,8 +16,8 @@ namespace qtengine {
 		Q_OBJECT
 
 	public:
-		LayoutManager();
-		~LayoutManager();
+		LayoutManager() = default;
+		~LayoutManager() = default;
 
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &) override;

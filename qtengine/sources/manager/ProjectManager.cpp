@@ -23,7 +23,6 @@ QJsonObject qtengine::ProjectManager::serialize() const
 	QJsonObject json;
 	json["Current project"] = _projectPath;
 	json["Recent projects"] = jsonRecentProjects;
-	json["Current view"] = _currentView;
 	return json;
 }
 
@@ -32,13 +31,6 @@ void qtengine::ProjectManager::deserialize(const QJsonObject &json)
 	openProject(json["Current project"].toString());
 	for (auto recentFileRef : json["Recent projects"].toArray())
 		_recentsProject << recentFileRef.toString();
-	setCurrentView(json["Current view"].toString());
-}
-
-void qtengine::ProjectManager::setCurrentView(const QString &currentView)
-{
-	_currentView = currentView;
-	emit currentViewChanged(_currentView);
 }
 
 void qtengine::ProjectManager::openProject(const QString &projectPath)

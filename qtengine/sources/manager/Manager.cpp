@@ -9,6 +9,7 @@
 
 #include "MainWindow.hpp"
 #include "ProjectManager.hpp"
+#include "ViewManager.hpp"
 #include "LayoutManager.hpp"
 
 #include "BoxTheme.hpp"
@@ -19,6 +20,7 @@
 
 qtengine::Manager::Manager()
 	: _projectManager(new ProjectManager)
+	, _viewManager(new ViewManager)
 	, _layoutManager(new LayoutManager)
 	, _mainWindow(new MainWindow(this))
 {
@@ -27,6 +29,7 @@ qtengine::Manager::Manager()
 qtengine::Manager::~Manager()
 {
 	delete _projectManager;
+	delete _viewManager;
 	delete _layoutManager;
 }
 
@@ -49,9 +52,8 @@ void qtengine::Manager::init()
 	BoxTheme().applyTheme(_theme);
 
 	_projectManager->deserialize(json["Project manager"].toObject());
-	_projectManager->openProject(json["Current project"].toString());
+	_viewManager->deserialize(json["View manager"].toObject());
 	_layoutManager->deserialize(json["Layout manager"].toObject());
-	_layoutManager->openLayout(json["Current layout"].toString());
 }
 
 void qtengine::Manager::save()
@@ -59,9 +61,8 @@ void qtengine::Manager::save()
 	QJsonObject json;
 	json["Theme"] = _theme;
 	json["Project manager"] = _projectManager->serialize();
-	json["Current project"] = _projectManager->projectPath();
+	json["View manager"] = _viewManager->serialize();
 	json["Layout manager"] = _layoutManager->serialize();
-	json["Current layout"] = _layoutManager->layoutName();
 
 	QFile file(qApp->applicationDirPath() + "/settings.ini");
 	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {

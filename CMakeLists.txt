@@ -67,11 +67,19 @@ add_custom_target(build-time-copy-conf ALL
   COMMAND ${CMAKE_COMMAND} -E copy "qt.conf" ".."
   )
 
+#=======QtPropertyBrowser=======
+INC_AND_SRC(INCS SRCS "qtpropertybrowser")
+set(QTPROPERTYBROWSER_INCS ${INCS})
+add_library(qtPropertyBrowser SHARED ${SRCS})
+target_link_libraries(qtPropertyBrowser ${CONAN_LIBS} Qt5::Widgets Qt5::Core)
+target_include_directories(qtPropertyBrowser PRIVATE ${INCS})
+target_compile_options(qtPropertyBrowser PRIVATE -Werror -Wall -Wextra)
+
 #==========QtEngine==============
 INC_AND_SRC(INCS SRCS "qtengine")
 add_executable(qtEngine ${SRCS})
-target_link_libraries(qtEngine ${CONAN_LIBS} Qt5::Widgets Qt5::Core)
-target_include_directories(qtEngine PRIVATE ${INCS})
+target_link_libraries(qtEngine ${CONAN_LIBS} Qt5::Widgets Qt5::Core qtPropertyBrowser)
+target_include_directories(qtEngine PRIVATE ${INCS} ${QTPROPERTYBROWSER_INCS})
 target_compile_options(qtEngine PRIVATE -Werror -Wall -Wextra -g3)
 add_custom_command(TARGET qtEngine POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:qtEngine> ".."
