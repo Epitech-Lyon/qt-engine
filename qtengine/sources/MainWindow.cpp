@@ -17,6 +17,8 @@
 
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
+
+#include "ViewManagement.hpp"
 #include <QtCore/QDebug>
 
 qtengine::MainWindow::MainWindow(Manager *manager)
@@ -29,15 +31,17 @@ qtengine::MainWindow::MainWindow(Manager *manager)
 	initMenuBar();
 	initInterface();
 
-	QStringList properties;
-	auto metaObject = QWidget::staticMetaObject;
-	for (int index = metaObject.propertyOffset(); index < metaObject.propertyCount(); index += 1) {
-		auto metaProperty = metaObject.property(index);
-
-		if (metaProperty.isDesignable() && metaProperty.isWritable() && metaProperty.isReadable() && metaProperty.isStored())
-			properties << metaProperty.name();
-	}
-	qDebug() << properties << "\n" << properties.count() << "\\" << metaObject.propertyCount() << "\n\n";
+//	auto widget = new QWidget();
+//	auto layout = new QVBoxLayout(widget);
+//	layout->addWidget(new QPushButton());
+//	widget->setLayout(layout);
+//
+//	QFile file("test.json");
+//	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+//		file.write(QJsonDocument(ViewManagement(widget).serialize()).toJson());
+//		file.close();
+//	}
+//	delete widget;
 }
 
 qtengine::MainWindow::~MainWindow()

@@ -8,6 +8,8 @@
 #include "moc_ViewManager.cpp"
 #include "ViewManager.hpp"
 
+#include "ViewManagement.hpp"
+
 #include "Manager.hpp"
 #include "MainWindow.hpp"
 
@@ -50,8 +52,9 @@ void qtengine::ViewManager::onCreateView(const QString &viewPath)
 	QFileInfo fileInfo(viewPath);
 	if (viewPath.isEmpty() || !fileInfo.exists() || fileInfo.completeSuffix() != _viewExt) { return; }
 
-	// TODO: Stock JSON information
-	QJsonObject json;
+	auto widget = new QWidget;
+	QJsonObject json = ViewManagement(widget).serialize();
+	delete widget;
 
 	QFile file(viewPath);
 	if (file.open(QIODevice::WriteOnly)) {
