@@ -17,6 +17,7 @@ namespace qtengine {
 	public:
 		virtual ~ContentPanelBase() = default;
 
+		virtual bool canHaveMultipleInstance() const { return false; }
 		virtual void init();
 
 		virtual QJsonObject serialize() const override;

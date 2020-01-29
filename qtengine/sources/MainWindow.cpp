@@ -17,6 +17,7 @@
 
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
+#include <QtCore/QDebug>
 
 qtengine::MainWindow::MainWindow(Manager *manager)
 	: _manager(manager)
@@ -27,6 +28,16 @@ qtengine::MainWindow::MainWindow(Manager *manager)
 
 	initMenuBar();
 	initInterface();
+
+	QStringList properties;
+	auto metaObject = QWidget::staticMetaObject;
+	for (int index = metaObject.propertyOffset(); index < metaObject.propertyCount(); index += 1) {
+		auto metaProperty = metaObject.property(index);
+
+		if (metaProperty.isDesignable() && metaProperty.isWritable() && metaProperty.isReadable() && metaProperty.isStored())
+			properties << metaProperty.name();
+	}
+	qDebug() << properties << "\n" << properties.count() << "\\" << metaObject.propertyCount() << "\n\n";
 }
 
 qtengine::MainWindow::~MainWindow()
@@ -94,16 +105,15 @@ QJsonObject qtengine::MainWindow::serialize() const
 
 void qtengine::MainWindow::deserialize(const QJsonObject &json)
 {
+	auto centralWidget = dynamic_cast<LayoutPanelBase*>(this->centralWidget());
+	delete centralWidget->child();
+
 	auto type = json["Type"].toString();
 	LayoutPanelBase *base = nullptr;
-	
 	if (type == "Tabber")
 		base = new LayoutPanelTabber;
 	else if (type == "Splitter")
 		base = new LayoutPanelSplitter(Qt::Horizontal);
 	base->deserialize(json["State"].toObject());
-
-	auto centralWidget = dynamic_cast<LayoutPanelBase*>(this->centralWidget());
-	delete centralWidget->child();
 	centralWidget->setChild(base);
 }

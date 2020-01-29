@@ -16,6 +16,7 @@ namespace qtengine {
 	class TabWidget : public QTabWidget {
 	public:
 		TabWidget(QWidget * = nullptr);
+		~TabWidget() = default;
 
 		int tabAt(const QPoint &);
 
@@ -24,8 +25,13 @@ namespace qtengine {
 		ContentPanelBase *getPage(int) const;
 		ContentPanelBase *closeTab(int);
 
+	private slots:
+		void onAvailablesNamesChanged(const QStringList &);
+
 	private:
 		void split(Qt::Orientation);
 		void initButton();
+		QMenu *_menuSetTabs;
+		QMenu *_menuAddTabs;
 	};
 }

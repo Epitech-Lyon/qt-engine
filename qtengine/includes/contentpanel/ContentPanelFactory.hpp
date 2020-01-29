@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <QtCore/QObject>
 #include <QtCore/QString>
 #include <QtCore/QMap>
 #include <QtWidgets/QWidget>
@@ -15,15 +16,30 @@
 namespace qtengine {
 	class ContentPanelBase;
 
-	class ContentPanelFactory {
+	class ContentPanelFactory : public QObject {
+		Q_OBJECT
+
 	public:
-		static QStringList getNames();
-		static ContentPanelBase *create(const QString &, QWidget * = nullptr);
+		~ContentPanelFactory() = default;
+		static ContentPanelFactory *instance();
+
+		QStringList availablesNames() const { return _availablesNames; }
+		ContentPanelBase *create(const QString &, QWidget * = nullptr);
+
+	signals:
+		void availablesNamesChanged(const QStringList &);
 
 	private:
-		~ContentPanelFactory() = default;
 		ContentPanelFactory();
+		template <typename ContentPanelType> void registerPanel()
+		{
+			QString name = ContentPanelType().name();
+
+			_constructors[name] = [](QWidget *parent) { return new ContentPanelType(parent); };
+			_availablesNames << name;
+		}
+
 		QMap<QString, std::function<ContentPanelBase *(QWidget *)>> _constructors;
-		static ContentPanelFactory *instance();
+		QStringList _availablesNames;
 	};
 };

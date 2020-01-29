@@ -43,12 +43,10 @@ void qtengine::TabWidget::initButton()
 	mainMenu->addAction(QIcon(":icon_splitter_horizontal"), "Split horizontal", [this]() { split(Qt::Horizontal); });
 	mainMenu->addSeparator();
 
-	auto menuSetTabs = mainMenu->addMenu("Set tab");
-	auto menuAddTabs = mainMenu->addMenu("Add tab");
-	for (auto name: ContentPanelFactory::getNames()) {
-		menuSetTabs->addAction(name, [this, name]() { setTab(name); });
-		menuAddTabs->addAction(name, [this, name]() { addTab(name); });
-	}
+	_menuSetTabs = mainMenu->addMenu("Set tab");
+	_menuAddTabs = mainMenu->addMenu("Add tab");
+	onAvailablesNamesChanged(ContentPanelFactory::instance()->availablesNames());
+	connect(ContentPanelFactory::instance(), &ContentPanelFactory::availablesNamesChanged, this, &TabWidget::onAvailablesNamesChanged);
 
 	toolButton->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonIconOnly);
 	toolButton->setPopupMode(QToolButton::InstantPopup);
@@ -59,9 +57,19 @@ void qtengine::TabWidget::initButton()
 	setCornerWidget(toolButton);
 }
 
+void qtengine::TabWidget::onAvailablesNamesChanged(const QStringList &availablesNames)
+{
+	_menuSetTabs->clear();
+	_menuAddTabs->clear();
+	for (auto name : availablesNames) {
+		_menuSetTabs->addAction(name, [this, name]() { setTab(name); });
+		_menuAddTabs->addAction(name, [this, name]() { addTab(name); });
+	}
+}
+
 qtengine::ContentPanelBase *qtengine::TabWidget::addTab(const QString &name)
 {
-	auto contentPanel = ContentPanelFactory::create(name);
+	auto contentPanel = ContentPanelFactory::instance()->create(name);
 
 	setCurrentIndex(QTabWidget::addTab(contentPanel, name));
 	return contentPanel;
@@ -70,7 +78,7 @@ qtengine::ContentPanelBase *qtengine::TabWidget::addTab(const QString &name)
 qtengine::ContentPanelBase *qtengine::TabWidget::setTab(const QString &name)
 {
 	int index = currentIndex();
-	auto contentPanel = ContentPanelFactory::create(name);
+	auto contentPanel = ContentPanelFactory::instance()->create(name);
 
 	currentWidget()->deleteLater();
 	removeTab(index);

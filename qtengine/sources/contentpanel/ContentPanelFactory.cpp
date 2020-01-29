@@ -5,6 +5,7 @@
 ** ContentPanelFactory
 */
 
+#include "moc_ContentPanelFactory.cpp"
 #include "ContentPanelFactory.hpp"
 
 #include <QtCore/QDebug>
@@ -16,10 +17,10 @@
 
 qtengine::ContentPanelFactory::ContentPanelFactory()
 {
-	_constructors[ContentPanelEmpty().name()] = [](QWidget *parent) { return new ContentPanelEmpty(parent); };
-	_constructors[ContentPanelProjectExplorer().name()] = [](QWidget *parent) { return new ContentPanelProjectExplorer(parent); };
-	_constructors[ContentPanelViewsExplorer().name()] = [](QWidget *parent) { return new ContentPanelViewsExplorer(parent); };
-	_constructors[ContentPanelViewProperty().name()] = [](QWidget *parent) { return new ContentPanelViewProperty(parent); };
+	registerPanel<ContentPanelEmpty>();
+	registerPanel<ContentPanelProjectExplorer>();
+	registerPanel<ContentPanelViewsExplorer>();
+	registerPanel<ContentPanelViewProperty>();
 }
 
 qtengine::ContentPanelFactory *qtengine::ContentPanelFactory::instance()
@@ -29,20 +30,22 @@ qtengine::ContentPanelFactory *qtengine::ContentPanelFactory::instance()
 	return &contentPanelFactory;
 }
 
-QStringList qtengine::ContentPanelFactory::getNames()
-{
-	return instance()->_constructors.keys();
-}
-
 qtengine::ContentPanelBase *qtengine::ContentPanelFactory::create(const QString &contentPanelName, QWidget *parent)
 {
-	try {
-		ContentPanelBase *contentPanel = instance()->_constructors[contentPanelName](parent);
+	ContentPanelBase *contentPanel = nullptr;
 
+	if (_availablesNames.contains(contentPanelName)) {
+		contentPanel = _constructors[contentPanelName](parent);
 		contentPanel->init();
-		return contentPanel;
-	} catch(const std::exception &e) {
-		qCritical() << e.what() << "when try to create" << contentPanelName;
-		return nullptr;
-	}
+		if (!contentPanel->canHaveMultipleInstance()) {
+			_availablesNames.removeAll(contentPanelName);
+			emit availablesNamesChanged(_availablesNames);
+			connect(contentPanel, &QObject::destroyed, [this, contentPanelName](QObject *) {
+				_availablesNames << contentPanelName;
+				emit availablesNamesChanged(_availablesNames);
+			});
+		}
+	} else
+		qCritical() << "ContentPanelFactoryError:" << contentPanelName << "is not available";
+	return contentPanel;
 }

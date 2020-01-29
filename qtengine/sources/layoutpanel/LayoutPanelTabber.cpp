@@ -19,7 +19,7 @@ qtengine::LayoutPanelTabber::LayoutPanelTabber(QWidget *parent)
 {
 	_mainLayout->addWidget(_tabWidget);
 	_tabWidget->setDocumentMode(true);
-	addTab(ContentPanelFactory::create("Empty"));
+	addTab(ContentPanelFactory::instance()->create("Empty"));
 }
 
 QJsonObject qtengine::LayoutPanelTabber::serialize() const
@@ -45,10 +45,10 @@ void qtengine::LayoutPanelTabber::deserialize(const QJsonObject &jsonState)
 
 	for (auto jsonStateTabRef : jsonState["Tabs"].toArray()) {
 		QJsonObject jsonStateTab = jsonStateTabRef.toObject();
-		ContentPanelBase *content = ContentPanelFactory::create(jsonStateTab["ContentPanelType"].toString());
+		ContentPanelBase *content = ContentPanelFactory::instance()->create(jsonStateTab["ContentPanelType"].toString());
 
 		if (!content)
-			content = ContentPanelFactory::create("Empty");
+			content = ContentPanelFactory::instance()->create("Empty");
 		else
 			content->deserialize(jsonStateTab);
 		addTab(content);

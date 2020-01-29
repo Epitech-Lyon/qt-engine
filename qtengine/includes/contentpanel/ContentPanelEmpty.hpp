@@ -14,5 +14,7 @@ namespace qtengine {
 	public:
 		ContentPanelEmpty(QWidget * = nullptr);
 		~ContentPanelEmpty() = default;
+
+		bool canHaveMultipleInstance() const override { return true; }
 	};
 }
