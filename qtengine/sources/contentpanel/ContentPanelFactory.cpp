@@ -12,15 +12,15 @@
 
 #include "ContentPanelEmpty.hpp"
 #include "ContentPanelProjectExplorer.hpp"
-#include "ContentPanelViewsExplorer.hpp"
-#include "ContentPanelViewProperty.hpp"
+#include "ContentPanelViewExplorer.hpp"
+#include "ContentPanelObjectProperty.hpp"
 
 qtengine::ContentPanelFactory::ContentPanelFactory()
 {
 	registerPanel<ContentPanelEmpty>();
 	registerPanel<ContentPanelProjectExplorer>();
-	registerPanel<ContentPanelViewsExplorer>();
-	registerPanel<ContentPanelViewProperty>();
+	registerPanel<ContentPanelViewExplorer>();
+	registerPanel<ContentPanelObjectProperty>();
 }
 
 qtengine::ContentPanelFactory *qtengine::ContentPanelFactory::instance()

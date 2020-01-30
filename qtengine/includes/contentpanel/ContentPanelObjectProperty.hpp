@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** ContentPanelViewProperty
+** ContentPanelObjectProperty
 */
 
 #pragma once
@@ -14,16 +14,16 @@
 #include "qttreepropertybrowser.h"
 
 namespace qtengine {
-    class ContentPanelViewProperty : public ContentPanelBase {
-    public:
-        ContentPanelViewProperty(QWidget * = nullptr);
-        ~ContentPanelViewProperty() = default;
+	class ContentPanelObjectProperty : public ContentPanelBase {
+	public:
+		ContentPanelObjectProperty(QWidget * = nullptr);
+		~ContentPanelObjectProperty() = default;
 
-    void init() override;
+		void init() override;
 
-    private:
+	private:
 		QtVariantPropertyManager *_propertyManager;
 		QtVariantEditorFactory *_propertyFactory;
 		QtTreePropertyBrowser *_propertyEditor;
-    };
+	};
 }

@@ -69,7 +69,7 @@ void qtengine::TabWidget::onAvailablesNamesChanged(const QStringList &availables
 
 qtengine::ContentPanelBase *qtengine::TabWidget::addTab(const QString &name)
 {
-	auto contentPanel = ContentPanelFactory::instance()->create(name);
+	auto contentPanel = ContentPanelFactory::instance()->create(name, parentWidget());
 
 	setCurrentIndex(QTabWidget::addTab(contentPanel, name));
 	return contentPanel;
@@ -78,7 +78,7 @@ qtengine::ContentPanelBase *qtengine::TabWidget::addTab(const QString &name)
 qtengine::ContentPanelBase *qtengine::TabWidget::setTab(const QString &name)
 {
 	int index = currentIndex();
-	auto contentPanel = ContentPanelFactory::instance()->create(name);
+	auto contentPanel = ContentPanelFactory::instance()->create(name, parentWidget());
 
 	currentWidget()->deleteLater();
 	removeTab(index);

@@ -40,13 +40,20 @@ QJsonObject qtengine::ObjectConverter::serialize() const
 		auto value = QVariantConverter::serialize(_object->property(property));
 
 		if (value.isNull())
-			qCritical() << "Serialize" << property << "of type" << _properties[property] << "is not implemented yet !" << value.type();
+			qCritical() << "Serialize" << property << "of type" << _properties[property] << "is not implemented yet !";
 		else
 			json[property] = value;
 	}
+	verifyProperties(json);
 	return json;
 }
 
 void qtengine::ObjectConverter::deserialize(const QJsonObject &)
 {
+}
+
+void qtengine::ObjectConverter::verifyProperties(QJsonObject &jsonProperties) const
+{
+	if (jsonProperties["objectName"].toString().isEmpty())
+		jsonProperties["objectName"] = _className;
 }

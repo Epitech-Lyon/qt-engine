@@ -2,17 +2,17 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** ContentPanelViewProperty
+** ContentPanelObjectProperty
 */
 
-#include "ContentPanelViewProperty.hpp"
+#include "ContentPanelObjectProperty.hpp"
 
-qtengine::ContentPanelViewProperty::ContentPanelViewProperty(QWidget *parent)
-	: ContentPanelBase("View Property", parent)
+qtengine::ContentPanelObjectProperty::ContentPanelObjectProperty(QWidget *parent)
+	: ContentPanelBase("Object Property", parent)
 {
 }
 
-void qtengine::ContentPanelViewProperty::init()
+void qtengine::ContentPanelObjectProperty::init()
 {
 	_propertyManager = new QtVariantPropertyManager(this);
 	_propertyFactory = new QtVariantEditorFactory(this);

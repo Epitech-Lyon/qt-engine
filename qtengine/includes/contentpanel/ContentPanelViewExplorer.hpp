@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** ContentPanelViewsExplorer
+** ContentPanelViewExplorer
 */
 
 #pragma once
@@ -12,15 +12,16 @@
 #include <QtWidgets/QTreeWidget>
 
 namespace qtengine {
-	class ContentPanelViewsExplorer : public ContentPanelBase {
+	class ContentPanelViewExplorer : public ContentPanelBase {
 	public:
-		ContentPanelViewsExplorer(QWidget * = nullptr);
-		~ContentPanelViewsExplorer() = default;
+		ContentPanelViewExplorer(QWidget * = nullptr);
+		~ContentPanelViewExplorer() = default;
 
 		void init() override;
 
 	private:
 		QToolBar *initToolBar() override;
+		void buildTree(QTreeWidgetItem *, const QJsonObject &);
 		QTreeWidget *_treeWidget;
 	};
 };

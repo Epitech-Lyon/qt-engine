@@ -115,9 +115,9 @@ void qtengine::MainWindow::deserialize(const QJsonObject &json)
 	auto type = json["Type"].toString();
 	LayoutPanelBase *base = nullptr;
 	if (type == "Tabber")
-		base = new LayoutPanelTabber;
+		base = new LayoutPanelTabber(centralWidget);
 	else if (type == "Splitter")
-		base = new LayoutPanelSplitter(Qt::Horizontal);
+		base = new LayoutPanelSplitter(Qt::Horizontal, centralWidget);
 	base->deserialize(json["State"].toObject());
 	centralWidget->setChild(base);
 }

@@ -29,6 +29,7 @@ namespace qtengine {
 
 	private:
 		void initProperties(const QMetaObject *);
+		void verifyProperties(QJsonObject &) const;
 		QObject *_object;
         const char *_className;
 		QMap<const char *, const char *> _properties;

@@ -27,7 +27,6 @@ qtengine::LayoutPanelSplitter::LayoutPanelSplitter(Qt::Orientation orientation, 
 	_mainLayout->addWidget(_splitter);
 }
 
-#include <QtCore/QDebug>
 QJsonObject qtengine::LayoutPanelSplitter::serialize() const
 {
 	QJsonArray jsonStateLayoutPanels;
@@ -61,9 +60,9 @@ void qtengine::LayoutPanelSplitter::deserialize(const QJsonObject &jsonState)
 		LayoutPanelBase *base = nullptr;
 		
 		if (type == "Tabber")
-			base = new LayoutPanelTabber;
+			base = new LayoutPanelTabber(this);
 		else if (type == "Splitter")
-			base = new LayoutPanelSplitter(Qt::Horizontal);
+			base = new LayoutPanelSplitter(Qt::Horizontal, this);
 		base->deserialize(jsonStateLayoutPanel["State"].toObject());
 		_splitter->addWidget(base);
 	}
