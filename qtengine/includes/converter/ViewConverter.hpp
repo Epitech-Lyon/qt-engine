@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** ViewManagement
+** ViewConverter
 */
 
 #pragma once
@@ -12,10 +12,10 @@
 #include <QtCore/QObject>
 
 namespace qtengine {
-	class ViewManagement : public ISerializable {
+	class ViewConverter : public ISerializable {
 	public:
-		ViewManagement(QObject *);
-		~ViewManagement() = default;
+		ViewConverter(QObject *);
+		~ViewConverter() = default;
 
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &) override;

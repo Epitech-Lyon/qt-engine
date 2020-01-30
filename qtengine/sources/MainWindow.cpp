@@ -18,7 +18,7 @@
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
 
-#include "ViewManagement.hpp"
+#include "ViewConverter.hpp"
 #include <QtCore/QDebug>
 
 qtengine::MainWindow::MainWindow(Manager *manager)
@@ -38,7 +38,7 @@ qtengine::MainWindow::MainWindow(Manager *manager)
 //
 //	QFile file("test.json");
 //	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-//		file.write(QJsonDocument(ViewManagement(widget).serialize()).toJson());
+//		file.write(QJsonDocument(ViewConverter(widget).serialize()).toJson());
 //		file.close();
 //	}
 //	delete widget;

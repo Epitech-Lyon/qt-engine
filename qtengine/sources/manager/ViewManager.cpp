@@ -8,7 +8,7 @@
 #include "moc_ViewManager.cpp"
 #include "ViewManager.hpp"
 
-#include "ViewManagement.hpp"
+#include "ViewConverter.hpp"
 
 #include "Manager.hpp"
 #include "MainWindow.hpp"
@@ -53,7 +53,7 @@ void qtengine::ViewManager::onCreateView(const QString &viewPath)
 	if (viewPath.isEmpty() || !fileInfo.exists() || fileInfo.completeSuffix() != _viewExt) { return; }
 
 	auto widget = new QWidget;
-	QJsonObject json = ViewManagement(widget).serialize();
+	QJsonObject json = ViewConverter(widget).serialize();
 	delete widget;
 
 	QFile file(viewPath);

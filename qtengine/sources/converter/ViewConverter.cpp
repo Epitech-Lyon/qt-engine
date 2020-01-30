@@ -2,18 +2,18 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** ViewManagement
+** ViewConverter
 */
 
-#include "ViewManagement.hpp"
-#include "ObjectManagement.hpp"
+#include "ViewConverter.hpp"
+#include "ObjectConverter.hpp"
 
-qtengine::ViewManagement::ViewManagement(QObject *object)
+qtengine::ViewConverter::ViewConverter(QObject *object)
 	: _object(object)
 {
 }
 
-QJsonObject qtengine::ViewManagement::serialize(QObject *object) const
+QJsonObject qtengine::ViewConverter::serialize(QObject *object) const
 {
 	QJsonArray childJsonArray;
 	for (auto child : object->children()) {
@@ -25,11 +25,11 @@ QJsonObject qtengine::ViewManagement::serialize(QObject *object) const
 
 	QJsonObject json;
 	json["Children"] = childJsonArray;
-	json["Properties"] = ObjectManagement(object).serialize();
+	json["Properties"] = ObjectConverter(object).serialize();
 	return json;
 }
 
-QJsonObject qtengine::ViewManagement::serialize() const
+QJsonObject qtengine::ViewConverter::serialize() const
 {
 	QJsonObject json;
 	
@@ -37,6 +37,6 @@ QJsonObject qtengine::ViewManagement::serialize() const
 	return json;
 }
 
-void qtengine::ViewManagement::deserialize(const QJsonObject &)
+void qtengine::ViewConverter::deserialize(const QJsonObject &)
 {
 }

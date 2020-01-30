@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** ObjectManagement
+** ObjectConverter
 */
 
 #pragma once
@@ -13,10 +13,10 @@
 #include <QtCore/QMap>
 
 namespace qtengine {
-	class ObjectManagement : public ISerializable {
+	class ObjectConverter : public ISerializable {
 	public:
-		ObjectManagement(QObject *);
-		~ObjectManagement() = default;
+		ObjectConverter(QObject *);
+		~ObjectConverter() = default;
 
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &) override;

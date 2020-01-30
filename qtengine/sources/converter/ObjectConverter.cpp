@@ -2,23 +2,23 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** ObjectManagement
+** ObjectConverter
 */
 
-#include "ObjectManagement.hpp"
+#include "ObjectConverter.hpp"
 
 #include "QVariantConverter.hpp"
 #include <QtCore/QMetaProperty>
 #include <QtCore/QDebug>
 
-qtengine::ObjectManagement::ObjectManagement(QObject *object)
+qtengine::ObjectConverter::ObjectConverter(QObject *object)
 	: _object(object)
 	, _className(_object->metaObject()->className())
 {
 	initProperties(_object->metaObject());
 }
 
-void qtengine::ObjectManagement::initProperties(const QMetaObject *metaObject)
+void qtengine::ObjectConverter::initProperties(const QMetaObject *metaObject)
 {
 	auto metaObjectSuperClass = metaObject->superClass();
 	if (metaObjectSuperClass)
@@ -32,7 +32,7 @@ void qtengine::ObjectManagement::initProperties(const QMetaObject *metaObject)
 	}
 }
 
-QJsonObject qtengine::ObjectManagement::serialize() const
+QJsonObject qtengine::ObjectConverter::serialize() const
 {
 	QJsonObject json;
 
@@ -40,13 +40,13 @@ QJsonObject qtengine::ObjectManagement::serialize() const
 		auto value = QVariantConverter::serialize(_object->property(property));
 
 		if (value.isNull())
-			qCritical() << "Serialize" << property << "of type" << _properties[property] << "is not implemented yet !";
+			qCritical() << "Serialize" << property << "of type" << _properties[property] << "is not implemented yet !" << value.type();
 		else
 			json[property] = value;
 	}
 	return json;
 }
 
-void qtengine::ObjectManagement::deserialize(const QJsonObject &)
+void qtengine::ObjectConverter::deserialize(const QJsonObject &)
 {
 }
