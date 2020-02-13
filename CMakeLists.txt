@@ -75,11 +75,27 @@ target_link_libraries(qtPropertyBrowser ${CONAN_LIBS} Qt5::Widgets Qt5::Core)
 target_include_directories(qtPropertyBrowser PRIVATE ${INCS})
 target_compile_options(qtPropertyBrowser PRIVATE -Werror -Wall -Wextra)
 
+#=======NodeEditor=======
+INC_AND_SRC(INCS SRCS "nodeeditor")
+set(NODEEDITOR_INCS ${INCS})
+add_library(nodeEditor SHARED ${SRCS})
+target_link_libraries(nodeEditor ${CONAN_LIBS} Qt5::Widgets Qt5::Core)
+target_include_directories(nodeEditor PRIVATE ${INCS})
+target_compile_options(nodeEditor PRIVATE -Werror -Wall -Wextra)
+
+#=======LibraryObjects=======
+INC_AND_SRC(INCS SRCS "libraryobjects")
+set(LIBRARYOBJECTS_INCS ${INCS})
+add_library(libraryObjects SHARED ${SRCS})
+target_link_libraries(libraryObjects ${CONAN_LIBS} Qt5::Widgets Qt5::Core)
+target_include_directories(libraryObjects PRIVATE ${INCS})
+target_compile_options(libraryObjects PRIVATE -Werror -Wall -Wextra)
+
 #==========QtEngine==============
 INC_AND_SRC(INCS SRCS "qtengine")
 add_executable(qtEngine ${SRCS})
-target_link_libraries(qtEngine ${CONAN_LIBS} Qt5::Widgets Qt5::Core qtPropertyBrowser)
-target_include_directories(qtEngine PRIVATE ${INCS} ${QTPROPERTYBROWSER_INCS})
+target_link_libraries(qtEngine ${CONAN_LIBS} Qt5::Widgets Qt5::Core qtPropertyBrowser nodeEditor libraryObjects)
+target_include_directories(qtEngine PRIVATE ${INCS} ${QTPROPERTYBROWSER_INCS} ${NODEEDITOR_INCS} ${LIBRARYOBJECTS_INCS})
 target_compile_options(qtEngine PRIVATE -Werror -Wall -Wextra -g3)
 add_custom_command(TARGET qtEngine POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:qtEngine> ".."

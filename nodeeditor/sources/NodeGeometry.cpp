@@ -241,7 +241,7 @@ unsigned int NodeGeometry::portWidth(PortType portType) const
 			name = _dataModel->portCaption(portType, i);
 		else
 			name = _dataModel->dataType(portType, i).name;
-		width = std::max(unsigned(_fontMetrics.width(name)), width);
+		width = std::max(unsigned(_fontMetrics.horizontalAdvance(name)), width);
 	}
 	return width;
 }

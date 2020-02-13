@@ -58,6 +58,7 @@ void qtengine::ProjectManager::openProject(const QString &projectPath)
 	emit recentProjectsChanged(_recentsProject);
 }
 
+#include <QtCore/QDebug>
 void qtengine::ProjectManager::onNewProject()
 {
 	QFileDialog dialog(Manager::instance()->mainWindow(), "New project", QDir::homePath(), "Project (*" + _projectExt + ")");
@@ -72,7 +73,7 @@ void qtengine::ProjectManager::onNewProject()
 	if (QFile(dir.path() + "/" + dir.dirName() + _projectExt).exists())
 		if (QMessageBox::warning(Manager::instance()->mainWindow(), "New project", dir.path() + "/" + dir.dirName() + _projectExt + " already exists, Do you want to replace it ?", QMessageBox::No, QMessageBox::Yes) == QMessageBox::No)
 			return;
-	dir.removeRecursively();
+	QFile::remove(dir.path() + "/" + dir.dirName() + _projectExt);
 	dir.mkpath(".");
 
 	// Create projectFile

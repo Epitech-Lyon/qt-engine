@@ -10,7 +10,6 @@
 
 #include "NodeDataModel.hpp"
 #include "TypeConverter.hpp"
-#include "QStringStdHash.hpp"
 #include "memory.hpp"
 
 namespace QtNodes {

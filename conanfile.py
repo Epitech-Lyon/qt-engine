@@ -4,7 +4,7 @@ class QtEngineConan(ConanFile):
     name = "QtEngine"
     version = "1.0"
     settings = "os", "compiler", "build_type", "arch"
-    requires = "qt/5.14.0@bincrafters/stable", "freetype/2.9.0@bincrafters/stable", "bzip2/1.0.6@conan/stable"
+    requires = "qt/5.14.1@bincrafters/stable", "freetype/2.10.0@bincrafters/stable", "bzip2/1.0.8@conan/stable"
     generators = "cmake", "qt"
     build_policy = "missing"
 
