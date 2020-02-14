@@ -10,6 +10,8 @@
 #include "Manager.hpp"
 #include "ViewManager.hpp"
 
+#include "AObject.hpp"
+
 qtengine::ContentPanelViewExplorer::ContentPanelViewExplorer(QWidget *parent)
 	: ContentPanelBase("View Explorer", parent)
 {
@@ -21,9 +23,9 @@ void qtengine::ContentPanelViewExplorer::init()
 	_treeWidget->setHeaderLabels({"Object name", "Class"});
 	_mainLayout->addWidget(_treeWidget);
 
-	auto onViewObjectChanged = [this](const QJsonObject &json) {
+	auto onViewObjectChanged = [this](libraryObjects::AObject *viewObject) {
 		_treeWidget->clear();
-		buildTree(_treeWidget->invisibleRootItem(), json);
+		buildTree(_treeWidget->invisibleRootItem(), viewObject);
 		_treeWidget->expandAll();
 	};
 
@@ -36,13 +38,11 @@ QToolBar *qtengine::ContentPanelViewExplorer::initToolBar()
 	return nullptr;
 }
 
-void qtengine::ContentPanelViewExplorer::buildTree(QTreeWidgetItem *parent, const QJsonObject &json)
+void qtengine::ContentPanelViewExplorer::buildTree(QTreeWidgetItem *parent, libraryObjects::AObject *object)
 {
-	auto className = json.keys().front();
-	auto jsonObject = json[className].toObject();
-	auto objectName = jsonObject["Properties"].toObject()["objectName"].toString();
-	auto widgetItem = new QTreeWidgetItem(parent, {objectName, className});
+	if (!object) { return; }
+	auto widgetItem = new QTreeWidgetItem(parent, {object->objectName(), object->className()});
 
-	for (auto jsonChild : jsonObject["Children"].toArray())
-		buildTree(widgetItem, jsonChild.toObject());
+	for (auto objectChild : object->children())
+		buildTree(widgetItem, objectChild);
 }

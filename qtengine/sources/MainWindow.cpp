@@ -60,8 +60,8 @@ void qtengine::MainWindow::initMenuBar()
 	menuFile->addAction("Open project", projectManager, &ProjectManager::onOpenProject, QKeySequence::Open);
 	auto menuFileRecents = menuFile->addMenu("Open recent project");
 	menuFile->addSeparator();
-	menuFile->addAction("Save view", [viewManager]() { emit viewManager->requestForSave(); }, QKeySequence::Save);
-	menuFile->addAction("Save view as", [viewManager]() { emit viewManager->requestForSaveAs(); }, QKeySequence::SaveAs);
+	menuFile->addAction("Save view", viewManager, &ViewManager::onSaveView, QKeySequence::Save);
+	menuFile->addAction("Save view as", viewManager, &ViewManager::onSaveViewAs, QKeySequence::SaveAs);
 	menuFile->addSeparator();
 	menuFile->addAction("Exit", this, &QMainWindow::close, QKeySequence::Quit);
 

@@ -11,6 +11,10 @@
 
 #include <QtWidgets/QTreeWidget>
 
+namespace libraryObjects {
+	class AObject;	
+}
+
 namespace qtengine {
 	class ContentPanelViewExplorer : public ContentPanelBase {
 	public:
@@ -21,7 +25,7 @@ namespace qtengine {
 
 	private:
 		QToolBar *initToolBar() override;
-		void buildTree(QTreeWidgetItem *, const QJsonObject &);
+		void buildTree(QTreeWidgetItem *, libraryObjects::AObject *);
 		QTreeWidget *_treeWidget;
 	};
 };

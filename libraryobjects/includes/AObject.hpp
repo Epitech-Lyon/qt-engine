@@ -33,6 +33,7 @@ namespace libraryObjects {
 		~AObject() = default;
 
 		QObject *object() const { return _object; }
+		QString objectName() const { return _object->objectName(); }
 		QString classHierarchy() const { return _classHierarchy; }
 		QString className() const { return _className; }
 

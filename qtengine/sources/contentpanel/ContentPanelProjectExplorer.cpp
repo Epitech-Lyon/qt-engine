@@ -69,9 +69,6 @@ void qtengine::ContentPanelProjectExplorer::init()
 	_treeView->setCurrentIndex(_fsModel->index(Manager::instance()->viewManager()->viewPath()));
 	connect(_treeView, &QTreeView::clicked, this, &ContentPanelProjectExplorer::onModelIndexClicked);
 
-	connect(Manager::instance()->viewManager(), &ViewManager::requestForSave, this, &ContentPanelProjectExplorer::onSave);
-	connect(Manager::instance()->viewManager(), &ViewManager::requestForSaveAs, this, &ContentPanelProjectExplorer::onSaveAs);
-
 	ContentPanelBase::init();
 }
 
@@ -133,18 +130,4 @@ void qtengine::ContentPanelProjectExplorer::onDeleteFile()
 
 	if (index.isValid())
 		_fsModel->remove(index);
-}
-
-void qtengine::ContentPanelProjectExplorer::onSave()
-{
-	QJsonObject json; // TODO fill json with property etc...
-
-	Manager::instance()->viewManager()->onSaveView(json);
-}
-
-void qtengine::ContentPanelProjectExplorer::onSaveAs()
-{
-	QJsonObject json; // TODO fill json with property etc...
-
-	Manager::instance()->viewManager()->onSaveViewAs(json);
 }

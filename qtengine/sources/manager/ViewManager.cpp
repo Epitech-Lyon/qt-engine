@@ -17,6 +17,13 @@
 #include <QtCore/QJsonDocument>
 #include <QtWidgets/QInputDialog>
 
+#include "Object.hpp"
+
+qtengine::ViewManager::ViewManager()
+	: _viewObject(nullptr)
+{
+}
+
 QJsonObject qtengine::ViewManager::serialize() const
 {
 	QJsonObject json;
@@ -36,11 +43,14 @@ void qtengine::ViewManager::openView(const QString &viewPath)
 
 	_viewPath = fileInfo.filePath();
 	_viewName = fileInfo.baseName();
+
+	QJsonObject json;
 	QFile file(_viewPath);
 	if (file.open(QIODevice::ReadOnly)) {
-		_viewObject = QJsonDocument::fromJson(file.readAll()).object();
+		json = QJsonDocument::fromJson(file.readAll()).object();
 		file.close();
 	}
+	_viewObject = libraryObjects::ViewConverter::deserialize(json);
 
 	emit viewPathChanged(_viewPath);
 	emit viewNameChanged(_viewName);
@@ -52,45 +62,38 @@ void qtengine::ViewManager::onCreateView(const QString &viewPath)
 	QFileInfo fileInfo(viewPath);
 	if (viewPath.isEmpty() || !fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
 
-	auto widget = new QWidget;
-	QJsonObject json = ViewConverter(widget).serialize();
-	delete widget;
-
-	QFile file(viewPath);
-	if (file.open(QIODevice::WriteOnly)) {
-		file.write(QJsonDocument(json).toJson());
-		file.close();
-	}
 	openView(viewPath);
 }
 
-void qtengine::ViewManager::onSaveView(const QJsonObject &viewObject)
+void qtengine::ViewManager::onSaveView()
 {
 	QFileInfo fileInfo(_viewPath);
 	if (_viewPath.isEmpty() || !fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
 
+	QJsonObject json = libraryObjects::ViewConverter::serialize(_viewObject);
 	QFile file(_viewPath);
 	if (file.open(QIODevice::WriteOnly)) {
-		_viewObject = viewObject;
-		file.write(QJsonDocument(_viewObject).toJson());
+		file.write(QJsonDocument(json).toJson());
 		file.close();
 	}
 }
 
-void qtengine::ViewManager::onSaveViewAs(const QJsonObject &viewObject)
+void qtengine::ViewManager::onSaveViewAs()
 {
 	QFileInfo fileInfo(_viewPath);
 	if (_viewPath.isEmpty() || !fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
 
 	bool ok = false;
 	auto viewPath = QInputDialog::getText(Manager::instance()->mainWindow(), "Save view as", "Choose a new name", QLineEdit::Normal, _viewPath, &ok);
-	if (!ok || viewPath.isEmpty()) {
-		viewPath = viewPath.endsWith(_viewExt) ? viewPath : viewPath + _viewExt;
-		QFile file(viewPath);
-		if (file.open(QIODevice::WriteOnly)) {
-			file.write(QJsonDocument(viewObject).toJson());
-			file.close();
-		}
-		openView(viewPath);
+	if (ok && !viewPath.isEmpty()) {
+		_viewPath = viewPath.endsWith(_viewExt) ? viewPath : viewPath + _viewExt;
+		_viewName = QFileInfo(_viewPath).baseName();
+		onSaveView();
 	}
+}
+
+void qtengine::ViewManager::setCurrentObject(libraryObjects::AObject *currentObject)
+{
+	_currentObject = currentObject;
+	emit currentObjectChanged(currentObject);
 }

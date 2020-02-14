@@ -14,8 +14,8 @@ namespace libraryObjects {
 
 	class ViewConverter {
 	public:
-		static QJsonObject serialize(AObject *);
-		AObject *deserialize(const QJsonObject &);
+		static QJsonObject serialize(AObject *object);
+		static AObject *deserialize(const QJsonObject &json);
 
 	private:
 		ViewConverter() = default;
