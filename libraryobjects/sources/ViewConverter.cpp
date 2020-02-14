@@ -25,7 +25,9 @@ QJsonObject libraryObjects::ViewConverter::serialize(AObject *object)
 	return json;
 }
 
+#include "Object.hpp"
+#include <QtWidgets/QWidget>
 libraryObjects::AObject *libraryObjects::ViewConverter::deserialize(const QJsonObject &)
 {
-	return nullptr;
+	return new Object<QWidget>();
 }

@@ -15,6 +15,7 @@ libraryObjects::AObject::AObject(QObject *object, const QString &classHierarchy)
 	, _classHierarchy(classHierarchy)
 	, _className(classHierarchy.split("::").last())
 {
+	initProperties(object->metaObject());
 }
 
 void libraryObjects::AObject::initProperties(const QMetaObject *metaObject)
@@ -35,7 +36,7 @@ QJsonObject libraryObjects::AObject::serialize() const
 {
 	QJsonObject json;
 
-	for (auto className : classHierarchy())
+	for (auto className : classHierarchy().split("::"))
 		for (auto &property : properties(className)) {
 			auto value = QVariantConverter::serialize(_object->property(property.name.toStdString().c_str()));
 
