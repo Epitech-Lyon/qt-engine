@@ -14,6 +14,9 @@
 #include "ContentPanelProjectExplorer.hpp"
 #include "ContentPanelViewExplorer.hpp"
 #include "ContentPanelObjectProperty.hpp"
+#include "ContentPanelLibraryObject.hpp"
+#include "ContentPanelView.hpp"
+#include "ContentPanelWorkflow.hpp"
 
 qtengine::ContentPanelFactory::ContentPanelFactory()
 {
@@ -21,6 +24,9 @@ qtengine::ContentPanelFactory::ContentPanelFactory()
 	registerPanel<ContentPanelProjectExplorer>();
 	registerPanel<ContentPanelViewExplorer>();
 	registerPanel<ContentPanelObjectProperty>();
+	registerPanel<ContentPanelLibraryObject>();
+	registerPanel<ContentPanelView>();
+	registerPanel<ContentPanelWorkflow>();
 }
 
 qtengine::ContentPanelFactory *qtengine::ContentPanelFactory::instance()

@@ -18,20 +18,6 @@ libraryObjects::AObject::AObject(QObject *object, const QString &classHierarchy)
 	initProperties(object->metaObject());
 }
 
-void libraryObjects::AObject::initProperties(const QMetaObject *metaObject)
-{
-	auto metaObjectSuperClass = metaObject->superClass();
-	if (metaObjectSuperClass)
-		initProperties(metaObjectSuperClass);
-
-	for (int i = metaObject->propertyOffset(); i < metaObject->propertyCount(); i += 1) {
-		auto metaProperty = metaObject->property(i);
-
-		if (metaProperty.isDesignable() && metaProperty.isWritable() && metaProperty.isReadable() && metaProperty.isStored())
-			_properties[metaObject->className()].push_back(metaProperty);
-	}
-}
-
 QJsonObject libraryObjects::AObject::serialize() const
 {
 	QJsonObject json;
@@ -50,6 +36,25 @@ QJsonObject libraryObjects::AObject::serialize() const
 
 void libraryObjects::AObject::deserialize(const QJsonObject &)
 {
+}
+
+void libraryObjects::AObject::initProperties(const QMetaObject *metaObject)
+{
+	auto metaObjectSuperClass = metaObject->superClass();
+	if (metaObjectSuperClass)
+		initProperties(metaObjectSuperClass);
+
+	for (int i = metaObject->propertyOffset(); i < metaObject->propertyCount(); i += 1) {
+		auto metaProperty = metaObject->property(i);
+
+		if (metaProperty.isDesignable() && metaProperty.isWritable() && metaProperty.isReadable() && metaProperty.isStored())
+			_properties[metaObject->className()].push_back(metaProperty);
+	}
+}
+
+void libraryObjects::AObject::setPropertyValue(const QString &propertyName, const QVariant &propertyValue)
+{
+	_object->setProperty(propertyName.toStdString().c_str(), propertyValue);
 }
 
 void libraryObjects::AObject::addChild(AObject *child)

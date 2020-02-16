@@ -59,6 +59,9 @@ namespace libraryObjects {
 	public:
 		QList<Variable> properties(const QString &className) const { return _properties[className]; }
 
+		QVariant propertyValue(const QString &propertyName) const { return _object->property(propertyName.toStdString().c_str()); }
+		void setPropertyValue(const QString &propertyName, const QVariant &propertyValue);
+
 	private:
 		void initProperties(const QMetaObject *);
 		QMap<QString, QList<Variable>> _properties;

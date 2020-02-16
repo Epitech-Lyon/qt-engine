@@ -13,13 +13,22 @@
 #include "qtvariantproperty.h"
 #include "qttreepropertybrowser.h"
 
+
+namespace libraryObjects {
+	class AObject;
+}
+
 namespace qtengine {
 	class ContentPanelObjectProperty : public ContentPanelBase {
 	public:
-		ContentPanelObjectProperty(QWidget * = nullptr);
+		ContentPanelObjectProperty(QWidget *parent = nullptr);
 		~ContentPanelObjectProperty() = default;
 
 		void init() override;
+
+	private slots:
+		void onCurrentObjectChanged(libraryObjects::AObject *object);
+		void onValueChanged(QtProperty *, const QVariant &);
 
 	private:
 		QtVariantPropertyManager *_propertyManager;

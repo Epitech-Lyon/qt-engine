@@ -12,7 +12,7 @@
 namespace libraryObjects {
 	class LibraryObject;
 
-	class LibraryObjectMimeData : QMimeData {
+	class LibraryObjectMimeData : public QMimeData {
 	public:
 		LibraryObjectMimeData(LibraryObject *libraryObject);
 		~LibraryObjectMimeData() = default;

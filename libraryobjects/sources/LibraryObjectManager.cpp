@@ -7,8 +7,13 @@
 
 #include "LibraryObjectManager.hpp"
 
+#include "Object.hpp"
+#include <QtWidgets>
 libraryObjects::LibraryObjectManager::LibraryObjectManager()
 {
+	registerObject<Object<QWidget>>();
+	registerObject<Object<QVBoxLayout>>();
+	registerObject<Object<QHBoxLayout>>();
 }
 
 libraryObjects::LibraryObjectManager *libraryObjects::LibraryObjectManager::instance()

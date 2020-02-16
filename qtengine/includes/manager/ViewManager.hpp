@@ -54,6 +54,8 @@ namespace qtengine {
 	// Current Object
 	public:
 		libraryObjects::AObject *currentObject() const { return _currentObject; }
+
+	public slots:
 		void setCurrentObject(libraryObjects::AObject *currentObject);
 
 	signals:
