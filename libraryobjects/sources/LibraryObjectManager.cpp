@@ -10,6 +10,9 @@
 #include "EWidget.hpp"
 #include "ELabel.hpp"
 #include "ELCDNumber.hpp"
+#include "EPlainTextEdit.hpp"
+#include "ETextEdit.hpp"
+#include "EScrollArea.hpp"
 
 #include "EVBoxLayout.hpp"
 #include "EHBoxLayout.hpp"
@@ -19,6 +22,9 @@ libraryObjects::LibraryObjectManager::LibraryObjectManager()
 	registerObject<EWidget>();
 	registerObject<ELabel>();
 	registerObject<ELCDNumber>();
+	registerObject<EPlainTextEdit>();
+	registerObject<ETextEdit>();
+	registerObject<EScrollArea>();
 
 	registerObject<EVBoxLayout>();
 	registerObject<EHBoxLayout>();
