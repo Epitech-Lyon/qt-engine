@@ -21,7 +21,7 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EScrollArea::library
 {
 	auto libraryFunction = EObject::libraryFunction();
 
-	libraryFunction->addDragFunction(Object<QWidget>::classHierarchy(), LibraryFunction::FunctionDrag("setWidget", setWidget, "unsetWidget", unsetWidget));
+	libraryFunction->addFunctionDrag(Object<QWidget>::classHierarchy(), LibraryFunction::FunctionDrag("setWidget", setWidget, "unsetWidget", unsetWidget));
 	return libraryFunction;
 }
 

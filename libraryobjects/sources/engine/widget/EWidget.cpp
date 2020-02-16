@@ -21,7 +21,7 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EWidget::libraryFunc
 {
 	auto libraryFunction = EObject::libraryFunction();
 
-	libraryFunction->addDragFunction(Object<QLayout>::classHierarchy(), LibraryFunction::FunctionDrag("setLayout", setLayout, "unsetLayout", unsetLayout));
+	libraryFunction->addFunctionDrag(Object<QLayout>::classHierarchy(), LibraryFunction::FunctionDrag("setLayout", setLayout, "unsetLayout", unsetLayout));
 	return libraryFunction;
 }
 

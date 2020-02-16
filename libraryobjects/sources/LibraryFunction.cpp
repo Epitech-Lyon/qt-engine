@@ -7,7 +7,7 @@
 
 #include "LibraryFunction.hpp"
 
-libraryObjects::LibraryFunction::FunctionDrag libraryObjects::LibraryFunction::dragFunctionFor(const QString &classHierarchy)
+libraryObjects::LibraryFunction::FunctionDrag libraryObjects::LibraryFunction::functionDragFor(const QString &classHierarchy) const
 {
 	for (auto functionDragAcceptedFor : _functionsDrag.keys())
 		if (classHierarchy.startsWith(functionDragAcceptedFor))

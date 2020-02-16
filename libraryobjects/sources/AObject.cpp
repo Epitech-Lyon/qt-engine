@@ -22,6 +22,8 @@ libraryObjects::AObject::~AObject()
 {
 	for (auto child : children())
 		delete child;
+	if (_parent)
+		_parent->removeChild(this);
 	delete _object;
 }
 
@@ -70,13 +72,18 @@ void libraryObjects::AObject::setPropertyValue(const QString &propertyName, cons
 	_object->setProperty(propertyName.toStdString().c_str(), propertyValue);
 }
 
-void libraryObjects::AObject::addChild(AObject *child)
+void libraryObjects::AObject::insertChild(int index, AObject *child)
 {
-	if (!child) { return; }
+	if (!child || index < 0 || index > _children.size()) { return; }
 
 	_children.removeAll(child);
-	_children.push_back(child);
+	_children.insert(index, child);
 	child->_parent = this;
+}
+
+void libraryObjects::AObject::addChild(AObject *child)
+{
+	insertChild(_children.size(), child);
 }
 
 void libraryObjects::AObject::removeChild(AObject *child)
@@ -85,4 +92,5 @@ void libraryObjects::AObject::removeChild(AObject *child)
 
 	_children.removeAll(child);
 	child->_parent = nullptr;
+	child->object()->setParent(nullptr);
 }

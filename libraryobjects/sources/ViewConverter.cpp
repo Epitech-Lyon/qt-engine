@@ -49,7 +49,7 @@ libraryObjects::AObject *libraryObjects::ViewConverter::deserialize(const QJsonO
 		auto child = deserialize(childRef.toObject());
 
 		if (child) {
-			auto function = libraryObject->libraryFunction()->dragFunctionFor(child->classHierarchy());
+			auto function = libraryObject->libraryFunction()->functionDragFor(child->classHierarchy());
 
 			if (function.isValid && function.functionAdd(object, index, child))
 				index += 1;

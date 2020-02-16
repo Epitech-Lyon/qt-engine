@@ -39,6 +39,7 @@ namespace libraryObjects {
 	// Parenty management
 	public:
 		QList<AObject *> children() const { return _children; }
+		void insertChild(int index, AObject *child);
 		void addChild(AObject *child);
 		void removeChild(AObject *child);
 

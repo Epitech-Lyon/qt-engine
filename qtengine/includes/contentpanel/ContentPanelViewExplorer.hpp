@@ -24,11 +24,13 @@ namespace qtengine {
 		TreeViewExplorer(QWidget *parent = nullptr);
 		~TreeViewExplorer() = default;
 
-		QTreeWidgetItem *createItemFor(libraryObjects::AObject *object, QTreeWidgetItem *parent, bool recursively = true);
-		QTreeWidgetItem *createItemFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, bool recursively = true);
+		QTreeWidgetItem *createItemFor(libraryObjects::AObject *object, QTreeWidgetItem *parent, bool recursively = true, int index = -1);
+		QTreeWidgetItem *createItemFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, bool recursively = true, int index = -1);
+		void removeItemFor(libraryObjects::AObject *object);
 
 	signals:
 		void objectClicked(libraryObjects::AObject *object);
+		void openMenuFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, const QPoint &pos);
 		void libraryObjectDropped(libraryObjects::AObject *parent, int index, libraryObjects::LibraryObject *libraryObject);
 
 	private:
@@ -48,6 +50,7 @@ namespace qtengine {
 
 	private slots:
 		void onViewObjectChanged(libraryObjects::AObject *viewObject);
+		void onOpenMenuFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, const QPoint &pos);
 		void onLibraryObjectDropped(libraryObjects::AObject *parent, int index, libraryObjects::LibraryObject *libraryObject);
 
 	private:

@@ -17,8 +17,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EBoxLayout::libraryF
 {
 	auto libraryFunction = ELayout::libraryFunction();
 
-	libraryFunction->addDragFunction(Object<QWidget>::classHierarchy(), LibraryFunction::FunctionDrag("insertWidget", insertWidget, "removeWidget", removeWidget));
-	libraryFunction->addDragFunction(Object<QLayout>::classHierarchy(), LibraryFunction::FunctionDrag("insertLayout", insertLayout, "removeLayout", removeLayout));
+	libraryFunction->addFunctionDrag(Object<QWidget>::classHierarchy(), LibraryFunction::FunctionDrag("insertWidget", insertWidget, "removeWidget", removeWidget));
+	libraryFunction->addFunctionDrag(Object<QLayout>::classHierarchy(), LibraryFunction::FunctionDrag("insertLayout", insertLayout, "removeLayout", removeLayout));
 	return libraryFunction;
 }
 
@@ -31,7 +31,7 @@ bool libraryObjects::insertWidget(AObject *parent, int index, AObject *child)
 	if (!widget) { return false; }
 
 	boxLayout->insertWidget(index, widget);
-	parent->addChild(child);
+	parent->insertChild(index, child);
 	return true;
 }
 
@@ -44,6 +44,6 @@ bool libraryObjects::insertLayout(AObject *parent, int index, AObject *child)
 	if (!layout) { return false; }
 
 	boxLayout->insertLayout(index, layout);
-	parent->addChild(child);
+	parent->insertChild(index, child);
 	return true;
 }

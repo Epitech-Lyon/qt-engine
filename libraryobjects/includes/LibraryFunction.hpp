@@ -47,18 +47,38 @@ namespace libraryObjects {
 			FunctionDragRemove functionRemove;
 		} FunctionDrag;
 
-		void addDragFunction(const QString &acceptedFor, const FunctionDrag &functionDrag) { _functionsDrag[acceptedFor] = functionDrag; }
-		FunctionDrag dragFunctionFor(const QString &classHierarchy);
+		void addFunctionDrag(const QString &acceptedFor, const FunctionDrag &functionDrag) { _functionsDrag[acceptedFor] = functionDrag; }
+		FunctionDrag functionDragFor(const QString &classHierarchy) const;
 
 	private:
 		QMap<QString, FunctionDrag> _functionsDrag;
 
 	// Menu functions
 	public:
+		typedef std::function<void (AObject *)> FunctionMenuSignature;
+		typedef struct FunctionMenu {
+			FunctionMenu() : isValid(false) {}
+			FunctionMenu(const QString &functionName, FunctionMenuSignature function)
+				: isValid(true), functionName(functionName), function(function) {}
+			FunctionMenu(const FunctionMenu &other)
+				: isValid(true), functionName(other.functionName), function(other.function) {}
+			FunctionMenu &operator=(const FunctionMenu &other)
+			{
+				isValid = other.isValid;
+				functionName = other.functionName;
+				function = other.function;
+				return *this;
+			}
+
+			bool isValid;
+			QString functionName;
+			FunctionMenuSignature function;
+		} FunctionMenu;
+		
+		void addFunctionMenu(const FunctionMenu &functionMenu) { _functionsMenu.push_back(functionMenu); }
+		QList<FunctionMenu> functionsMenu() const { return _functionsMenu; }
 
 	private:
-//		typedef std::function<void (AObject *)> FunctionMenuAdd;
-//		typedef std::function<void (AObject*)> FunctionMenuRemove;
-//		typedef QPair<FunctionAdd, FunctionRemove> FunctionsMenu;
+		QList<FunctionMenu> _functionsMenu;
 	};
 }

@@ -18,6 +18,7 @@
 #include "LibraryFunction.hpp"
 
 #include <QtGui/QDragMoveEvent>
+#include <QtWidgets/QMenu>
 
 qtengine::TreeViewExplorer::TreeViewExplorer(QWidget *parent)
 	: QTreeWidget(parent)
@@ -27,6 +28,7 @@ qtengine::TreeViewExplorer::TreeViewExplorer(QWidget *parent)
 	setDragDropMode(QAbstractItemView::DropOnly);
 	setDropIndicatorShown(true);
 	setHeaderLabels({"Object name", "Class"});
+	setContextMenuPolicy(Qt::CustomContextMenu);
 	invisibleRootItem()->setFlags(invisibleRootItem()->flags() ^ Qt::ItemIsDropEnabled);
 
 	connect(this, &QTreeWidget::itemClicked, [this](QTreeWidgetItem *item, int) { emit objectClicked(_objects[item]); });
@@ -41,24 +43,40 @@ qtengine::TreeViewExplorer::TreeViewExplorer(QWidget *parent)
 		_objects[item]->setObjectName(item->text(0));
 		emit objectClicked(_objects[item]);
 	});
+	connect(this, &QTreeWidget::customContextMenuRequested, [this](const QPoint &pos) {
+		auto objectItem = itemAt(pos);
+		if (!objectItem) { return; }
+
+		emit openMenuFor(_objects[objectItem], _objects[objectItem->parent()], mapToGlobal(pos));
+	});
 }
 
-QTreeWidgetItem *qtengine::TreeViewExplorer::createItemFor(libraryObjects::AObject *object, QTreeWidgetItem *parent, bool recursively)
+QTreeWidgetItem *qtengine::TreeViewExplorer::createItemFor(libraryObjects::AObject *object, QTreeWidgetItem *parent, bool recursively, int index)
 {
 	if (!object) { return nullptr; }
-	auto item = new QTreeWidgetItem(parent, {object->objectName(), object->className()});
+	auto item = new QTreeWidgetItem({object->objectName(), object->className()});
 
+	parent->insertChild(index == -1 ? parent->childCount() : index, item);
 	_objects[item] = object;
 	if (recursively)
 		for (auto objectChild : object->children())
-			createItemFor(objectChild, item, true);
+			createItemFor(objectChild, item, true, -1);
 	return item;
 }
 
-QTreeWidgetItem *qtengine::TreeViewExplorer::createItemFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, bool recursively)
+QTreeWidgetItem *qtengine::TreeViewExplorer::createItemFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, bool recursively, int index)
 {
 	if (!object || !parent) { return nullptr; }
-	return createItemFor(object, _objects.key(parent), recursively);
+	return createItemFor(object, _objects.key(parent), recursively, index);
+}
+
+void qtengine::TreeViewExplorer::removeItemFor(libraryObjects::AObject *object)
+{
+	if (!object) { return; }
+	auto item = _objects.key(object);
+
+	delete item;
+	_objects.remove(item);
 }
 
 void qtengine::TreeViewExplorer::dragMoveEvent(QDragMoveEvent *event)
@@ -70,8 +88,22 @@ void qtengine::TreeViewExplorer::dragMoveEvent(QDragMoveEvent *event)
 	auto item = itemAt(event->pos());
 	if (!_objects[item]) { return; }
 
+	switch (dropIndicatorPosition()) {
+	case QTreeWidget::OnItem:
+		break;
+	case QTreeWidget::AboveItem:
+		item = item->parent();
+		break;
+	case QTreeWidget::BelowItem:
+		item = item->parent();
+		break;
+	case QTreeWidget::OnViewport:
+		break;
+	}
+	if (!_objects[item]) { return; }
+
 	auto libraryObjectParent = libraryObjects::LibraryObjectManager::instance()->libraryObjectOf(_objects[item]->classHierarchy());
-	if (!libraryObjectParent->libraryFunction()->dragFunctionFor(libraryObjectMimeData->libraryObject()->classHierarchy()).isValid)
+	if (!libraryObjectParent->libraryFunction()->functionDragFor(libraryObjectMimeData->libraryObject()->classHierarchy()).isValid)
 		event->ignore();
 }
 
@@ -99,6 +131,7 @@ void qtengine::ContentPanelViewExplorer::init()
 	connect(Manager::instance()->viewManager(), &ViewManager::viewObjectChanged, this, &ContentPanelViewExplorer::onViewObjectChanged);
 
 	connect(_tree, &TreeViewExplorer::objectClicked, Manager::instance()->viewManager(), &ViewManager::setCurrentObject);
+	connect(_tree, &TreeViewExplorer::openMenuFor, this, &ContentPanelViewExplorer::onOpenMenuFor);
 	connect(_tree, &TreeViewExplorer::libraryObjectDropped, this, &ContentPanelViewExplorer::onLibraryObjectDropped);
 }
 
@@ -109,12 +142,46 @@ void qtengine::ContentPanelViewExplorer::onViewObjectChanged(libraryObjects::AOb
 	_tree->expandAll();
 }
 
+void qtengine::ContentPanelViewExplorer::onOpenMenuFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, const QPoint &pos)
+{
+	QMenu menu;
+
+	if (parent) {
+		auto libraryObjectParent = libraryObjects::LibraryObjectManager::instance()->libraryObjectOf(parent->classHierarchy());
+		if (libraryObjectParent) {
+			auto functionDrag = libraryObjectParent->libraryFunction()->functionDragFor(object->classHierarchy());
+			if (functionDrag.isValid) {
+				auto callback = [&, this]() {
+					if (functionDrag.functionRemove(parent, object)) {
+						_tree->removeItemFor(object);
+						delete object;
+					}
+				};
+				menu.addAction(functionDrag.functionRemoveName, callback);
+			}
+		}
+	}
+
+	auto libraryObject = libraryObjects::LibraryObjectManager::instance()->libraryObjectOf(object->classHierarchy());
+	if (libraryObject) {
+		auto functionsMenu = libraryObject->libraryFunction()->functionsMenu();
+
+		if (!menu.isEmpty() && !functionsMenu.isEmpty())
+			menu.addSeparator();
+		for (auto functionMenu : functionsMenu)
+			if (functionMenu.isValid)
+				menu.addAction(functionMenu.functionName, std::bind(functionMenu.function, object));
+	}
+	if (!menu.isEmpty())
+		menu.exec(pos);
+}
+
 void qtengine::ContentPanelViewExplorer::onLibraryObjectDropped(libraryObjects::AObject *parent, int index, libraryObjects::LibraryObject *child)
 {
 	auto libraryObject = libraryObjects::LibraryObjectManager::instance()->libraryObjectOf(parent->classHierarchy());
 	if (!libraryObject) { return; }
 
-	auto function = libraryObject->libraryFunction()->dragFunctionFor(child->classHierarchy());
+	auto function = libraryObject->libraryFunction()->functionDragFor(child->classHierarchy());
 	if (!function.isValid) { return; }
 
 	auto childObject = child->constructor();
@@ -122,7 +189,7 @@ void qtengine::ContentPanelViewExplorer::onLibraryObjectDropped(libraryObjects::
 
 	if (!function.functionAdd(parent, index, childObject)) { delete childObject; return; }
 
-	auto childObjectItem = _tree->createItemFor(childObject, parent);
+	auto childObjectItem = _tree->createItemFor(childObject, parent, false, index);
 	if (childObjectItem)
 		childObjectItem->parent()->setExpanded(true);
 }
