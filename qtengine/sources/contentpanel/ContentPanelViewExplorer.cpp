@@ -29,6 +29,17 @@ qtengine::TreeViewExplorer::TreeViewExplorer(QWidget *parent)
 	invisibleRootItem()->setFlags(invisibleRootItem()->flags() ^ Qt::ItemIsDropEnabled);
 
 	connect(this, &QTreeWidget::itemClicked, [this](QTreeWidgetItem *item, int) { emit objectClicked(_objects[item]); });
+	connect(this, &QTreeWidget::itemDoubleClicked, [this](QTreeWidgetItem *item, int column)
+	{
+		if (column != 0) { return; }
+		openPersistentEditor(item, 0);
+	});
+	connect(this, &QTreeWidget::itemChanged, [this](QTreeWidgetItem *item, int)
+	{
+		closePersistentEditor(item, 0);
+		_objects[item]->setObjectName(item->text(0));
+		emit objectClicked(_objects[item]);
+	});
 }
 
 QTreeWidgetItem *qtengine::TreeViewExplorer::createItemFor(libraryObjects::AObject *object, QTreeWidgetItem *parent, bool recursively)

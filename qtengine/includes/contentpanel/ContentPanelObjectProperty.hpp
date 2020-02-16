@@ -31,8 +31,12 @@ namespace qtengine {
 		void onValueChanged(QtProperty *, const QVariant &);
 
 	private:
+		void initObject();
+		void refreshObject();
 		QtVariantPropertyManager *_propertyManager;
 		QtVariantEditorFactory *_propertyFactory;
 		QtTreePropertyBrowser *_propertyEditor;
+		bool _init;
+		libraryObjects::AObject *_currentObject;
 	};
 }

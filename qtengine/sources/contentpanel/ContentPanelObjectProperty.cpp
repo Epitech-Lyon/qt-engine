@@ -30,6 +30,8 @@ void qtengine::ContentPanelObjectProperty::init()
 
 	_mainLayout->addWidget(_propertyEditor);
 
+	_init = false;
+	_currentObject = nullptr;
 	onCurrentObjectChanged(Manager::instance()->viewManager()->currentObject());
 	connect(Manager::instance()->viewManager(), &ViewManager::currentObjectChanged, this, &ContentPanelObjectProperty::onCurrentObjectChanged);
 
@@ -38,13 +40,24 @@ void qtengine::ContentPanelObjectProperty::init()
 
 void qtengine::ContentPanelObjectProperty::onCurrentObjectChanged(libraryObjects::AObject *object)
 {
-	_propertyManager->clear();
-	if (!object) { return; }
-	for (auto className : object->classHierarchy().split("::")) {
+	_init = true;
+	if (_currentObject != object) {
+		_currentObject = object;
+		_propertyManager->clear();
+		if (_currentObject)
+			initObject();
+	} else if (_currentObject)
+		refreshObject();
+	_init = false;
+}
+
+void qtengine::ContentPanelObjectProperty::initObject()
+{
+	for (auto className : _currentObject->classHierarchy().split("::")) {
 		auto propertyGroup = _propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), className);
 
-		for (auto classProperty : object->properties(className)) {
-			auto property = object->propertyValue(classProperty.name);
+		for (auto classProperty : _currentObject->properties(className)) {
+			auto property = _currentObject->propertyValue(classProperty.name);
 			auto objectProperty = _propertyManager->addProperty(property.type(), classProperty.name);
 
 			if (objectProperty) {
@@ -62,7 +75,20 @@ void qtengine::ContentPanelObjectProperty::onCurrentObjectChanged(libraryObjects
 		_propertyEditor->setExpanded(item, false);
 }
 
+void qtengine::ContentPanelObjectProperty::refreshObject()
+{
+	for (auto topLevelItem : _propertyEditor->topLevelItems())
+		for (auto item : topLevelItem->property()->subProperties()) {
+			auto variantProperty = dynamic_cast<QtVariantProperty*>(item);
+
+			if (variantProperty)
+				variantProperty->setValue(_currentObject->propertyValue(item->propertyName()));
+		}
+}
+
 void qtengine::ContentPanelObjectProperty::onValueChanged(QtProperty *property, const QVariant &value)
 {
-	Manager::instance()->viewManager()->currentObject()->setPropertyValue(property->propertyName().toStdString().c_str(), value);
+	if (_init) { return; }
+	_currentObject->setPropertyValue(property->propertyName().toStdString().c_str(), value);
+	Manager::instance()->viewManager()->setCurrentObject(_currentObject);
 }
