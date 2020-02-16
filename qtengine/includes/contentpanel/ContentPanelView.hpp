@@ -17,11 +17,14 @@ namespace qtengine {
 	class ContentPanelView : public ContentPanelBase {
 	public:
 		ContentPanelView(QWidget *parent = nullptr);
-		~ContentPanelView() = default;
+		~ContentPanelView();
 
 		void init() override;
 
 	private slots:
 		void onViewObjectChanged(libraryObjects::AObject *object);
+
+	private:
+		void clear();
 	};
 }

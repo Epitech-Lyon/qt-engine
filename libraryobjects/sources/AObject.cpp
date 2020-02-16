@@ -18,6 +18,13 @@ libraryObjects::AObject::AObject(QObject *object, const QString &classHierarchy)
 	initProperties(object->metaObject());
 }
 
+libraryObjects::AObject::~AObject()
+{
+	for (auto child : children())
+		delete child;
+	delete _object;
+}
+
 QJsonObject libraryObjects::AObject::serialize() const
 {
 	QJsonObject json;

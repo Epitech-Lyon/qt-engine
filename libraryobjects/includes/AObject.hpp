@@ -30,7 +30,7 @@ namespace libraryObjects {
 	// General management
 	public:
 		AObject(QObject *object, const QString &classHierarchy);
-		~AObject() = default;
+		~AObject();
 
 		QObject *object() const { return _object; }
 		QString objectName() const { return _object->objectName(); }
@@ -42,7 +42,7 @@ namespace libraryObjects {
 		QJsonObject serialize() const;
 		void deserialize(const QJsonObject &);
 
-	protected:
+	private:
 		QObject *_object;
 		QString _classHierarchy;
 		QString _className;

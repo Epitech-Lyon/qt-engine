@@ -23,7 +23,7 @@ namespace libraryObjects {
 
 	public:
 		LibraryObject(Constructor constructor, const QString &classHierarchy, const QIcon &icon, LibraryFunction *libraryFunction);
-		~LibraryObject() = default;
+		~LibraryObject();
 
 		AObject *constructor() const { return _constructor(); }
 		QString classHierarchy() const { return _classHierarchy; }

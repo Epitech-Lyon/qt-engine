@@ -8,6 +8,8 @@
 #include "LibraryObject.hpp"
 #include "AObject.hpp"
 
+#include "LibraryFunction.hpp"
+
 libraryObjects::LibraryObject::LibraryObject(Constructor constructor, const QString &classHierarchy, const QIcon &icon, LibraryFunction *libraryFunction)
 	: _constructor(constructor)
 	, _classHierarchy(classHierarchy)
@@ -15,4 +17,9 @@ libraryObjects::LibraryObject::LibraryObject(Constructor constructor, const QStr
 	, _icon(icon)
 	, _libraryFunction(libraryFunction)
 {
+}
+
+libraryObjects::LibraryObject::~LibraryObject()
+{
+	delete _libraryFunction;
 }

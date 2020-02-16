@@ -9,6 +9,7 @@
 
 #include "EWidget.hpp"
 #include "ELabel.hpp"
+#include "ELCDNumber.hpp"
 
 #include "EVBoxLayout.hpp"
 #include "EHBoxLayout.hpp"
@@ -17,9 +18,16 @@ libraryObjects::LibraryObjectManager::LibraryObjectManager()
 {
 	registerObject<EWidget>();
 	registerObject<ELabel>();
+	registerObject<ELCDNumber>();
 
 	registerObject<EVBoxLayout>();
 	registerObject<EHBoxLayout>();
+}
+
+libraryObjects::LibraryObjectManager::~LibraryObjectManager()
+{
+	for (auto libraryObject : libraryObjects())
+		delete libraryObject;
 }
 
 libraryObjects::LibraryObjectManager *libraryObjects::LibraryObjectManager::instance()

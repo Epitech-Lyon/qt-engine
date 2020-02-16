@@ -16,6 +16,11 @@ qtengine::ContentPanelView::ContentPanelView(QWidget *parent)
 {
 }
 
+qtengine::ContentPanelView::~ContentPanelView()
+{
+	clear();
+}
+
 void qtengine::ContentPanelView::init()
 {
 	onViewObjectChanged(Manager::instance()->viewManager()->viewObject());
@@ -24,8 +29,18 @@ void qtengine::ContentPanelView::init()
 
 void qtengine::ContentPanelView::onViewObjectChanged(libraryObjects::AObject *object)
 {
-	while (!_mainLayout->isEmpty())
-		_mainLayout->removeItem(_mainLayout->itemAt(0));
+	clear();
 	if (object)
 		_mainLayout->addWidget(dynamic_cast<QWidget*>(object->object()));
+}
+
+void qtengine::ContentPanelView::clear()
+{
+	while (!_mainLayout->isEmpty()) {
+		auto item = _mainLayout->itemAt(0);
+
+		_mainLayout->removeItem(item);
+		if (item->widget())
+			item->widget()->setParent(nullptr);
+	}
 }

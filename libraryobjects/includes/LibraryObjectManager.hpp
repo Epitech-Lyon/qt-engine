@@ -15,7 +15,7 @@
 namespace libraryObjects {
 	class LibraryObjectManager {
 	public:
-		~LibraryObjectManager() = default;
+		~LibraryObjectManager();
 		static LibraryObjectManager *instance();
 
 		QList<LibraryObject *> libraryObjects() const { return _libraryObjects; }

@@ -25,6 +25,11 @@ qtengine::ViewManager::ViewManager()
 {
 }
 
+qtengine::ViewManager::~ViewManager()
+{
+	delete _viewObject;
+}
+
 QJsonObject qtengine::ViewManager::serialize() const
 {
 	QJsonObject json;
@@ -41,6 +46,8 @@ void qtengine::ViewManager::openView(const QString &viewPath)
 {
 	QFileInfo fileInfo(viewPath);
 	if (viewPath.isEmpty() || !fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
+
+	delete _viewObject;
 
 	_viewPath = fileInfo.filePath();
 	_viewName = fileInfo.baseName();
@@ -72,6 +79,7 @@ void qtengine::ViewManager::onCreateView(const QString &viewPath)
 	emit viewNameChanged(_viewName);
 	emit viewObjectChanged(_viewObject);
 	setCurrentObject(_viewObject);
+	onSaveView();
 }
 
 void qtengine::ViewManager::onSaveView()

@@ -22,7 +22,7 @@ namespace qtengine {
 	// General
     public:
         ViewManager();
-        ~ViewManager() = default;
+        ~ViewManager();
 
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &json) override;
