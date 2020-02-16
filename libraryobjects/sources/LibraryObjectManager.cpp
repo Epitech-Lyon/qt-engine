@@ -36,3 +36,11 @@ libraryObjects::LibraryObject *libraryObjects::LibraryObjectManager::libraryObje
 			return libraryObject;
 	return nullptr;
 }
+
+libraryObjects::LibraryObject *libraryObjects::LibraryObjectManager::libraryObjectOfClassName(const QString &className) const
+{
+	for (auto libraryObject : _libraryObjects)
+		if (libraryObject->className() == className)
+			return libraryObject;
+	return nullptr;
+}

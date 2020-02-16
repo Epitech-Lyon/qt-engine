@@ -24,7 +24,7 @@ QJsonObject libraryObjects::AObject::serialize() const
 
 	for (auto className : classHierarchy().split("::"))
 		for (auto &property : properties(className)) {
-			auto value = QVariantConverter::serialize(_object->property(property.name.toStdString().c_str()));
+			auto value = QVariantConverter::serialize(propertyValue(property.name));
 
 			if (value.isNull())
 				qCritical() << "Serialize" << property.name << "of type" << property.typeName << "is not implemented yet !";
@@ -34,8 +34,14 @@ QJsonObject libraryObjects::AObject::serialize() const
 	return json;
 }
 
-void libraryObjects::AObject::deserialize(const QJsonObject &)
+void libraryObjects::AObject::deserialize(const QJsonObject &json)
 {
+	for (auto key : json.keys()) {
+		auto value = QVariantConverter::deserialize(QVariant::nameToType(key.toStdString().c_str()), json[key]);
+
+		if (!value.isNull())
+			setPropertyValue(key, value);
+	}
 }
 
 void libraryObjects::AObject::initProperties(const QMetaObject *metaObject)

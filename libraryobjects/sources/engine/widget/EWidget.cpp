@@ -28,5 +28,6 @@ libraryObjects::AObject *libraryObjects::setLayout(AObject *parent, int, Library
 	auto layout = dynamic_cast<QLayout*>(childObject->object());
 
 	widget->setLayout(layout);
+	parent->addChild(childObject);
 	return childObject;
 }

@@ -28,5 +28,6 @@ libraryObjects::AObject *libraryObjects::addWidget(AObject *parent, int index, L
 	auto widget = dynamic_cast<QWidget*>(childObject->object());
 
 	boxLayout->insertWidget(index, widget);
+	parent->addChild(childObject);
 	return childObject;
 }

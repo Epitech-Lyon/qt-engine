@@ -20,6 +20,7 @@ namespace libraryObjects {
 
 		QList<LibraryObject *> libraryObjects() const { return _libraryObjects; }
 		LibraryObject *libraryObjectOf(const QString &classHierarchy) const;
+		LibraryObject *libraryObjectOfClassName(const QString &className) const;
 
 	private:
 		LibraryObjectManager();

@@ -26,5 +26,6 @@ void qtengine::ContentPanelView::onViewObjectChanged(libraryObjects::AObject *ob
 {
 	while (!_mainLayout->isEmpty())
 		_mainLayout->removeItem(_mainLayout->itemAt(0));
-	_mainLayout->addWidget(dynamic_cast<QWidget*>(object->object()));
+	if (object)
+		_mainLayout->addWidget(dynamic_cast<QWidget*>(object->object()));
 }
