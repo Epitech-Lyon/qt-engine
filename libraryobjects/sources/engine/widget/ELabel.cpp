@@ -6,13 +6,14 @@
 */
 
 #include "ELabel.hpp"
+#include "EObject.hpp"
 
 template<> QIcon libraryObjects::ELabel::icon()
 {
 	return QIcon();
 }
 
-template<> QPair<QString, libraryObjects::LibraryObject::FunctionDrag> libraryObjects::ELabel::functionDrag()
+template<> libraryObjects::LibraryFunction *libraryObjects::ELabel::libraryFunction()
 {
-	return QPair<QString, libraryObjects::LibraryObject::FunctionDrag>();
+	return EObject::libraryFunction();
 }

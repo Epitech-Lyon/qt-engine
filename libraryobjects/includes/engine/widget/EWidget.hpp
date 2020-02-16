@@ -13,5 +13,6 @@
 namespace libraryObjects {
 	typedef Object<QWidget> EWidget;
 
-	AObject *setLayout(AObject *parent, int index, LibraryObject *child);
+	bool setLayout(AObject *parent, int index, AObject *child);
+	bool unsetLayout(AObject *parent, AObject *child);
 }

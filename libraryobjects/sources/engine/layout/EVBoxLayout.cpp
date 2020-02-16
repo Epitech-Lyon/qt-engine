@@ -13,7 +13,7 @@ template<> QIcon libraryObjects::EVBoxLayout::icon()
 	return QIcon();
 }
 
-template<> QPair<QString, libraryObjects::LibraryObject::FunctionDrag> libraryObjects::EVBoxLayout::functionDrag()
+template<> libraryObjects::LibraryFunction *libraryObjects::EVBoxLayout::libraryFunction()
 {
-	return EBoxLayout::functionDrag();
+	return EBoxLayout::libraryFunction();
 }

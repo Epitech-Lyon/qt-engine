@@ -67,7 +67,7 @@ void qtengine::ContentPanelProjectExplorer::init()
 	connect(Manager::instance()->projectManager(), &ProjectManager::projectDirChanged, onProjectDirChanged);
 
 	_treeView->setCurrentIndex(_fsModel->index(Manager::instance()->viewManager()->viewPath()));
-	connect(_treeView, &QTreeView::clicked, this, &ContentPanelProjectExplorer::onModelIndexClicked);
+	connect(_treeView, &QTreeView::doubleClicked, this, &ContentPanelProjectExplorer::onModelIndexDoubleClicked);
 
 	ContentPanelBase::init();
 }
@@ -85,7 +85,7 @@ QToolBar *qtengine::ContentPanelProjectExplorer::initToolBar()
 	return toolbar;
 }
 
-void qtengine::ContentPanelProjectExplorer::onModelIndexClicked(const QModelIndex &modelIndex)
+void qtengine::ContentPanelProjectExplorer::onModelIndexDoubleClicked(const QModelIndex &modelIndex)
 {
 	Manager::instance()->viewManager()->openView(_fsModel->filePath(modelIndex));
 }

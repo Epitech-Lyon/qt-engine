@@ -22,12 +22,10 @@ namespace qtengine {
 		void init() override;
 
 	private slots:
-		void onModelIndexClicked(const QModelIndex &);
+		void onModelIndexDoubleClicked(const QModelIndex &);
 		void onCreateFile();
 		void onRenameFile();
 		void onDeleteFile();
-		void onSave();
-		void onSaveAs();
 
 	private:
 		class TreeViewItemDelegate : public QStyledItemDelegate {

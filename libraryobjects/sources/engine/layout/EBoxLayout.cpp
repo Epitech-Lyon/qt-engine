@@ -6,28 +6,44 @@
 */
 
 #include "EBoxLayout.hpp"
+#include "ELayout.hpp"
+
+#include "LibraryFunction.hpp"
 
 #include <QtWidgets/QWidget>
+#include <QtWidgets/QLayout>
 
-template<> QIcon libraryObjects::EBoxLayout::icon()
+template<> libraryObjects::LibraryFunction *libraryObjects::EBoxLayout::libraryFunction()
 {
-	return QIcon();
+	auto libraryFunction = ELayout::libraryFunction();
+
+	libraryFunction->addDragFunction(Object<QWidget>::classHierarchy(), LibraryFunction::FunctionDrag("insertWidget", insertWidget, "removeWidget", removeWidget));
+	libraryFunction->addDragFunction(Object<QLayout>::classHierarchy(), LibraryFunction::FunctionDrag("insertLayout", insertLayout, "removeLayout", removeLayout));
+	return libraryFunction;
 }
 
-template<> QPair<QString, libraryObjects::LibraryObject::FunctionDrag> libraryObjects::EBoxLayout::functionDrag()
-{
-	return { Object<QWidget>::classHierarchy(), addWidget };
-}
-
-libraryObjects::AObject *libraryObjects::addWidget(AObject *parent, int index, LibraryObject *child)
+bool libraryObjects::insertWidget(AObject *parent, int index, AObject *child)
 {
 	auto boxLayout = dynamic_cast<QBoxLayout*>(parent->object());
-	if (!boxLayout) { return nullptr; }
+	if (!boxLayout) { return false; }
 
-	auto childObject = child->constructor();
-	auto widget = dynamic_cast<QWidget*>(childObject->object());
+	auto widget = dynamic_cast<QWidget*>(child->object());
+	if (!widget) { return false; }
 
 	boxLayout->insertWidget(index, widget);
-	parent->addChild(childObject);
-	return childObject;
+	parent->addChild(child);
+	return true;
+}
+
+bool libraryObjects::insertLayout(AObject *parent, int index, AObject *child)
+{
+	auto boxLayout = dynamic_cast<QBoxLayout*>(parent->object());
+	if (!boxLayout) { return false; }
+
+	auto layout = dynamic_cast<QLayout*>(child->object());
+	if (!layout) { return false; }
+
+	boxLayout->insertLayout(index, layout);
+	parent->addChild(child);
+	return true;
 }

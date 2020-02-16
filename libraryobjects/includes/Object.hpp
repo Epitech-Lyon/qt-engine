@@ -9,9 +9,11 @@
 
 #include "AObject.hpp"
 
-#include "LibraryObject.hpp"
+#include <QtGui/QIcon>
 
 namespace libraryObjects {
+	class LibraryFunction;
+
 	template <typename Obj> class Object : public AObject {
 	public:
 		Object()
@@ -36,14 +38,9 @@ namespace libraryObjects {
 			return QIcon();
 		}
 
-		static LibraryObject::Constructor constructor()
+		static LibraryFunction *libraryFunction()
 		{
-			return []() { return new Object<Obj>(); };
-		}
-
-		static QPair<QString, LibraryObject::FunctionDrag> functionDrag()
-		{
-			return QPair<QString, LibraryObject::FunctionDrag>();
+			return nullptr;
 		}
 
 	private:

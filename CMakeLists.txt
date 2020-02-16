@@ -89,7 +89,7 @@ set(LIBRARYOBJECTS_INCS ${INCS})
 add_library(libraryObjects SHARED ${SRCS})
 target_link_libraries(libraryObjects ${CONAN_LIBS} Qt5::Widgets Qt5::Core)
 target_include_directories(libraryObjects PRIVATE ${INCS})
-target_compile_options(libraryObjects PRIVATE -Werror -Wall -Wextra)
+target_compile_options(libraryObjects PRIVATE -Werror -Wall -Wextra -g3)
 
 #==========QtEngine==============
 INC_AND_SRC(INCS SRCS "qtengine")

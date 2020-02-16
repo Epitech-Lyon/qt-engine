@@ -9,6 +9,7 @@
 #include "AObject.hpp"
 
 #include "LibraryObjectManager.hpp"
+#include "LibraryFunction.hpp"
 
 #include <QtCore/QJsonArray>
 #include <QtCore/QMetaType>
@@ -30,6 +31,8 @@ QJsonObject libraryObjects::ViewConverter::serialize(AObject *object)
 
 libraryObjects::AObject *libraryObjects::ViewConverter::deserialize(const QJsonObject &json)
 {
+	if (json.keys().size() == 0) { return nullptr; }
+
 	auto libraryObjectmanager = LibraryObjectManager::instance();
 	auto className = json.keys().front();
 	auto libraryObject = libraryObjectmanager->libraryObjectOfClassName(className);
@@ -46,10 +49,11 @@ libraryObjects::AObject *libraryObjects::ViewConverter::deserialize(const QJsonO
 		auto child = deserialize(childRef.toObject());
 
 		if (child) {
-			// TODO -> pas la bonne méthode
-			object->addChild(child);
+			auto function = libraryObject->libraryFunction()->dragFunctionFor(child->classHierarchy());
+
+			if (function.isValid && function.functionAdd(object, index, child))
+				index += 1;
 		}
-		index += 1;
 	}
 	return object;
 }

@@ -6,6 +6,9 @@
 */
 
 #include "EWidget.hpp"
+#include "EObject.hpp"
+
+#include "LibraryFunction.hpp"
 
 #include <QtWidgets/QLayout>
 
@@ -14,20 +17,36 @@ template<> QIcon libraryObjects::EWidget::icon()
 	return QIcon();
 }
 
-template<> QPair<QString, libraryObjects::LibraryObject::FunctionDrag> libraryObjects::EWidget::functionDrag()
+template<> libraryObjects::LibraryFunction *libraryObjects::EWidget::libraryFunction()
 {
-	return {Object<QLayout>::classHierarchy(), setLayout};
+	auto libraryFunction = EObject::libraryFunction();
+
+	libraryFunction->addDragFunction(Object<QLayout>::classHierarchy(), LibraryFunction::FunctionDrag("setLayout", setLayout, "unsetLayout", unsetLayout));
+	return libraryFunction;
 }
 
-libraryObjects::AObject *libraryObjects::setLayout(AObject *parent, int, LibraryObject *child)
+bool libraryObjects::setLayout(AObject *parent, int, AObject *child)
 {
 	auto widget = dynamic_cast<QWidget*>(parent->object());
-	if (!widget || widget->layout()) { return nullptr; }
+	if (!widget || widget->layout()) { return false; }
 
-	auto childObject = child->constructor();
-	auto layout = dynamic_cast<QLayout*>(childObject->object());
+	auto layout = dynamic_cast<QLayout*>(child->object());
+	if (!layout) { return false; }
 
 	widget->setLayout(layout);
-	parent->addChild(childObject);
-	return childObject;
+	parent->addChild(child);
+	return true;
+}
+
+bool libraryObjects::unsetLayout(AObject *parent, AObject *child)
+{
+	auto widget = dynamic_cast<QWidget*>(parent->object());
+	if (!widget || widget->layout()) { return false; }
+
+	auto layout = dynamic_cast<QLayout*>(child->object());
+	if (!layout) { return false; }
+
+	widget->setLayout(nullptr);
+	parent->removeChild(child);
+	return true;
 }

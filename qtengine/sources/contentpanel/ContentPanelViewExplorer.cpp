@@ -15,6 +15,7 @@
 #include "LibraryObjectManager.hpp"
 #include "LibraryObjectMimeData.hpp"
 #include "LibraryObject.hpp"
+#include "LibraryFunction.hpp"
 
 #include <QtGui/QDragMoveEvent>
 
@@ -31,8 +32,8 @@ qtengine::TreeViewExplorer::TreeViewExplorer(QWidget *parent)
 	connect(this, &QTreeWidget::itemClicked, [this](QTreeWidgetItem *item, int) { emit objectClicked(_objects[item]); });
 	connect(this, &QTreeWidget::itemDoubleClicked, [this](QTreeWidgetItem *item, int column)
 	{
-		if (column != 0) { return; }
-		openPersistentEditor(item, 0);
+		if (column == 0)
+			openPersistentEditor(item, 0);
 	});
 	connect(this, &QTreeWidget::itemChanged, [this](QTreeWidgetItem *item, int)
 	{
@@ -70,7 +71,7 @@ void qtengine::TreeViewExplorer::dragMoveEvent(QDragMoveEvent *event)
 	if (!_objects[item]) { return; }
 
 	auto libraryObjectParent = libraryObjects::LibraryObjectManager::instance()->libraryObjectOf(_objects[item]->classHierarchy());
-	if (!libraryObjectParent->canCallFunctionDrag(libraryObjectMimeData->libraryObject()))
+	if (!libraryObjectParent->libraryFunction()->dragFunctionFor(libraryObjectMimeData->libraryObject()->classHierarchy()).isValid)
 		event->ignore();
 }
 
@@ -108,14 +109,20 @@ void qtengine::ContentPanelViewExplorer::onViewObjectChanged(libraryObjects::AOb
 	_tree->expandAll();
 }
 
-void qtengine::ContentPanelViewExplorer::onLibraryObjectDropped(libraryObjects::AObject *parent, int position, libraryObjects::LibraryObject *child)
+void qtengine::ContentPanelViewExplorer::onLibraryObjectDropped(libraryObjects::AObject *parent, int index, libraryObjects::LibraryObject *child)
 {
 	auto libraryObject = libraryObjects::LibraryObjectManager::instance()->libraryObjectOf(parent->classHierarchy());
 	if (!libraryObject) { return; }
 
-	auto objectChild = libraryObject->functionDrag(parent, position, child);
-	auto objectChildItem = _tree->createItemFor(objectChild, parent);
-	
-	if (objectChildItem)
-		objectChildItem->parent()->setExpanded(true);
+	auto function = libraryObject->libraryFunction()->dragFunctionFor(child->classHierarchy());
+	if (!function.isValid) { return; }
+
+	auto childObject = child->constructor();
+	if (!childObject) { return; }
+
+	if (!function.functionAdd(parent, index, childObject)) { delete childObject; return; }
+
+	auto childObjectItem = _tree->createItemFor(childObject, parent);
+	if (childObjectItem)
+		childObjectItem->parent()->setExpanded(true);
 }
