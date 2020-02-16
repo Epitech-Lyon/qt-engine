@@ -12,6 +12,7 @@
 #include "AObject.hpp"
 
 #include <QtCore/QDebug>
+#include <QtCore/QMetaEnum>
 
 qtengine::ContentPanelObjectProperty::ContentPanelObjectProperty(QWidget *parent)
 	: ContentPanelBase("Object Property", parent)
@@ -57,14 +58,18 @@ void qtengine::ContentPanelObjectProperty::initObject()
 		auto propertyGroup = _propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), className);
 
 		for (auto classProperty : _currentObject->properties(className)) {
-			auto property = _currentObject->propertyValue(classProperty.name);
-			auto objectProperty = _propertyManager->addProperty(property.type(), classProperty.name);
+			auto propertyName = classProperty.name;
+			auto property = _currentObject->propertyValue(propertyName);
+			auto objectProperty = 
+				classProperty.isFlag ? initFlagProperty(propertyName, classProperty.keys) :
+				classProperty.isEnum ? initEnumProperty(propertyName, classProperty.keys) :
+				_propertyManager->addProperty(property.type(), propertyName);
 
 			if (objectProperty) {
 				objectProperty->setValue(property);
 				propertyGroup->addSubProperty(objectProperty);
 			} else
-				qWarning() << "No editor for the property" << classProperty.name << "of type" << property.type();
+				qWarning() << "No editor for the property" << propertyName << "of type" << property.type();
 		}
 		if (propertyGroup->subProperties().size() > 0)
 			_propertyEditor->addProperty(propertyGroup);
@@ -73,6 +78,22 @@ void qtengine::ContentPanelObjectProperty::initObject()
 	}
 	for (auto item : _propertyEditor->topLevelItems())
 		_propertyEditor->setExpanded(item, false);
+}
+
+QtVariantProperty *qtengine::ContentPanelObjectProperty::initFlagProperty(const QString &propertyName, const QStringList &flagNames)
+{
+	auto objectProperty = _propertyManager->addProperty(QtVariantPropertyManager::flagTypeId(), propertyName);
+
+	objectProperty->setAttribute("flagNames", flagNames);
+	return objectProperty;
+}
+
+QtVariantProperty *qtengine::ContentPanelObjectProperty::initEnumProperty(const QString &propertyName, const QStringList &enumNames)
+{
+	auto objectProperty = _propertyManager->addProperty(QtVariantPropertyManager::enumTypeId(), propertyName);
+
+	objectProperty->setAttribute("enumNames", enumNames);
+	return objectProperty;
 }
 
 void qtengine::ContentPanelObjectProperty::refreshObject()

@@ -16,17 +16,6 @@
 
 namespace libraryObjects {
 	class AObject {
-	// Some structure
-	public:
-		typedef struct Variable {
-			Variable(const QMetaProperty &metaProperty) : name(metaProperty.name()), typeName(metaProperty.typeName()) {}
-			Variable(const Variable &other) : name(other.name), typeName(other.typeName) {}
-			Variable &operator=(const Variable &other) { name = other.name; typeName = other.typeName; return *this; }
-
-			QString name;
-			QString typeName;
-		} Variable;
-
 	// General management
 	public:
 		AObject(QObject *object, const QString &classHierarchy);
@@ -59,13 +48,32 @@ namespace libraryObjects {
 
 	// Properties management
 	public:
-		QList<Variable> properties(const QString &className) const { return _properties[className]; }
+		typedef struct Property {
+			Property(const QMetaProperty &metaProperty) : isFlag(metaProperty.isFlagType()), isEnum(metaProperty.isEnumType()), name(metaProperty.name()), typeName(metaProperty.typeName()) { initKeys(metaProperty.enumerator()); }
+			Property(const Property &other) : isFlag(other.isFlag), isEnum(other.isEnum), keys(other.keys), name(other.name), typeName(other.typeName) {}
+			Property &operator=(const Property &other) { isFlag = other.isFlag; isEnum = other.isEnum; keys = other.keys; name = other.name; typeName = other.typeName; return *this; }
+
+			bool isFlag;
+			bool isEnum;
+			QStringList keys;
+			QString name;
+			QString typeName;
+
+		private:
+			void initKeys(const QMetaEnum &metaEnum)
+			{
+				for (int i = 0; i < metaEnum.keyCount(); i += 1)
+					keys << metaEnum.key(i);
+			}
+		} Property;
+
+		QList<Property> properties(const QString &className) const { return _properties[className]; }
 
 		QVariant propertyValue(const QString &propertyName) const { return _object->property(propertyName.toStdString().c_str()); }
 		void setPropertyValue(const QString &propertyName, const QVariant &propertyValue);
 
 	private:
 		void initProperties(const QMetaObject *);
-		QMap<QString, QList<Variable>> _properties;
+		QMap<QString, QList<Property>> _properties;
 	};
 }

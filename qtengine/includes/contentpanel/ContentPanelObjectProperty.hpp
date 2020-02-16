@@ -13,7 +13,6 @@
 #include "qtvariantproperty.h"
 #include "qttreepropertybrowser.h"
 
-
 namespace libraryObjects {
 	class AObject;
 }
@@ -32,6 +31,8 @@ namespace qtengine {
 
 	private:
 		void initObject();
+		QtVariantProperty *initFlagProperty(const QString &propertyName, const QStringList &flagNames);
+		QtVariantProperty *initEnumProperty(const QString &propertyName, const QStringList &enumNames);
 		void refreshObject();
 		QtVariantPropertyManager *_propertyManager;
 		QtVariantEditorFactory *_propertyFactory;
