@@ -7,13 +7,19 @@
 
 #include "LibraryObjectManager.hpp"
 
-#include "Object.hpp"
-#include <QtWidgets>
+#include "EWidget.hpp"
+#include "ELabel.hpp"
+
+#include "EVBoxLayout.hpp"
+#include "EHBoxLayout.hpp"
+
 libraryObjects::LibraryObjectManager::LibraryObjectManager()
 {
-	registerObject<Object<QWidget>>();
-	registerObject<Object<QVBoxLayout>>();
-	registerObject<Object<QHBoxLayout>>();
+	registerObject<EWidget>();
+	registerObject<ELabel>();
+
+	registerObject<EVBoxLayout>();
+	registerObject<EHBoxLayout>();
 }
 
 libraryObjects::LibraryObjectManager *libraryObjects::LibraryObjectManager::instance()
@@ -21,4 +27,12 @@ libraryObjects::LibraryObjectManager *libraryObjects::LibraryObjectManager::inst
 	static LibraryObjectManager libraryObjectManager;
 
 	return &libraryObjectManager;
+}
+
+libraryObjects::LibraryObject *libraryObjects::LibraryObjectManager::libraryObjectOf(const QString &classHierarchy) const
+{
+	for (auto libraryObject : _libraryObjects)
+		if (libraryObject->classHierarchy() == classHierarchy)
+			return libraryObject;
+	return nullptr;
 }

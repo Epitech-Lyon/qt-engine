@@ -25,12 +25,14 @@ namespace qtengine {
 		~TreeViewExplorer() = default;
 
 		QTreeWidgetItem *createItemFor(libraryObjects::AObject *object, QTreeWidgetItem *parent, bool recursively = true);
+		QTreeWidgetItem *createItemFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, bool recursively = true);
 
 	signals:
 		void objectClicked(libraryObjects::AObject *object);
 		void libraryObjectDropped(libraryObjects::AObject *parent, int index, libraryObjects::LibraryObject *libraryObject);
 
 	private:
+		void dragMoveEvent(QDragMoveEvent *event);
 		bool dropMimeData(QTreeWidgetItem *parent, int index, const QMimeData *data, Qt::DropAction action) override;
 		QMap<QTreeWidgetItem *, libraryObjects::AObject *> _objects;
 	};

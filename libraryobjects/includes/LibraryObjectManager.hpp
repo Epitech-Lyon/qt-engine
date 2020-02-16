@@ -19,12 +19,13 @@ namespace libraryObjects {
 		static LibraryObjectManager *instance();
 
 		QList<LibraryObject *> libraryObjects() const { return _libraryObjects; }
+		LibraryObject *libraryObjectOf(const QString &classHierarchy) const;
 
 	private:
 		LibraryObjectManager();
 		template <typename Object> void registerObject()
 		{
-			_libraryObjects << new LibraryObject(Object::classHierarchy(), Object::icon(), Object::constructor(), Object::functions());
+			_libraryObjects << new LibraryObject(Object::classHierarchy(), Object::icon(), Object::constructor(), Object::functionDrag());
 		}
 
 		QList<LibraryObject *> _libraryObjects;

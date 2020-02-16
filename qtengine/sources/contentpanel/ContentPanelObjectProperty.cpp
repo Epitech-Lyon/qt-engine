@@ -9,8 +9,9 @@
 
 #include "Manager.hpp"
 #include "ViewManager.hpp"
-
 #include "AObject.hpp"
+
+#include <QtCore/QDebug>
 
 qtengine::ContentPanelObjectProperty::ContentPanelObjectProperty(QWidget *parent)
 	: ContentPanelBase("Object Property", parent)
@@ -22,9 +23,11 @@ void qtengine::ContentPanelObjectProperty::init()
 	_propertyManager = new QtVariantPropertyManager(this);
 	_propertyFactory = new QtVariantEditorFactory(this);
 	_propertyEditor = new QtTreePropertyBrowser(this);
+
 	_propertyEditor->setFactoryForManager(_propertyManager, _propertyFactory);
 	_propertyEditor->setPropertiesWithoutValueMarked(true);
-	_propertyEditor->setRootIsDecorated(false);
+	_propertyEditor->setResizeMode(QtTreePropertyBrowser::ResizeToContents);
+
 	_mainLayout->addWidget(_propertyEditor);
 
 	onCurrentObjectChanged(Manager::instance()->viewManager()->currentObject());
@@ -47,13 +50,16 @@ void qtengine::ContentPanelObjectProperty::onCurrentObjectChanged(libraryObjects
 			if (objectProperty) {
 				objectProperty->setValue(property);
 				propertyGroup->addSubProperty(objectProperty);
-			}
+			} else
+				qWarning() << "No editor for the property" << classProperty.name << "of type" << property.type();
 		}
 		if (propertyGroup->subProperties().size() > 0)
 			_propertyEditor->addProperty(propertyGroup);
 		else
 			delete propertyGroup;
 	}
+	for (auto item : _propertyEditor->topLevelItems())
+		_propertyEditor->setExpanded(item, false);
 }
 
 void qtengine::ContentPanelObjectProperty::onValueChanged(QtProperty *property, const QVariant &value)

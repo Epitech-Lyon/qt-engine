@@ -8,34 +8,21 @@
 #include "LibraryObject.hpp"
 #include "AObject.hpp"
 
-libraryObjects::LibraryObject::LibraryObject(const QString &classHierarchy, const QIcon &icon, Constructor constructor, const QMap<QString, Functions> &functions)
-    : _classHierarchy(classHierarchy)
-    , _className(_classHierarchy.split("::").last())
-    , _icon(icon)
-    , _constructor(constructor)
-    , _functions(functions)
+libraryObjects::LibraryObject::LibraryObject(const QString &classHierarchy, const QIcon &icon, Constructor constructor, const QPair<QString, FunctionDrag> &functionDrag)
+	: _classHierarchy(classHierarchy)
+	, _className(_classHierarchy.split("::").last())
+	, _icon(icon)
+	, _constructor(constructor)
+	, _functionDrag(functionDrag)
 {
 }
 
-libraryObjects::AObject *libraryObjects::LibraryObject::functionAdd(AObject *parent, LibraryObject *child, int position) const
+bool libraryObjects::LibraryObject::canCallFunctionDrag(LibraryObject *child) const
 {
-    auto function = this->function(child->classHierarchy()).first;
-
-    return function ? function(parent, child, position) : nullptr;
+	return !_functionDrag.first.isEmpty() && _functionDrag.second && child->classHierarchy().startsWith(_functionDrag.first);
 }
 
-void libraryObjects::LibraryObject::functionRemove(AObject *parent, AObject *child) const
+libraryObjects::AObject *libraryObjects::LibraryObject::functionDrag(AObject *parent, int position, LibraryObject *child) const
 {
-    auto function = this->function(child->classHierarchy()).second;
-
-    if (function)
-        function(parent, child);
-}
-
-libraryObjects::LibraryObject::Functions libraryObjects::LibraryObject::function(const QString &childClassHierarchy) const
-{
-    for (auto acceptedClassHierarchy : _functions.keys())
-        if (childClassHierarchy.startsWith(acceptedClassHierarchy))
-            return _functions[acceptedClassHierarchy];
-    return Functions(nullptr, nullptr);
+	return canCallFunctionDrag(child) ? _functionDrag.second(parent, position, child) : nullptr;
 }

@@ -41,11 +41,9 @@ namespace libraryObjects {
 			return []() { return new Object<Obj>(); };
 		}
 
-		static QMap<QString, LibraryObject::Functions> functions()
+		static QPair<QString, LibraryObject::FunctionDrag> functionDrag()
 		{
-			QMap<QString, LibraryObject::Functions> functions;
-
-			return functions;
+			return QPair<QString, LibraryObject::FunctionDrag>();
 		}
 
 	private:

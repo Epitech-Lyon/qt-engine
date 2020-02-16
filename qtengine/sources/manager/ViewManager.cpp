@@ -21,6 +21,7 @@
 
 qtengine::ViewManager::ViewManager()
 	: _viewObject(nullptr)
+	, _currentObject(nullptr)
 {
 }
 

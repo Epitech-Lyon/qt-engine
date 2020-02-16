@@ -19,12 +19,15 @@ namespace libraryObjects {
 	class LibraryObject {
 	public:
 		typedef std::function<AObject *()> Constructor;
-		typedef std::function<AObject* (AObject*, LibraryObject *, int)> FunctionAdd;
-		typedef std::function<void (AObject*, AObject*)> FunctionRemove;
-		typedef QPair<FunctionAdd, FunctionRemove> Functions;
+
+		typedef std::function<AObject* (AObject*, int, LibraryObject *)> FunctionDrag;
+
+//		typedef std::function<void (AObject *)> FunctionMenuAdd;
+//		typedef std::function<void (AObject*)> FunctionMenuRemove;
+//		typedef QPair<FunctionAdd, FunctionRemove> FunctionsMenu;
 
 	public:
-		LibraryObject(const QString &classHierarchy, const QIcon &icon, Constructor constructor, const QMap<QString, Functions> &functions);
+		LibraryObject(const QString &classHierarchy, const QIcon &icon, Constructor constructor, const QPair<QString, FunctionDrag> &functionDrag);
 		~LibraryObject() = default;
 
 		QString classHierarchy() const { return _classHierarchy; }
@@ -33,16 +36,14 @@ namespace libraryObjects {
 
 		AObject *constructor() const { return _constructor(); }
 
-		AObject *functionAdd(AObject *parent, LibraryObject *child, int position) const;
-		void functionRemove(AObject *parent, AObject *child) const;
+		bool canCallFunctionDrag(LibraryObject *child) const;
+		AObject *functionDrag(AObject *parent, int position, LibraryObject *child) const;
 
 	private:
-		Functions function(const QString &childClassHierarchy) const;
-
 		QString _classHierarchy;
 		QString _className;
 		QIcon _icon;
 		Constructor _constructor;
-		QMap<QString, Functions> _functions;
+		QPair<QString, FunctionDrag> _functionDrag;
 	};
 }
