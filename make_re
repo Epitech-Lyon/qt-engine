@@ -6,3 +6,5 @@ conan remote add --force public-conan https://api.bintray.com/conan/bincrafters/
 
 rm -rf build
 mkdir build && cd build && conan install .. --build=missing -s compiler.libcxx=libstdc++11 && cmake .. -G "Unix Makefiles" && cmake --build .
+
+# find . -name "*.*pp" | egrep -v "build" | wc -l

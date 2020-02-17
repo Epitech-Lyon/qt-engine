@@ -14,6 +14,7 @@ libraryObjects::AObject::AObject(QObject *object, const QString &classHierarchy)
 	: _object(object)
 	, _classHierarchy(classHierarchy)
 	, _className(classHierarchy.split("::").last())
+	, _parent(nullptr)
 {
 	initProperties(object->metaObject());
 }
@@ -23,7 +24,7 @@ libraryObjects::AObject::~AObject()
 	for (auto child : children())
 		delete child;
 	if (_parent)
-		_parent->removeChild(this);
+		_parent->_children.removeAll(this);
 	delete _object;
 }
 

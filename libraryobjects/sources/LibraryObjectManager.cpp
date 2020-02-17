@@ -10,22 +10,34 @@
 #include "EWidget.hpp"
 #include "ELabel.hpp"
 #include "ELCDNumber.hpp"
+#include "ESplitter.hpp"
+#include "EStackedWidget.hpp"
+#include "EToolBox.hpp"
 #include "EPlainTextEdit.hpp"
-#include "ETextEdit.hpp"
 #include "EScrollArea.hpp"
+#include "ETextEdit.hpp"
 
 #include "EVBoxLayout.hpp"
 #include "EHBoxLayout.hpp"
 
 libraryObjects::LibraryObjectManager::LibraryObjectManager()
 {
+	// QObject
 	registerObject<EWidget>();
+
+	// QObject::QWidget::QFrame
 	registerObject<ELabel>();
 	registerObject<ELCDNumber>();
+	registerObject<ESplitter>();
+	registerObject<EStackedWidget>();
+	registerObject<EToolBox>();
+
+	// QObject::QWidget::QFrame::QAbstractScrollArea
 	registerObject<EPlainTextEdit>();
 	registerObject<ETextEdit>();
 	registerObject<EScrollArea>();
 
+	// QObject::QLayout::QBoxLayout
 	registerObject<EVBoxLayout>();
 	registerObject<EHBoxLayout>();
 }
