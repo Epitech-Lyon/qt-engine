@@ -15,7 +15,7 @@ template<> libraryObjects::LibraryFunction *libraryObjects::ELayout::libraryFunc
 	return EObject::libraryFunction();
 }
 
-bool libraryObjects::removeWidget(AObject *parent, AObject *child)
+bool libraryObjects::Layout::removeWidget(AObject *parent, AObject *child)
 {
 	auto layout = dynamic_cast<QLayout*>(parent->object());
 	if (!layout) { return false; }
@@ -30,7 +30,7 @@ bool libraryObjects::removeWidget(AObject *parent, AObject *child)
 	return true;
 }
 
-bool libraryObjects::removeLayout(AObject *parent, AObject *child)
+bool libraryObjects::Layout::removeLayout(AObject *parent, AObject *child)
 {
 	auto layout = dynamic_cast<QLayout*>(parent->object());
 	if (!layout) { return false; }

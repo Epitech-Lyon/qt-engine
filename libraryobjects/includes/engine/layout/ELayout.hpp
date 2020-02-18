@@ -13,7 +13,9 @@
 namespace libraryObjects {
 	typedef Object<QLayout> ELayout;
 
-	bool removeWidget(AObject *parent, AObject *child);
+	namespace Layout {
+		bool removeWidget(AObject *parent, AObject *child);
 
-	bool removeLayout(AObject *parent, AObject *child);
+		bool removeLayout(AObject *parent, AObject *child);
+	}
 }

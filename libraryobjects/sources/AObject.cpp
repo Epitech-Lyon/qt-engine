@@ -47,7 +47,7 @@ QJsonObject libraryObjects::AObject::serializeProperties() const
 void libraryObjects::AObject::deserializeProperties(const QJsonObject &json)
 {
 	for (auto key : json.keys()) {
-		auto value = QVariantConverter::deserialize(QVariant::nameToType(key.toStdString().c_str()), json[key]);
+		auto value = QVariantConverter::deserialize(json[key]);
 
 		if (!value.isNull())
 			setPropertyValue(key, value);

@@ -159,18 +159,24 @@ void qtengine::ContentPanelViewExplorer::onOpenMenuFor(libraryObjects::AObject *
 				};
 				menu.addAction(functionDrag.functionRemoveName, callback);
 			}
+
+			auto functionsMenuChildren = libraryObjectParent->libraryFunction()->functionsMenuChildren();
+			if (!menu.isEmpty() && !functionsMenuChildren.isEmpty())
+				menu.addSeparator();
+			for (auto functionMenuChildren : functionsMenuChildren)
+				if (functionMenuChildren.isValid)
+					menu.addAction(functionMenuChildren.functionName, std::bind(functionMenuChildren.function, object));
 		}
 	}
 
 	auto libraryObject = libraryObjects::LibraryObjectManager::instance()->libraryObjectOf(object->classHierarchy());
 	if (libraryObject) {
-		auto functionsMenu = libraryObject->libraryFunction()->functionsMenu();
-
-		if (!menu.isEmpty() && !functionsMenu.isEmpty())
+		auto functionsMenuParent = libraryObject->libraryFunction()->functionsMenuParent();
+		if (!menu.isEmpty() && !functionsMenuParent.isEmpty())
 			menu.addSeparator();
-		for (auto functionMenu : functionsMenu)
-			if (functionMenu.isValid)
-				menu.addAction(functionMenu.functionName, std::bind(functionMenu.function, object));
+		for (auto functionMenuParent : functionsMenuParent)
+			if (functionMenuParent.isValid)
+				menu.addAction(functionMenuParent.functionName, std::bind(functionMenuParent.function, object));
 	}
 	if (!menu.isEmpty())
 		menu.exec(pos);

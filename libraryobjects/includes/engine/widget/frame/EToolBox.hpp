@@ -16,5 +16,10 @@ namespace libraryObjects {
 	namespace ToolBox {
 		bool insertItem(AObject *parent, int index, AObject *child);
 		bool removeItem(AObject *parent, AObject *child);
+
+		void setText(AObject *object);
+		void setToolTip(AObject *object);
+		void setIcon(AObject *object);
+		void setEnable(AObject *object);
 	}
 }

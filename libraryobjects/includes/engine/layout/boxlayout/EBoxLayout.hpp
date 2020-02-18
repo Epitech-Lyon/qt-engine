@@ -13,7 +13,9 @@
 namespace libraryObjects {
 	typedef Object<QBoxLayout> EBoxLayout;
 
-	bool insertWidget(AObject *parent, int index, AObject *child);
+	namespace BoxLayout {
+		bool insertWidget(AObject *parent, int index, AObject *child);
 
-	bool insertLayout(AObject *parent, int index, AObject *child);
+		bool insertLayout(AObject *parent, int index, AObject *child);
+	}
 }

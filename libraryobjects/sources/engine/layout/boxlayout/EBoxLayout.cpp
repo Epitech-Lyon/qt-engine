@@ -17,12 +17,12 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EBoxLayout::libraryF
 {
 	auto libraryFunction = ELayout::libraryFunction();
 
-	libraryFunction->addFunctionDrag(Object<QWidget>::classHierarchy(), LibraryFunction::FunctionDrag("insertWidget", insertWidget, "removeWidget", removeWidget));
-	libraryFunction->addFunctionDrag(Object<QLayout>::classHierarchy(), LibraryFunction::FunctionDrag("insertLayout", insertLayout, "removeLayout", removeLayout));
+	libraryFunction->addFunctionDrag(Object<QWidget>::classHierarchy(), LibraryFunction::FunctionDrag("insertWidget", BoxLayout::insertWidget, "removeWidget", Layout::removeWidget));
+	libraryFunction->addFunctionDrag(Object<QLayout>::classHierarchy(), LibraryFunction::FunctionDrag("insertLayout", BoxLayout::insertLayout, "removeLayout", Layout::removeLayout));
 	return libraryFunction;
 }
 
-bool libraryObjects::insertWidget(AObject *parent, int index, AObject *child)
+bool libraryObjects::BoxLayout::insertWidget(AObject *parent, int index, AObject *child)
 {
 	auto boxLayout = dynamic_cast<QBoxLayout*>(parent->object());
 	if (!boxLayout) { return false; }
@@ -35,7 +35,7 @@ bool libraryObjects::insertWidget(AObject *parent, int index, AObject *child)
 	return true;
 }
 
-bool libraryObjects::insertLayout(AObject *parent, int index, AObject *child)
+bool libraryObjects::BoxLayout::insertLayout(AObject *parent, int index, AObject *child)
 {
 	auto boxLayout = dynamic_cast<QBoxLayout*>(parent->object());
 	if (!boxLayout) { return false; }
