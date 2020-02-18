@@ -23,6 +23,15 @@ namespace libraryObjects {
 
 		~Object() = default;
 
+		QJsonObject serializeData() const
+		{
+			return QJsonObject();
+		}
+
+		void deserializeData(const QJsonObject &)
+		{
+		}
+
 		static QString classHierarchy()
 		{
 			auto metaObjectBegin = Obj::staticMetaObject;

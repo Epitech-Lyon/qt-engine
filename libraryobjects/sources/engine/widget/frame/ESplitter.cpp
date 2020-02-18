@@ -11,6 +11,27 @@
 #include "LibraryFunction.hpp"
 
 #include <QtWidgets/QWidget>
+#include <QtCore/QJsonArray>
+
+template<> QJsonObject libraryObjects::ESplitter::serializeData() const
+{
+	QJsonArray jsonSizes;
+	for (auto size : dynamic_cast<QSplitter*>(object())->sizes())
+		jsonSizes.append(size);
+
+	QJsonObject json;
+	json["Sizes"] = jsonSizes;
+	return json;
+}
+
+template<> void libraryObjects::ESplitter::deserializeData(const QJsonObject &json)
+{
+	QList<int> sizes;
+	for (auto sizeRef : json["Sizes"].toArray())
+		sizes << sizeRef.toInt();
+
+	dynamic_cast<QSplitter*>(object())->setSizes(sizes);
+}
 
 template<> QIcon libraryObjects::ESplitter::icon()
 {

@@ -12,6 +12,43 @@
 
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QInputDialog>
+#include <QtCore/QJsonArray>
+
+template<> QJsonObject libraryObjects::EToolBox::serializeData() const
+{
+	auto toolBox = dynamic_cast<QToolBox*>(object());
+
+	QJsonArray jsonItems;
+	for (int i = 0; i < toolBox->count(); i += 1) {
+		QJsonObject jsonItemsObj;
+
+// TODO		jsonItemsObj["Icon"] = toolBox->itemIcon(i);
+		jsonItemsObj["Text"] = toolBox->itemText(i);
+		jsonItemsObj["ToolTip"] = toolBox->itemToolTip(i);
+		jsonItemsObj["IsEnabled"] = toolBox->isItemEnabled(i);
+		jsonItems.append(jsonItemsObj);
+	}
+
+	QJsonObject json;
+	json["Items"] = jsonItems;
+	return json;
+}
+
+template<> void libraryObjects::EToolBox::deserializeData(const QJsonObject &json)
+{
+	auto toolBox = dynamic_cast<QToolBox*>(object());
+	int index = 0;
+
+	for (auto jsonItemsObjRef : json["Items"].toArray()) {
+		QJsonObject jsonItemsObj = jsonItemsObjRef.toObject();
+
+// TODO		toolBox->setItemIcon(index, jsonItemsObj["Icon"].toString());
+		toolBox->setItemText(index, jsonItemsObj["Text"].toString());
+		toolBox->setItemToolTip(index, jsonItemsObj["ToolTip"].toString());
+		toolBox->setItemEnabled(index, jsonItemsObj["IsEnabled"].toBool());
+		index += 1;
+	}
+}
 
 template<> QIcon libraryObjects::EToolBox::icon()
 {
@@ -26,6 +63,10 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EToolBox::libraryFun
 	return libraryFunction;
 }
 
+//	bool ok = false;
+//	auto title = QInputDialog::getText(nullptr, "insert Item", "Please enter the title of the item", QLineEdit::Normal, "", &ok);
+//	if (!ok || title.isEmpty()) { return false; }
+
 bool libraryObjects::ToolBox::insertItem(AObject *parent, int index, AObject *child)
 {
 	auto toolBox = dynamic_cast<QToolBox*>(parent->object());
@@ -36,11 +77,7 @@ bool libraryObjects::ToolBox::insertItem(AObject *parent, int index, AObject *ch
 
 	if (toolBox->indexOf(widget) != -1) { return false; }
 
-	bool ok = false;
-	auto title = QInputDialog::getText(nullptr, "insert Item", "Please enter the title of the item", QLineEdit::Normal, "", &ok);
-	if (!ok || title.isEmpty()) { return false; }
-
-	toolBox->insertItem(index, widget, title);
+	toolBox->insertItem(index, widget, "title");
 	parent->insertChild(index, child);
 	return true;
 }

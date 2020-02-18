@@ -28,7 +28,7 @@ libraryObjects::AObject::~AObject()
 	delete _object;
 }
 
-QJsonObject libraryObjects::AObject::serialize() const
+QJsonObject libraryObjects::AObject::serializeProperties() const
 {
 	QJsonObject json;
 
@@ -44,7 +44,7 @@ QJsonObject libraryObjects::AObject::serialize() const
 	return json;
 }
 
-void libraryObjects::AObject::deserialize(const QJsonObject &json)
+void libraryObjects::AObject::deserializeProperties(const QJsonObject &json)
 {
 	for (auto key : json.keys()) {
 		auto value = QVariantConverter::deserialize(QVariant::nameToType(key.toStdString().c_str()), json[key]);
@@ -52,6 +52,15 @@ void libraryObjects::AObject::deserialize(const QJsonObject &json)
 		if (!value.isNull())
 			setPropertyValue(key, value);
 	}
+}
+
+QJsonObject libraryObjects::AObject::serializeData() const
+{
+	return QJsonObject();
+}
+
+void libraryObjects::AObject::deserializeData(const QJsonObject &)
+{
 }
 
 void libraryObjects::AObject::initProperties(const QMetaObject *metaObject)

@@ -22,7 +22,8 @@ QJsonObject libraryObjects::ViewConverter::serialize(AObject *object)
 
 	QJsonObject jsonData;
 	jsonData["Children"] = childJsonArray;
-	jsonData["Properties"] = object->serialize();
+	jsonData["Properties"] = object->serializeProperties();
+	jsonData["Data"] = object->serializeData();
 
 	QJsonObject json;
 	json[object->className()] = jsonData;
@@ -44,7 +45,6 @@ libraryObjects::AObject *libraryObjects::ViewConverter::deserialize(const QJsonO
 	auto jsonData = json[className].toObject();
 	int index = 0;
 
-	object->deserialize(jsonData["Properties"].toObject());
 	for (auto childRef : jsonData["Children"].toArray()) {
 		auto child = deserialize(childRef.toObject());
 
@@ -55,5 +55,7 @@ libraryObjects::AObject *libraryObjects::ViewConverter::deserialize(const QJsonO
 				index += 1;
 		}
 	}
+	object->deserializeData(jsonData["Data"].toObject());
+	object->deserializeProperties(jsonData["Properties"].toObject());
 	return object;
 }
