@@ -72,6 +72,7 @@ void libraryObjects::AObject::initProperties(const QMetaObject *metaObject)
 void libraryObjects::AObject::setPropertyValue(const QString &propertyName, const QVariant &propertyValue)
 {
 	_object->setProperty(propertyName.toStdString().c_str(), propertyValue);
+	emit propertyUpdated(propertyName, propertyValue);
 }
 
 void libraryObjects::AObject::insertChild(int index, AObject *child)

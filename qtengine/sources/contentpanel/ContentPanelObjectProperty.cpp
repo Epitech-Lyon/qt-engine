@@ -117,7 +117,9 @@ void qtengine::ContentPanelObjectProperty::refreshObject()
 void qtengine::ContentPanelObjectProperty::onValueChanged(QtProperty *property, const QVariant &value)
 {
 	if (_init) { return; }
+	_init = true;
 	_currentObject->setPropertyValue(property->propertyName().toStdString().c_str(), value);
+	_init = false;
 }
 
 void qtengine::ContentPanelObjectProperty::onPropertyUpdated(const QString &propertyName, const QVariant &propertyValue)

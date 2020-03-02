@@ -128,6 +128,9 @@ void qtengine::ContentPanelProjectExplorer::onDeleteFile()
 {
 	auto index = _treeView->currentIndex();
 
-	if (index.isValid())
+	if (index.isValid()) {
 		_fsModel->remove(index);
+		_treeView->setCurrentIndex(QModelIndex());
+		Manager::instance()->viewManager()->closeView();
+	}
 }

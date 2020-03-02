@@ -28,6 +28,9 @@ namespace qtengine {
 		QTreeWidgetItem *createItemFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, bool recursively = true, int index = -1);
 		void removeItemFor(libraryObjects::AObject *object);
 
+	public slots:
+		void setCurrentItemFor(libraryObjects::AObject *object);
+
 	signals:
 		void objectClicked(libraryObjects::AObject *object);
 		void openMenuFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, const QPoint &pos);

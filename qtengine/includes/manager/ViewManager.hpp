@@ -27,6 +27,7 @@ namespace qtengine {
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &json) override;
 
+		void closeView();
 		void openView(const QString &viewPath);
 
 		QString viewExtension() const { return _viewExt; }

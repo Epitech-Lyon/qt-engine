@@ -71,6 +71,12 @@ QTreeWidgetItem *qtengine::TreeViewExplorer::createItemFor(libraryObjects::AObje
 	return createItemFor(object, _objects.key(parent), recursively, index);
 }
 
+void qtengine::TreeViewExplorer::setCurrentItemFor(libraryObjects::AObject *object)
+{
+	if (!object) { return; }
+	setCurrentItem(_objects.key(object));
+}
+
 void qtengine::TreeViewExplorer::removeItemFor(libraryObjects::AObject *object)
 {
 	if (!object) { return; }
@@ -137,6 +143,7 @@ void qtengine::ContentPanelViewExplorer::init()
 
 	onViewObjectChanged(Manager::instance()->viewManager()->viewObject());
 	connect(Manager::instance()->viewManager(), &ViewManager::viewObjectChanged, this, &ContentPanelViewExplorer::onViewObjectChanged);
+	connect(Manager::instance()->viewManager(), &ViewManager::currentObjectChanged, _tree, &TreeViewExplorer::setCurrentItemFor);
 
 	connect(_tree, &TreeViewExplorer::objectClicked, Manager::instance()->viewManager(), &ViewManager::setCurrentObject);
 	connect(_tree, &TreeViewExplorer::openMenuFor, this, &ContentPanelViewExplorer::onOpenMenuFor);
