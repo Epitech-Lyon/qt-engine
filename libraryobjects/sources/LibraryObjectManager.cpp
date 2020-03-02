@@ -7,6 +7,8 @@
 
 #include "LibraryObjectManager.hpp"
 
+#include "EFileSystemModel.hpp"
+
 #include "EWidget.hpp"
 #include "ELabel.hpp"
 #include "ELCDNumber.hpp"
@@ -16,6 +18,9 @@
 #include "EPlainTextEdit.hpp"
 #include "EScrollArea.hpp"
 #include "ETextEdit.hpp"
+#include "EListView.hpp"
+#include "ETreeView.hpp"
+#include "ETableView.hpp"
 
 #include "EVBoxLayout.hpp"
 #include "EHBoxLayout.hpp"
@@ -24,6 +29,9 @@ libraryObjects::LibraryObjectManager::LibraryObjectManager()
 {
 	// QObject
 	registerObject<EWidget>();
+
+	// QObject::QAbstractItemModel
+	registerObject<EFileSystemModel>();
 
 	// QObject::QWidget::QFrame
 	registerObject<ELabel>();
@@ -36,6 +44,15 @@ libraryObjects::LibraryObjectManager::LibraryObjectManager()
 	registerObject<EPlainTextEdit>();
 	registerObject<ETextEdit>();
 	registerObject<EScrollArea>();
+
+	// QObject::QWidget::QFrame::QAbstractScrollArea::QAbstractItemView::QListView
+	registerObject<EListView>();
+
+	// QObject::QWidget::QFrame::QAbstractScrollArea::QAbstractItemView::QTreeView
+	registerObject<ETreeView>();
+
+	// QObject::QWidget::QFrame::QAbstractScrollArea::QAbstractItemView::QTableView
+	registerObject<ETableView>();
 
 	// QObject::QLayout::QBoxLayout
 	registerObject<EVBoxLayout>();

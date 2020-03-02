@@ -16,13 +16,16 @@
 
 QJsonObject libraryObjects::ViewConverter::serialize(AObject *object)
 {
+	auto libraryObject = LibraryObjectManager::instance()->libraryObjectOf(object->classHierarchy());
+	if (!libraryObject) { return QJsonObject(); }
+
 	QJsonArray childJsonArray;
 	for (auto child : object->children())
 		childJsonArray << serialize(child);
 
 	QJsonObject jsonData;
 	jsonData["Children"] = childJsonArray;
-	jsonData["Data"] = object->serializeData();
+	jsonData["Data"] = libraryObject->serializeData(object);
 	jsonData["Properties"] = object->serializeProperties();
 
 	QJsonObject json;
@@ -30,32 +33,35 @@ QJsonObject libraryObjects::ViewConverter::serialize(AObject *object)
 	return json;
 }
 
-libraryObjects::AObject *libraryObjects::ViewConverter::deserialize(const QJsonObject &json)
+libraryObjects::AObject *libraryObjects::ViewConverter::deserialize(const QJsonObject &json, bool isRoot)
 {
-	if (json.keys().size() == 0) { return nullptr; }
+	if (json.keys().isEmpty()) { return nullptr; }
 
-	auto libraryObjectmanager = LibraryObjectManager::instance();
 	auto className = json.keys().front();
-	auto libraryObject = libraryObjectmanager->libraryObjectOfClassName(className);
-	if (!libraryObject) { return nullptr; }
-
-	auto object = libraryObject->constructor();
+	auto libraryObject = LibraryObjectManager::instance()->libraryObjectOfClassName(className);
+	auto object = libraryObject ? libraryObject->constructor() : nullptr;
 	if (!object) { return nullptr; }
 
 	auto jsonData = json[className].toObject();
 	int index = 0;
 
 	for (auto childRef : jsonData["Children"].toArray()) {
-		auto child = deserialize(childRef.toObject());
+		auto child = deserialize(childRef.toObject(), false);
 
 		if (child) {
 			auto function = libraryObject->libraryFunction()->functionDragFor(child->classHierarchy());
 
 			if (function.isValid && function.functionAdd(object, index, child))
 				index += 1;
+			_objectData[child]();
+			_objectProperties[child]();
 		}
 	}
-	object->deserializeData(jsonData["Data"].toObject());
-	object->deserializeProperties(jsonData["Properties"].toObject());
+	_objectData[object] = std::bind(&LibraryObject::deserializeData, libraryObject, jsonData["Data"].toObject(), object);
+	_objectProperties[object] = std::bind(&AObject::deserializeProperties, object, jsonData["Properties"].toObject());
+	if (isRoot) {
+		_objectData[object]();
+		_objectProperties[object]();
+	}
 	return object;
 }

@@ -8,6 +8,11 @@
 #include "EVBoxLayout.hpp"
 #include "EBoxLayout.hpp"
 
+template<> void libraryObjects::EVBoxLayout::init(AObject *object)
+{
+	EBoxLayout::init(object);
+}
+
 template<> QIcon libraryObjects::EVBoxLayout::icon()
 {
 	return QIcon();

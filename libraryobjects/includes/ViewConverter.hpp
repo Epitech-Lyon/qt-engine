@@ -8,17 +8,22 @@
 #pragma once
 
 #include <QtCore/QJsonObject>
+#include <QtCore/QMap>
+#include <functional>
 
 namespace libraryObjects {
 	class AObject;
 
 	class ViewConverter {
 	public:
-		static QJsonObject serialize(AObject *object);
-		static AObject *deserialize(const QJsonObject &json);
-
-	private:
 		ViewConverter() = default;
 		~ViewConverter() = default;
+
+		QJsonObject serialize(AObject *object);
+		AObject *deserialize(const QJsonObject &json, bool isRoot = true);
+
+	private:
+		QMap<AObject*, std::function<void ()>> _objectData;
+		QMap<AObject*, std::function<void ()>> _objectProperties;
 	};
 }

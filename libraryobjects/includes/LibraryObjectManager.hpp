@@ -26,9 +26,9 @@ namespace libraryObjects {
 		LibraryObjectManager();
 		template <typename Object> void registerObject()
 		{
-			auto constructor = []() { return new Object(); };
+			auto constructor = []() { auto object = new Object(); Object::init(object); return object; };
 
-			_libraryObjects << new LibraryObject(constructor, Object::classHierarchy(), Object::icon(), Object::libraryFunction());
+			_libraryObjects << new LibraryObject(constructor, Object::serializeData, Object::deserializeData, Object::classHierarchy(), Object::icon(), Object::libraryFunction());
 		}
 
 		QList<LibraryObject *> _libraryObjects;

@@ -5,6 +5,7 @@
 ** AObject
 */
 
+#include "moc_AObject.cpp"
 #include "AObject.hpp"
 
 #include "QVariantConverter.hpp"
@@ -52,15 +53,6 @@ void libraryObjects::AObject::deserializeProperties(const QJsonObject &json)
 		if (!value.isNull())
 			setPropertyValue(key, value);
 	}
-}
-
-QJsonObject libraryObjects::AObject::serializeData() const
-{
-	return QJsonObject();
-}
-
-void libraryObjects::AObject::deserializeData(const QJsonObject &)
-{
 }
 
 void libraryObjects::AObject::initProperties(const QMetaObject *metaObject)

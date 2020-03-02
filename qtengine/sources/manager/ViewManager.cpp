@@ -58,7 +58,7 @@ void qtengine::ViewManager::openView(const QString &viewPath)
 		json = QJsonDocument::fromJson(file.readAll()).object();
 		file.close();
 	}
-	_viewObject = libraryObjects::ViewConverter::deserialize(json);
+	_viewObject = libraryObjects::ViewConverter().deserialize(json);
 
 	emit viewPathChanged(_viewPath);
 	emit viewNameChanged(_viewName);
@@ -87,7 +87,7 @@ void qtengine::ViewManager::onSaveView()
 	QFileInfo fileInfo(_viewPath);
 	if (_viewPath.isEmpty() || !fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
 
-	QJsonObject json = libraryObjects::ViewConverter::serialize(_viewObject);
+	QJsonObject json = libraryObjects::ViewConverter().serialize(_viewObject);
 	QFile file(_viewPath);
 	if (file.open(QIODevice::WriteOnly)) {
 		file.write(QJsonDocument(json).toJson());

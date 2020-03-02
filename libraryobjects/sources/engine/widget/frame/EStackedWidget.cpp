@@ -6,11 +6,17 @@
 */
 
 #include "EStackedWidget.hpp"
+#include "EWidget.hpp"
 #include "EObject.hpp"
 
 #include "LibraryFunction.hpp"
 
 #include <QtWidgets/QWidget>
+
+template<> void libraryObjects::EStackedWidget::init(AObject *object)
+{
+	EWidget::init(object);
+}
 
 template<> QIcon libraryObjects::EStackedWidget::icon()
 {

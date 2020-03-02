@@ -27,7 +27,8 @@ namespace qtengine {
 
 	private slots:
 		void onCurrentObjectChanged(libraryObjects::AObject *object);
-		void onValueChanged(QtProperty *, const QVariant &);
+		void onValueChanged(QtProperty *property, const QVariant &value);
+		void onPropertyUpdated(const QString &propertyName, const QVariant &propertyValue);
 
 	private:
 		void initObject();

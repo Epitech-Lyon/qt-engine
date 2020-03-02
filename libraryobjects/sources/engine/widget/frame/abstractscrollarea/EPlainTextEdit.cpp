@@ -6,7 +6,15 @@
 */
 
 #include "EPlainTextEdit.hpp"
-#include "EObject.hpp"
+#include "EAbstractScrollArea.hpp"
+
+template<> void libraryObjects::EPlainTextEdit::init(AObject *object)
+{
+	auto plainText = dynamic_cast<QPlainTextEdit*>(object->object());
+
+	EAbstractScrollArea::init(object);
+	connect(plainText, &QPlainTextEdit::textChanged, [object, plainText]() { emit object->propertyUpdated("plainText", plainText->toPlainText()); });
+}
 
 template<> QIcon libraryObjects::EPlainTextEdit::icon()
 {
@@ -15,5 +23,5 @@ template<> QIcon libraryObjects::EPlainTextEdit::icon()
 
 template<> libraryObjects::LibraryFunction *libraryObjects::EPlainTextEdit::libraryFunction()
 {
-	return EObject::libraryFunction();
+	return EAbstractScrollArea::libraryFunction();
 }

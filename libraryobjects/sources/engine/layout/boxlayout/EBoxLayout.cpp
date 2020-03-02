@@ -13,6 +13,11 @@
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QLayout>
 
+template<> void libraryObjects::EBoxLayout::init(AObject *object)
+{
+	ELayout::init(object);
+}
+
 template<> libraryObjects::LibraryFunction *libraryObjects::EBoxLayout::libraryFunction()
 {
 	auto libraryFunction = ELayout::libraryFunction();

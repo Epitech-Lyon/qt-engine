@@ -43,10 +43,14 @@ void qtengine::ContentPanelObjectProperty::onCurrentObjectChanged(libraryObjects
 {
 	_init = true;
 	if (_currentObject != object) {
+		if (_currentObject)
+			disconnect(_currentObject, &libraryObjects::AObject::propertyUpdated, this, &ContentPanelObjectProperty::onPropertyUpdated);
 		_currentObject = object;
 		_propertyManager->clear();
-		if (_currentObject)
+		if (_currentObject) {
 			initObject();
+			connect(_currentObject, &libraryObjects::AObject::propertyUpdated, this, &ContentPanelObjectProperty::onPropertyUpdated);
+		}
 	} else if (_currentObject)
 		refreshObject();
 	_init = false;
@@ -76,8 +80,11 @@ void qtengine::ContentPanelObjectProperty::initObject()
 		else
 			delete propertyGroup;
 	}
-	for (auto item : _propertyEditor->topLevelItems())
+	for (auto item : _propertyEditor->topLevelItems()) {
+		for (auto subItem : item->children())
+			_propertyEditor->setExpanded(subItem, false);
 		_propertyEditor->setExpanded(item, false);
+	}
 }
 
 QtVariantProperty *qtengine::ContentPanelObjectProperty::initFlagProperty(const QString &propertyName, const QStringList &flagNames)
@@ -111,5 +118,18 @@ void qtengine::ContentPanelObjectProperty::onValueChanged(QtProperty *property, 
 {
 	if (_init) { return; }
 	_currentObject->setPropertyValue(property->propertyName().toStdString().c_str(), value);
-	Manager::instance()->viewManager()->setCurrentObject(_currentObject);
+}
+
+void qtengine::ContentPanelObjectProperty::onPropertyUpdated(const QString &propertyName, const QVariant &propertyValue)
+{
+	_init = true;
+	for (auto topLevelItem : _propertyEditor->topLevelItems())
+		for (auto item : topLevelItem->property()->subProperties())
+			if (item->propertyName() == propertyName) {
+				auto variantProperty = dynamic_cast<QtVariantProperty*>(item);
+
+				if (variantProperty)
+					variantProperty->setValue(propertyValue);
+			}
+	_init = false;
 }

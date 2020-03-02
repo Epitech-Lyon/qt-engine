@@ -6,11 +6,16 @@
 */
 
 #include "EScrollArea.hpp"
-#include "EObject.hpp"
+#include "EAbstractScrollArea.hpp"
 
 #include "LibraryFunction.hpp"
 
 #include <QtWidgets/QWidget>
+
+template<> void libraryObjects::EScrollArea::init(AObject *object)
+{
+	EAbstractScrollArea::init(object);
+}
 
 template<> QIcon libraryObjects::EScrollArea::icon()
 {
@@ -19,13 +24,13 @@ template<> QIcon libraryObjects::EScrollArea::icon()
 
 template<> libraryObjects::LibraryFunction *libraryObjects::EScrollArea::libraryFunction()
 {
-	auto libraryFunction = EObject::libraryFunction();
+	auto libraryFunction = EAbstractScrollArea::libraryFunction();
 
-	libraryFunction->addFunctionDrag(Object<QWidget>::classHierarchy(), LibraryFunction::FunctionDrag("setWidget", setWidget, "unsetWidget", unsetWidget));
+	libraryFunction->addFunctionDrag(Object<QWidget>::classHierarchy(), LibraryFunction::FunctionDrag("setWidget", ScrollArea::setWidget, "unsetWidget", ScrollArea::unsetWidget));
 	return libraryFunction;
 }
 
-bool libraryObjects::setWidget(AObject *parent, int, AObject *child)
+bool libraryObjects::ScrollArea::setWidget(AObject *parent, int, AObject *child)
 {
 	auto scrollArea = dynamic_cast<QScrollArea*>(parent->object());
 	if (!scrollArea || scrollArea->widget()) { return false; }
@@ -38,7 +43,7 @@ bool libraryObjects::setWidget(AObject *parent, int, AObject *child)
 	return true;
 }
 
-bool libraryObjects::unsetWidget(AObject *parent, AObject *child)
+bool libraryObjects::ScrollArea::unsetWidget(AObject *parent, AObject *child)
 {
 	auto scrollArea = dynamic_cast<QScrollArea*>(parent->object());
 	if (!scrollArea) { return false; }

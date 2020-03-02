@@ -15,7 +15,8 @@
 #include <QtCore/QMetaProperty>
 
 namespace libraryObjects {
-	class AObject {
+	class AObject : public QObject {
+		Q_OBJECT
 	// General management
 	public:
 		virtual ~AObject();
@@ -25,13 +26,10 @@ namespace libraryObjects {
 		QString classHierarchy() const { return _classHierarchy; }
 		QString className() const { return _className; }
 
-		void setObjectName(const QString &name) const { return _object->setObjectName(name); }
+		void setObjectName(const QString &name) const { _object->setObjectName(name); }
 
 		QJsonObject serializeProperties() const;
 		void deserializeProperties(const QJsonObject &);
-
-		virtual QJsonObject serializeData() const;
-		virtual void deserializeData(const QJsonObject &);
 
 	protected:
 		AObject(QObject *object, const QString &classHierarchy);
@@ -79,6 +77,9 @@ namespace libraryObjects {
 
 		QVariant propertyValue(const QString &propertyName) const { return _object->property(propertyName.toStdString().c_str()); }
 		void setPropertyValue(const QString &propertyName, const QVariant &propertyValue);
+
+	signals:
+		void propertyUpdated(const QString &propertyName, const QVariant &propertyValue) const;
 
 	private:
 		void initProperties(const QMetaObject *);

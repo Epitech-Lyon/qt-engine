@@ -6,20 +6,27 @@
 */
 
 #include "EToolBox.hpp"
+#include "EWidget.hpp"
 #include "EObject.hpp"
 
 #include "LibraryFunction.hpp"
 #include "QVariantConverter.hpp"
-
-#include <QtWidgets/QWidget>
-#include <QtCore/QDir>
-#include <QtWidgets/QFileDialog>
-#include <QtWidgets/QInputDialog>
 #include <QtCore/QJsonArray>
 
-template<> QJsonObject libraryObjects::EToolBox::serializeData() const
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QInputDialog>
+#include <QtCore/QDir>
+
+template<> void libraryObjects::EToolBox::init(AObject *object)
 {
-	auto toolBox = dynamic_cast<QToolBox*>(object());
+	EWidget::init(object);
+}
+
+template<> QJsonObject libraryObjects::EToolBox::serializeData(AObject *object)
+{
+	auto toolBox = dynamic_cast<QToolBox*>(object->object());
+	if (!toolBox) { return QJsonObject(); }
 
 	QJsonArray jsonItems;
 	for (int i = 0; i < toolBox->count(); i += 1) {
@@ -37,11 +44,12 @@ template<> QJsonObject libraryObjects::EToolBox::serializeData() const
 	return json;
 }
 
-template<> void libraryObjects::EToolBox::deserializeData(const QJsonObject &json)
+template<> void libraryObjects::EToolBox::deserializeData(const QJsonObject &json, AObject *object)
 {
-	auto toolBox = dynamic_cast<QToolBox*>(object());
-	int index = 0;
+	auto toolBox = dynamic_cast<QToolBox*>(object->object());
+	if (!toolBox) { return; }
 
+	int index = 0;
 	for (auto jsonItemsObjRef : json["Items"].toArray()) {
 		QJsonObject jsonItemsObj = jsonItemsObjRef.toObject();
 

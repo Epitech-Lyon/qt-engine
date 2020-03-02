@@ -10,8 +10,10 @@
 
 #include "LibraryFunction.hpp"
 
-libraryObjects::LibraryObject::LibraryObject(Constructor constructor, const QString &classHierarchy, const QIcon &icon, LibraryFunction *libraryFunction)
+libraryObjects::LibraryObject::LibraryObject(Constructor constructor, SerializeData funSerialize, DeserializeData funDeserialize, const QString &classHierarchy, const QIcon &icon, LibraryFunction *libraryFunction)
 	: _constructor(constructor)
+	, _funSerialize(funSerialize)
+	, _funDeserialize(funDeserialize)
 	, _classHierarchy(classHierarchy)
 	, _className(_classHierarchy.split("::").last())
 	, _icon(icon)

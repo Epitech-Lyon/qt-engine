@@ -23,12 +23,16 @@ namespace libraryObjects {
 
 		~Object() = default;
 
-		QJsonObject serializeData() const
+		static void init(AObject *)
+		{
+		}
+
+		static QJsonObject serializeData(AObject *)
 		{
 			return QJsonObject();
 		}
 
-		void deserializeData(const QJsonObject &)
+		static void deserializeData(const QJsonObject &, AObject *)
 		{
 		}
 
@@ -51,7 +55,5 @@ namespace libraryObjects {
 		{
 			return nullptr;
 		}
-
-	private:
 	};
 }

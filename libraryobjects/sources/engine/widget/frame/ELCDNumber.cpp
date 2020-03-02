@@ -6,7 +6,13 @@
 */
 
 #include "ELCDNumber.hpp"
+#include "EWidget.hpp"
 #include "EObject.hpp"
+
+template<> void libraryObjects::ELCDNumber::init(AObject *object)
+{
+	EWidget::init(object);
+}
 
 template<> QIcon libraryObjects::ELCDNumber::icon()
 {

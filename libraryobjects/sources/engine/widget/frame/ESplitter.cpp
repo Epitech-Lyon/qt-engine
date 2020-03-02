@@ -6,17 +6,26 @@
 */
 
 #include "ESplitter.hpp"
+#include "EWidget.hpp"
 #include "EObject.hpp"
 
 #include "LibraryFunction.hpp"
-
-#include <QtWidgets/QWidget>
 #include <QtCore/QJsonArray>
 
-template<> QJsonObject libraryObjects::ESplitter::serializeData() const
+#include <QtWidgets/QWidget>
+
+template<> void libraryObjects::ESplitter::init(AObject *object)
 {
+	EWidget::init(object);
+}
+
+template<> QJsonObject libraryObjects::ESplitter::serializeData(AObject *object)
+{
+	auto splitter = dynamic_cast<QSplitter*>(object->object());
+	if (!splitter) { return QJsonObject(); }
+
 	QJsonArray jsonSizes;
-	for (auto size : dynamic_cast<QSplitter*>(object())->sizes())
+	for (auto size : splitter->sizes())
 		jsonSizes.append(size);
 
 	QJsonObject json;
@@ -24,13 +33,16 @@ template<> QJsonObject libraryObjects::ESplitter::serializeData() const
 	return json;
 }
 
-template<> void libraryObjects::ESplitter::deserializeData(const QJsonObject &json)
+template<> void libraryObjects::ESplitter::deserializeData(const QJsonObject &json, AObject *object)
 {
+	auto splitter = dynamic_cast<QSplitter*>(object->object());
+	if (!splitter) { return; }
+
 	QList<int> sizes;
 	for (auto sizeRef : json["Sizes"].toArray())
 		sizes << sizeRef.toInt();
 
-	dynamic_cast<QSplitter*>(object())->setSizes(sizes);
+	splitter->setSizes(sizes);
 }
 
 template<> QIcon libraryObjects::ESplitter::icon()

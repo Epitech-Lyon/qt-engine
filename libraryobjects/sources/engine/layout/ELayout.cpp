@@ -10,6 +10,11 @@
 
 #include <QtWidgets/QWidget>
 
+template<> void libraryObjects::ELayout::init(AObject *object)
+{
+	EObject::init(object);
+}
+
 template<> libraryObjects::LibraryFunction *libraryObjects::ELayout::libraryFunction()
 {
 	return EObject::libraryFunction();

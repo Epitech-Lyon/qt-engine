@@ -58,6 +58,7 @@ QTreeWidgetItem *qtengine::TreeViewExplorer::createItemFor(libraryObjects::AObje
 
 	parent->insertChild(index == -1 ? parent->childCount() : index, item);
 	_objects[item] = object;
+	connect(object, &libraryObjects::AObject::propertyUpdated, this, &TreeViewExplorer::onPropertyUpdated);
 	if (recursively)
 		for (auto objectChild : object->children())
 			createItemFor(objectChild, item, true, -1);
@@ -77,6 +78,7 @@ void qtengine::TreeViewExplorer::removeItemFor(libraryObjects::AObject *object)
 
 	delete item;
 	_objects.remove(item);
+	disconnect(object, &libraryObjects::AObject::propertyUpdated, this, &TreeViewExplorer::onPropertyUpdated);
 }
 
 void qtengine::TreeViewExplorer::dragMoveEvent(QDragMoveEvent *event)
@@ -114,6 +116,12 @@ bool qtengine::TreeViewExplorer::dropMimeData(QTreeWidgetItem *parent, int index
 
 	emit libraryObjectDropped(_objects[parent], index, libraryObjectMimeData->libraryObject());
 	return false;
+}
+
+void qtengine::TreeViewExplorer::onPropertyUpdated(const QString &propertyName, const QVariant &propertyValue)
+{
+	if (propertyName == "objectName")
+		_objects.key(dynamic_cast<libraryObjects::AObject*>(sender()))->setText(0, propertyValue.toString());
 }
 
 qtengine::ContentPanelViewExplorer::ContentPanelViewExplorer(QWidget *parent)

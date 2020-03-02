@@ -33,6 +33,9 @@ namespace qtengine {
 		void openMenuFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, const QPoint &pos);
 		void libraryObjectDropped(libraryObjects::AObject *parent, int index, libraryObjects::LibraryObject *libraryObject);
 
+	private slots:
+		void onPropertyUpdated(const QString &propertyName, const QVariant &propertyValue);
+
 	private:
 		void dragMoveEvent(QDragMoveEvent *event);
 		bool dropMimeData(QTreeWidgetItem *parent, int index, const QMimeData *data, Qt::DropAction action) override;

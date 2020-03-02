@@ -8,6 +8,11 @@
 #include "ELabel.hpp"
 #include "EObject.hpp"
 
+template<> void libraryObjects::ELabel::init(AObject *object)
+{
+	EObject::init(object);
+}
+
 template<> QIcon libraryObjects::ELabel::icon()
 {
 	return QIcon();

@@ -6,7 +6,19 @@
 */
 
 #include "ETextEdit.hpp"
-#include "EObject.hpp"
+#include "EAbstractScrollArea.hpp"
+
+template<> void libraryObjects::ETextEdit::init(AObject *object)
+{
+	auto text = dynamic_cast<QTextEdit*>(object->object());
+
+	EAbstractScrollArea::init(object);
+	connect(text, &QTextEdit::textChanged, [object, text]()
+	{
+		emit object->propertyUpdated("markdown", text->toMarkdown());
+		emit object->propertyUpdated("html", text->toHtml());
+	});
+}
 
 template<> QIcon libraryObjects::ETextEdit::icon()
 {
@@ -15,5 +27,5 @@ template<> QIcon libraryObjects::ETextEdit::icon()
 
 template<> libraryObjects::LibraryFunction *libraryObjects::ETextEdit::libraryFunction()
 {
-	return EObject::libraryFunction();
+	return EAbstractScrollArea::libraryFunction();
 }

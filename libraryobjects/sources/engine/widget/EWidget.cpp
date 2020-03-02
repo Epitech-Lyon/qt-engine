@@ -12,6 +12,15 @@
 
 #include <QtWidgets/QLayout>
 
+template<> void libraryObjects::EWidget::init(AObject *object)
+{
+	auto widget = dynamic_cast<QWidget*>(object->object());
+
+	EObject::init(object);
+	connect(widget, &QWidget::windowIconChanged, [object](const QIcon &icon) { emit object->propertyUpdated("windowIcon", icon); });
+	connect(widget, &QWidget::windowTitleChanged, [object](const QString &title) { emit object->propertyUpdated("windowTitle", title); });
+}
+
 template<> QIcon libraryObjects::EWidget::icon()
 {
 	return QIcon();
@@ -21,11 +30,11 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EWidget::libraryFunc
 {
 	auto libraryFunction = EObject::libraryFunction();
 
-	libraryFunction->addFunctionDrag(Object<QLayout>::classHierarchy(), LibraryFunction::FunctionDrag("setLayout", setLayout, "unsetLayout", unsetLayout));
+	libraryFunction->addFunctionDrag(Object<QLayout>::classHierarchy(), LibraryFunction::FunctionDrag("setLayout", Widget::setLayout, "unsetLayout", Widget::unsetLayout));
 	return libraryFunction;
 }
 
-bool libraryObjects::setLayout(AObject *parent, int, AObject *child)
+bool libraryObjects::Widget::setLayout(AObject *parent, int, AObject *child)
 {
 	auto widget = dynamic_cast<QWidget*>(parent->object());
 	if (!widget || widget->layout()) { return false; }
@@ -38,7 +47,7 @@ bool libraryObjects::setLayout(AObject *parent, int, AObject *child)
 	return true;
 }
 
-bool libraryObjects::unsetLayout(AObject *parent, AObject *child)
+bool libraryObjects::Widget::unsetLayout(AObject *parent, AObject *child)
 {
 	auto widget = dynamic_cast<QWidget*>(parent->object());
 	if (!widget || widget->layout()) { return false; }
