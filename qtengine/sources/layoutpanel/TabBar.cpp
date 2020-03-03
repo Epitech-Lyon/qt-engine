@@ -10,7 +10,9 @@
 #include "TabGhost.hpp"
 #include "TabWidget.hpp"
 #include "LayoutPanelTabber.hpp"
+
 #include <QtGui/QMouseEvent>
+#include <QtWidgets/QApplication>
 
 qtengine::TabBar::TabBar(QWidget *parent)
 	: QTabBar(parent)

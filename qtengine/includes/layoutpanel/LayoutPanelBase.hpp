@@ -7,7 +7,8 @@
 
 #pragma once
 
-#include <QtWidgets/QtWidgets>
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QVBoxLayout>
 #include "ISerializable.hpp"
 
 namespace qtengine {
