@@ -30,8 +30,12 @@ void qtengine::ContentPanelView::init()
 void qtengine::ContentPanelView::onViewObjectChanged(libraryObjects::AObject *object)
 {
 	clear();
-	if (object)
-		_mainLayout->addWidget(dynamic_cast<QWidget*>(object->object()));
+	if (object) {
+		if (object->object()->inherits("QWidget"))
+			_mainLayout->addWidget(dynamic_cast<QWidget*>(object->object()));
+		else if (object->object()->inherits("QLayout"))
+			_mainLayout->addLayout(dynamic_cast<QLayout*>(object->object()));
+	}
 }
 
 void qtengine::ContentPanelView::clear()

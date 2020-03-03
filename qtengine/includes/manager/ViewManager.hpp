@@ -29,6 +29,7 @@ namespace qtengine {
 
 		void closeView();
 		void openView(const QString &viewPath);
+		bool createView(libraryObjects::AObject *viewObject);
 
 		QString viewExtension() const { return _viewExt; }
 
