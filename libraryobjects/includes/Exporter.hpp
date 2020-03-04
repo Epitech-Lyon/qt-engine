@@ -7,24 +7,21 @@
 
 #pragma once
 
-#include <QtCore/QObject>
+#include <QtCore/QThread>
 #include <QtCore/QString>
 
 namespace libraryObjects {
-	class Exporter : public QObject {
+	class Exporter : public QThread {
 		Q_OBJECT
 
 	public:
 		Exporter(const QString &exportedDirPath, bool generateMain, const QStringList &views);
 		~Exporter();
 
-		QStringList views() const { return _views; }
-
-		void exportProject();
+		void run() override;
 
 	signals:
 		void currentViewExportedChanged(int index);
-		void finished();
 
 	private:
 		QString _exportedDirPath;

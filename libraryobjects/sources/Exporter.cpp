@@ -21,8 +21,11 @@ libraryObjects::Exporter::~Exporter()
 {
 }
 
-void libraryObjects::Exporter::exportProject()
+void libraryObjects::Exporter::run()
 {
 	qDebug() << "Export" << _views << "to" << _exportedDirPath << (_generateMain ? "with main" : "without main");
-	emit finished();
+	for (int i = 0; i < _views.count(); i += 1) {
+		emit currentViewExportedChanged(i);
+		sleep(1);
+	}
 }

@@ -11,11 +11,12 @@
 #include "Manager.hpp"
 #include "ViewManager.hpp"
 #include "MainWindow.hpp"
-#include "DialogExport.hpp"
+#include "DialogExportSettings.hpp"
 #include "Exporter.hpp"
 
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QProgressDialog>
 #include <QtCore/QDebug>
 
 QJsonObject qtengine::ProjectManager::serialize() const
@@ -95,13 +96,30 @@ void qtengine::ProjectManager::onOpenProject()
 
 void qtengine::ProjectManager::onExportProject()
 {
-//	DialogExport dialog;
-//
-//	if (dialog.exec() == QDialog::Accepted) {
-		auto views = QDir(_projectDir + "/views/", "*" + Manager::instance()->viewManager()->viewExtension()).entryList(QDir::Files);
-		auto exporter = new libraryObjects::Exporter(_projectDir + "/build", false, views);
+	DialogExportSettings dialog(_projectDir + "/build", Manager::instance()->mainWindow());
 
-		connect(exporter, &libraryObjects::Exporter::finished, exporter, &QObject::deleteLater);
-		exporter->exportProject();
-//	}
+	if (dialog.exec() == QDialog::Accepted) {
+		QStringList views;
+		auto viewsInfo = QDir(_projectDir + "/views/", "*" + Manager::instance()->viewManager()->viewExtension()).entryInfoList(QDir::Files);
+		for (auto viewInfo : viewsInfo)
+			views << viewInfo.absoluteFilePath();
+
+		auto exporter = new libraryObjects::Exporter(dialog.outputPath(), dialog.generateMain(), views);
+
+		if (dialog.displayProgress()) {
+			auto progressDialog = new QProgressDialog(Manager::instance()->mainWindow());
+			connect(exporter, &libraryObjects::Exporter::currentViewExportedChanged, [progressDialog, viewsInfo](int index) {
+				progressDialog->setLabelText("Export " + viewsInfo[index].completeBaseName());
+			});
+			connect(exporter, &libraryObjects::Exporter::currentViewExportedChanged, progressDialog, &QProgressDialog::setValue);
+			connect(exporter, &QThread::finished, progressDialog, &QWidget::close);
+			progressDialog->setAttribute(Qt::WA_DeleteOnClose);
+			progressDialog->setCancelButton(nullptr);
+			progressDialog->setMaximum(views.size());
+			progressDialog->show();
+		}
+
+		connect(exporter, &QThread::finished, exporter, &QObject::deleteLater);
+		exporter->start();
+	}
 }
