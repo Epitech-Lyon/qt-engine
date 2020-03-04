@@ -15,7 +15,7 @@ namespace qtengine {
 		Q_OBJECT
 
 	public:
-		DialogWorkflowAdd(QWidget * = nullptr);
+		DialogWorkflowAdd(QWidget *parent = nullptr);
 		~DialogWorkflowAdd() = default;
 
 		Types::Access access() const { return _access; }
@@ -23,7 +23,7 @@ namespace qtengine {
 		QString name() const { return _name; }
 
 	private:
-        QWidget *initBody();
+		QWidget *initBody();
 		Types::Access _access;
 		Types::Type _type;
 		QString _name;

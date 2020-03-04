@@ -14,6 +14,7 @@
 #include "Manager.hpp"
 #include "ViewManager.hpp"
 #include "AObject.hpp"
+#include "MainWindow.hpp"
 
 #include "DialogWorkflowAdd.hpp"
 
@@ -103,7 +104,7 @@ void qtengine::ContentPanelWorkflow::onViewObjectChanged(libraryObjects::AObject
 
 void qtengine::ContentPanelWorkflow::onAddClicked()
 {
-	DialogWorkflowAdd dialog;
+	DialogWorkflowAdd dialog(Manager::instance()->mainWindow());
 
 	if (dialog.exec() == QDialog::Accepted) {
 		QMap<Types::Access, ListWidget*> listList = {

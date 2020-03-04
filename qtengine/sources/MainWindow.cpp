@@ -30,18 +30,6 @@ qtengine::MainWindow::MainWindow(Manager *manager)
 
 	initMenuBar();
 	initInterface();
-
-//	auto widget = new QWidget();
-//	auto layout = new QVBoxLayout(widget);
-//	layout->addWidget(new QPushButton());
-//	widget->setLayout(layout);
-//
-//	QFile file("test.json");
-//	if (file.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-//		file.write(QJsonDocument(ViewConverter(widget).serialize()).toJson());
-//		file.close();
-//	}
-//	delete widget;
 }
 
 qtengine::MainWindow::~MainWindow()
@@ -63,6 +51,8 @@ void qtengine::MainWindow::initMenuBar()
 	menuFile->addAction("Save view", viewManager, &ViewManager::onSaveView, QKeySequence::Save);
 	menuFile->addAction("Save view as", viewManager, &ViewManager::onSaveViewAs, QKeySequence::SaveAs);
 	menuFile->addSeparator();
+	menuFile->addAction("Export project", projectManager, &ProjectManager::onExportProject, QKeySequence("Ctrl+E"));
+	menuFile->addSeparator();
 	menuFile->addAction("Exit", this, &QMainWindow::close, QKeySequence::Quit);
 
 	auto initMenuFileRecents = [projectManager, menuFileRecents](const QStringList &recentsProject) {
@@ -74,7 +64,7 @@ void qtengine::MainWindow::initMenuBar()
 	initMenuFileRecents(projectManager->recentsProject());
 
 	auto menuSettings = menuBar()->addMenu("Settings");
-	menuSettings->addAction("Theme", _manager, &Manager::onTheme);
+	menuSettings->addAction("Theme", _manager, &Manager::onSettingsTheme);
 
 	auto menuLayouts = new QMenu(this);
 	auto initMenuLayout = [menuLayouts, layoutManager](const QStringList &keys) {

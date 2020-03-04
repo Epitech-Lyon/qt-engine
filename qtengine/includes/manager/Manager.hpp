@@ -35,9 +35,9 @@ namespace qtengine {
 		LayoutManager *_layoutManager;
 		MainWindow *_mainWindow;
 
-	// Theme
+	// Settings Theme
 	public slots:
-		void onTheme();
+		void onSettingsTheme();
 	
 	private:
 		QString _theme;

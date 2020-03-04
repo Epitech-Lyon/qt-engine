@@ -39,6 +39,7 @@ namespace qtengine {
 	public slots:
 		void onNewProject();
 		void onOpenProject();
+		void onExportProject();
 
 	private:
 		const QString _projectExt = ".prj";

@@ -9,7 +9,11 @@
 #include "ProjectManager.hpp"
 
 #include "Manager.hpp"
+#include "ViewManager.hpp"
 #include "MainWindow.hpp"
+#include "DialogExport.hpp"
+#include "Exporter.hpp"
+
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtCore/QDebug>
@@ -58,7 +62,6 @@ void qtengine::ProjectManager::openProject(const QString &projectPath)
 	emit recentProjectsChanged(_recentsProject);
 }
 
-#include <QtCore/QDebug>
 void qtengine::ProjectManager::onNewProject()
 {
 	QFileDialog dialog(Manager::instance()->mainWindow(), "New project", QDir::homePath(), "Project (*" + _projectExt + ")");
@@ -88,4 +91,17 @@ void qtengine::ProjectManager::onNewProject()
 void qtengine::ProjectManager::onOpenProject()
 {
 	openProject(QFileDialog::getOpenFileName(Manager::instance()->mainWindow(), "Open project", QDir::homePath(), "Project (*" + _projectExt + ")"));
+}
+
+void qtengine::ProjectManager::onExportProject()
+{
+//	DialogExport dialog;
+//
+//	if (dialog.exec() == QDialog::Accepted) {
+		auto views = QDir(_projectDir + "/views/", "*" + Manager::instance()->viewManager()->viewExtension()).entryList(QDir::Files);
+		auto exporter = new libraryObjects::Exporter(_projectDir + "/build", false, views);
+
+		connect(exporter, &libraryObjects::Exporter::finished, exporter, &QObject::deleteLater);
+		exporter->exportProject();
+//	}
 }

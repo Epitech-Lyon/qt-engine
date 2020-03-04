@@ -16,7 +16,7 @@
 namespace qtengine {
 	class DialogBase : public QDialog {
 	public:
-		DialogBase(QWidget * = nullptr);
+		DialogBase(QWidget *parent = nullptr);
 		~DialogBase() = default;
 
 	protected:

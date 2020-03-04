@@ -71,7 +71,7 @@ void qtengine::Manager::save()
 	}
 }
 
-void qtengine::Manager::onTheme()
+void qtengine::Manager::onSettingsTheme()
 {
 	BoxTheme boxTheme(_mainWindow);
 	
