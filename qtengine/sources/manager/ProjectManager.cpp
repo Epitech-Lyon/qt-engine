@@ -113,6 +113,7 @@ void qtengine::ProjectManager::onExportProject()
 			});
 			connect(exporter, &libraryObjects::Exporter::currentViewExportedChanged, progressDialog, &QProgressDialog::setValue);
 			connect(exporter, &QThread::finished, progressDialog, &QWidget::close);
+			progressDialog->setWindowFlags(Qt::Window);
 			progressDialog->setAttribute(Qt::WA_DeleteOnClose);
 			progressDialog->setCancelButton(nullptr);
 			progressDialog->setMaximum(views.size());

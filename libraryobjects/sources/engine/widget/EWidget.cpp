@@ -50,12 +50,11 @@ bool libraryObjects::Widget::setLayout(AObject *parent, int, AObject *child)
 bool libraryObjects::Widget::unsetLayout(AObject *parent, AObject *child)
 {
 	auto widget = dynamic_cast<QWidget*>(parent->object());
-	if (!widget || widget->layout()) { return false; }
+	if (!widget) { return false; }
 
 	auto layout = dynamic_cast<QLayout*>(child->object());
 	if (!layout) { return false; }
 
-	widget->setLayout(nullptr);
 	parent->removeChild(child);
 	return true;
 }

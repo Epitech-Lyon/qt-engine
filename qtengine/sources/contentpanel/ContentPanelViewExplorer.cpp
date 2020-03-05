@@ -169,6 +169,7 @@ void qtengine::ContentPanelViewExplorer::onOpenMenuFor(libraryObjects::AObject *
 				auto callback = [&, this]() {
 					if (functionDrag.functionRemove(parent, object)) {
 						_tree->removeItemFor(object);
+						Manager::instance()->viewManager()->setCurrentObject(parent);
 						delete object;
 					}
 				};

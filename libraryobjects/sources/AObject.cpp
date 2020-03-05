@@ -95,5 +95,4 @@ void libraryObjects::AObject::removeChild(AObject *child)
 
 	_children.removeAll(child);
 	child->_parent = nullptr;
-	child->object()->setParent(nullptr);
 }

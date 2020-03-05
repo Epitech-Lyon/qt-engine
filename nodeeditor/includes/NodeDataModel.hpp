@@ -60,8 +60,8 @@ namespace QtNodes {
 		virtual bool portCaptionVisible(PortType, PortIndex) const { return false; }
 
 		/// Triggers the algorithm
-		virtual void setInData(std::shared_ptr<NodeData> nodeData, PortIndex port) = 0;
-		virtual std::shared_ptr<NodeData> outData(PortIndex port) = 0;
+		virtual void setInData(std::shared_ptr<NodeData>, PortIndex) {}
+		virtual std::shared_ptr<NodeData> outData(PortIndex) { return std::shared_ptr<NodeData>(); }
 
 		virtual unsigned int nPorts(PortType portType) const = 0;
 		virtual NodeDataType dataType(PortType portType, PortIndex portIndex) const = 0;

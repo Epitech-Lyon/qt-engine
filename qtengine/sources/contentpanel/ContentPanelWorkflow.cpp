@@ -10,17 +10,17 @@
 
 #include "FlowView.hpp"
 #include "FlowScene.hpp"
+#include "Function.hpp"
 
 #include "Manager.hpp"
 #include "ViewManager.hpp"
 #include "AObject.hpp"
 #include "MainWindow.hpp"
 
-#include "DialogWorkflowAdd.hpp"
-
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QSpacerItem>
 #include <QtCore/QDebug>
 
 qtengine::ListWidget::ListWidget(QWidget *parent)
@@ -28,22 +28,6 @@ qtengine::ListWidget::ListWidget(QWidget *parent)
 {
 	viewport()->setAutoFillBackground(false);
 	setFrameShape(QFrame::NoFrame);
-}
-
-void qtengine::ListWidget::addFunction(const QString &name)
-{
-	auto widget = new QLabel("Function " + name, this);
-
-	addItem("");
-	setItemWidget(item(count() - 1), widget);
-}
-
-void qtengine::ListWidget::addVariable(const QString &name)
-{
-	auto widget = new QLabel("Variable " + name, this);
-
-	addItem("");
-	setItemWidget(item(count() - 1), widget);
 }
 
 qtengine::ContentPanelWorkflow::ContentPanelWorkflow(QWidget *parent)
@@ -62,30 +46,34 @@ void qtengine::ContentPanelWorkflow::init()
 	menuLayout->setSpacing(16);
 	menuWidget->setLayout(menuLayout);
 
-	auto createMenuFor = [this, menuLayout](const QString &lblText) {
+	auto createMenuFor = [menuLayout](const QString &objectName, std::function<void (void)> onAdd) {
 		auto widget = new QWidget(menuLayout->parentWidget());
+		widget->setLayout(new QVBoxLayout(widget));
+		widget->layout()->setMargin(0);
 		menuLayout->addWidget(widget);
 
-		auto label = new QLabel(lblText, widget);
-		label->setAlignment(Qt::AlignCenter);
+		auto btnAdd = new QPushButton("+");
+		btnAdd->setFixedSize(btnAdd->minimumSizeHint());
+		connect(btnAdd, &QPushButton::clicked, onAdd);
+
+		auto toolbar = new QWidget(widget);
+		auto toolbarLayout = new QHBoxLayout(toolbar);
+		toolbar->setLayout(toolbarLayout);
+		toolbarLayout->addWidget(new QLabel(objectName, widget));
+		toolbarLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
+		toolbarLayout->addWidget(btnAdd);
+		widget->layout()->addWidget(toolbar);
 
 		auto list = new ListWidget(widget);
-
-		auto layout = new QVBoxLayout(widget);
-		layout->setMargin(0);
-		layout->addWidget(label);
-		layout->addWidget(list);
-
+		list->setObjectName(objectName);
+		widget->layout()->addWidget(list);
 		return list;
 	};
 
-	_listPublic = createMenuFor("Public");
-	_listProtected = createMenuFor("Protected");
-	_listPrivate = createMenuFor("Private");
-
-	auto btnAdd = new QPushButton("Add", menuWidget);
-	connect(btnAdd, &QPushButton::clicked, this, &ContentPanelWorkflow::onAddClicked);
-	menuLayout->addWidget(btnAdd);
+	_listFunction = createMenuFor("Function", std::bind(&ContentPanelWorkflow::onAddFunction, this));
+	_listSignal = createMenuFor("Signal", std::bind(&ContentPanelWorkflow::onAddSignal, this));
+	_listSlot = createMenuFor("Slot", std::bind(&ContentPanelWorkflow::onAddSlot, this));
+	_listVariable = createMenuFor("Variable", std::bind(&ContentPanelWorkflow::onAddVariable, this));
 
 	_scene = new QtNodes::FlowScene();
 	_view = new QtNodes::FlowView(_scene, splitter);
@@ -98,23 +86,47 @@ void qtengine::ContentPanelWorkflow::init()
 	connect(Manager::instance()->viewManager(), &ViewManager::viewObjectChanged, this, &ContentPanelWorkflow::onViewObjectChanged);
 }
 
-void qtengine::ContentPanelWorkflow::onViewObjectChanged(libraryObjects::AObject *)
+std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistry(const QMetaObject *metaObject, QMetaMethod::Access minimumAccess)
+{
+	auto registry = metaObject->superClass() ? generateRegistry(metaObject->superClass(), minimumAccess) : std::make_shared<QtNodes::DataModelRegistry>();
+	QMap<QMetaMethod::MethodType, QString> typeToString = {
+		{ QMetaMethod::Method, "Method" },
+		{ QMetaMethod::Signal, "Signal" },
+		{ QMetaMethod::Slot, "Slot" }};
+
+	for (int idx = metaObject->methodOffset(); idx < metaObject->methodCount(); idx += 1) {
+		auto metaMethod = metaObject->method(idx);
+
+		if (metaMethod.access() >= minimumAccess && typeToString.contains(metaMethod.methodType()))
+			registry->registerModel<Function>(typeToString[metaMethod.methodType()], [=]() { return std::unique_ptr<Function>(new Function(metaMethod)); });
+	}
+	return registry;
+}
+
+void qtengine::ContentPanelWorkflow::onViewObjectChanged(libraryObjects::AObject *viewObject)
+{
+	_listFunction->clear();
+	_listSignal->clear();
+	_listSlot->clear();
+	_listVariable->clear();
+	if (!viewObject) { return; }
+	_viewRegistry = generateRegistry(viewObject->object()->metaObject(), QMetaMethod::Protected);
+
+	_scene->setRegistry(_viewRegistry);
+}
+
+void qtengine::ContentPanelWorkflow::onAddFunction()
 {
 }
 
-void qtengine::ContentPanelWorkflow::onAddClicked()
+void qtengine::ContentPanelWorkflow::onAddSignal()
 {
-	DialogWorkflowAdd dialog(Manager::instance()->mainWindow());
+}
 
-	if (dialog.exec() == QDialog::Accepted) {
-		QMap<Types::Access, ListWidget*> listList = {
-			{ Types::Public, _listPublic },
-			{ Types::Protected, _listProtected },
-			{ Types::Private, _listPrivate }};
-		QMap<Types::Type, void (ListWidget::*)(const QString &)> listFunctions = {
-			{ Types::Function, &ListWidget::addFunction },
-			{ Types::Variable, &ListWidget::addVariable }};
+void qtengine::ContentPanelWorkflow::onAddSlot()
+{
+}
 
-		(listList[dialog.access()]->*listFunctions[dialog.type()])(dialog.name());
-	}
+void qtengine::ContentPanelWorkflow::onAddVariable()
+{
 }

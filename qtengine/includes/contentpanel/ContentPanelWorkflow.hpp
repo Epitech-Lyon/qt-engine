@@ -10,11 +10,14 @@
 #include "ContentPanelBase.hpp"
 
 #include <QtWidgets/QListWidget>
+#include <QtCore/QMetaObject>
+#include <QtCore/QMetaMethod>
 
 namespace QtNodes {
 	class FlowView;
 	class FlowScene;
-};
+	class DataModelRegistry;
+}
 
 namespace libraryObjects {
 	class AObject;
@@ -27,9 +30,6 @@ namespace qtengine {
 	public:
 		ListWidget(QWidget *parent = nullptr);
 		~ListWidget() = default;
-
-		void addFunction(const QString &name);
-		void addVariable(const QString &name);
 
 	private:
 	};
@@ -45,13 +45,31 @@ namespace qtengine {
 
 	private slots:
 		void onViewObjectChanged(libraryObjects::AObject *viewObject);
-		void onAddClicked();
+		void onAddFunction();
+		void onAddSignal();
+		void onAddSlot();
+		void onAddVariable();
 
 	private:
+		typedef struct DataFunction {
+		} DataFunction;
+
+		typedef struct DataVariable {
+		} DataVariable;
+
+		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistry(const QMetaObject *metaObject, QMetaMethod::Access minimumAccess);
+
 		QtNodes::FlowView *_view;
 		QtNodes::FlowScene *_scene;
-		ListWidget *_listPublic;
-		ListWidget *_listProtected;
-		ListWidget *_listPrivate;
+		std::shared_ptr<QtNodes::DataModelRegistry> _viewRegistry;
+
+		ListWidget *_listFunction;
+		QList<DataFunction> _functions;
+		ListWidget *_listSignal;
+		QList<DataFunction> _signals;
+		ListWidget *_listSlot;
+		QList<DataFunction> _slots;
+		ListWidget *_listVariable;
+		QList<DataVariable> _variables;
 	};
 }

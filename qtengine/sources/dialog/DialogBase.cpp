@@ -12,6 +12,7 @@ qtengine::DialogBase::DialogBase(QWidget *parent)
 	: QDialog(parent)
 {
 	_mainLayout = new QVBoxLayout(this);
+	_mainLayout->setSizeConstraint(QLayout::SetFixedSize);
 	setLayout(_mainLayout);
 
 	_mainLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
