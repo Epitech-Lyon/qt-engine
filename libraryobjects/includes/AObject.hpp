@@ -26,7 +26,7 @@ namespace libraryObjects {
 		QString classHierarchy() const { return _classHierarchy; }
 		QString className() const { return _className; }
 
-		void setObjectName(const QString &name) const { _object->setObjectName(name); }
+		void setObjectName(const QString &objectName) { setPropertyValue("objectName", objectName); }
 
 		QJsonObject serializeProperties() const;
 		void deserializeProperties(const QJsonObject &);

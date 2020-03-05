@@ -62,7 +62,7 @@ void qtengine::ViewManager::openView(const QString &viewPath)
 	QFileInfo fileInfo(viewPath);
 	if (viewPath.isEmpty() || !fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
 
-	auto oldViewObject = _viewObject;
+	closeView();
 
 	_viewPath = fileInfo.filePath();
 	_viewName = fileInfo.baseName();
@@ -79,14 +79,14 @@ void qtengine::ViewManager::openView(const QString &viewPath)
 	emit viewNameChanged(_viewName);
 	emit viewObjectChanged(_viewObject);
 	setCurrentObject(_viewObject);
-
-	delete oldViewObject;
 }
 
 void qtengine::ViewManager::onCreateView(const QString &viewPath)
 {
 	QFileInfo fileInfo(viewPath);
 	if (viewPath.isEmpty() || !fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
+
+	closeView();
 
 	_viewPath = fileInfo.filePath();
 	_viewName = fileInfo.baseName();

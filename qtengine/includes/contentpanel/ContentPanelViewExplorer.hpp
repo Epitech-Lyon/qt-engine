@@ -43,6 +43,7 @@ namespace qtengine {
 		void dragMoveEvent(QDragMoveEvent *event);
 		bool dropMimeData(QTreeWidgetItem *parent, int index, const QMimeData *data, Qt::DropAction action) override;
 		QMap<QTreeWidgetItem *, libraryObjects::AObject *> _objects;
+		QTreeWidgetItem *_itemEditorOpened;
 	};
 
 	class ContentPanelViewExplorer : public ContentPanelBase {

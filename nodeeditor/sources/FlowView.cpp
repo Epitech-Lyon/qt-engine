@@ -86,12 +86,8 @@ void FlowView::setScene(FlowScene *scene)
 	addAction(_deleteSelectionAction);
 }
 
-void FlowView::contextMenuEvent(QContextMenuEvent *event)
+void FlowView::openMenu(const QPoint &pos)
 {
-	if (itemAt(event->pos())) {
-		QGraphicsView::contextMenuEvent(event);
-		return;
-	}
 	QMenu modelMenu;
 
 	auto skipText = QStringLiteral("skip me");
@@ -142,14 +138,12 @@ void FlowView::contextMenuEvent(QContextMenuEvent *event)
 
 		if (type) {
 			auto &node = _scene->createNode(std::move(type));
-			QPoint pos = event->pos();
 			QPointF posView = this->mapToScene(pos);
 
 			node.nodeGraphicsObject().setPos(posView);
 			_scene->nodePlaced(node);
-		}
-		else
-			qDebug() << "Model not found";
+		} else
+			qWarning() << "Model not found:" << modelName;
 		modelMenu.close();
 	});
 
@@ -167,7 +161,16 @@ void FlowView::contextMenuEvent(QContextMenuEvent *event)
 	});
 	// make sure the text box gets focus so the user doesn't have to click on it
 	txtBox->setFocus();
-	modelMenu.exec(event->globalPos());
+	modelMenu.exec(mapToGlobal(pos));
+}
+
+void FlowView::contextMenuEvent(QContextMenuEvent *event)
+{
+	if (itemAt(event->pos())) {
+		QGraphicsView::contextMenuEvent(event);
+		return;
+	}
+	openMenu(event->pos());
 }
 
 void FlowView::wheelEvent(QWheelEvent *event)

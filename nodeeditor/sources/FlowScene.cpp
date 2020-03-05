@@ -50,8 +50,7 @@ FlowScene::FlowScene(std::shared_ptr<DataModelRegistry> registry, QObject *paren
 }
 
 FlowScene::FlowScene(QObject * parent)
-	: FlowScene(std::make_shared<DataModelRegistry>()
-	, parent)
+	: FlowScene(std::make_shared<DataModelRegistry>(), parent)
 {
 }
 

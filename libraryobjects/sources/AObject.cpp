@@ -8,6 +8,8 @@
 #include "moc_AObject.cpp"
 #include "AObject.hpp"
 
+#include "ObjectManager.hpp"
+
 #include "QVariantConverter.hpp"
 #include <QtCore/QDebug>
 
@@ -18,6 +20,7 @@ libraryObjects::AObject::AObject(QObject *object, const QString &classHierarchy)
 	, _parent(nullptr)
 {
 	initProperties(object->metaObject());
+	ObjectManager::instance()->registerObject(this);
 }
 
 libraryObjects::AObject::~AObject()
@@ -27,6 +30,7 @@ libraryObjects::AObject::~AObject()
 	if (_parent)
 		_parent->_children.removeAll(this);
 	delete _object;
+	ObjectManager::instance()->unregisterObject(this);
 }
 
 QJsonObject libraryObjects::AObject::serializeProperties() const
@@ -71,8 +75,10 @@ void libraryObjects::AObject::initProperties(const QMetaObject *metaObject)
 
 void libraryObjects::AObject::setPropertyValue(const QString &propertyName, const QVariant &propertyValue)
 {
-	_object->setProperty(propertyName.toStdString().c_str(), propertyValue);
-	emit propertyUpdated(propertyName, propertyValue);
+	if (this->propertyValue(propertyName) != propertyValue) {
+		_object->setProperty(propertyName.toStdString().c_str(), propertyValue);
+		emit propertyUpdated(propertyName, propertyValue);
+	}
 }
 
 void libraryObjects::AObject::insertChild(int index, AObject *child)

@@ -8,6 +8,7 @@
 #pragma once
 
 #include "ContentPanelBase.hpp"
+#include "FlowScene.hpp"
 
 #include <QtWidgets/QListWidget>
 #include <QtCore/QMetaObject>
@@ -32,6 +33,19 @@ namespace qtengine {
 		~ListWidget() = default;
 
 	private:
+	};
+
+	class FlowScene : public QtNodes::FlowScene {
+		Q_OBJECT
+
+	public:
+		FlowScene(QObject *parent = nullptr);
+		~FlowScene() = default;
+
+	private:
+		void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
+		void dragMoveEvent(QGraphicsSceneDragDropEvent *event);
+		void dropEvent(QGraphicsSceneDragDropEvent *event);
 	};
 
 	class ContentPanelWorkflow : public ContentPanelBase {
@@ -60,7 +74,7 @@ namespace qtengine {
 		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistry(const QMetaObject *metaObject, QMetaMethod::Access minimumAccess);
 
 		QtNodes::FlowView *_view;
-		QtNodes::FlowScene *_scene;
+		FlowScene *_scene;
 		std::shared_ptr<QtNodes::DataModelRegistry> _viewRegistry;
 
 		ListWidget *_listFunction;

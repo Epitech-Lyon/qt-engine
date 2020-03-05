@@ -21,6 +21,7 @@
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QGraphicsSceneDragDropEvent>
 #include <QtCore/QDebug>
 
 qtengine::ListWidget::ListWidget(QWidget *parent)
@@ -28,6 +29,30 @@ qtengine::ListWidget::ListWidget(QWidget *parent)
 {
 	viewport()->setAutoFillBackground(false);
 	setFrameShape(QFrame::NoFrame);
+}
+
+qtengine::FlowScene::FlowScene(QObject *parent)
+	: QtNodes::FlowScene(parent)
+{
+}
+
+void qtengine::FlowScene::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
+{
+	QtNodes::FlowScene::dragEnterEvent(event);
+	qDebug() << event->mimeData();
+}
+
+#include "LibraryObjectMimeData.hpp"
+void qtengine::FlowScene::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
+{
+//	QtNodes::FlowScene::dragMoveEvent(event);
+	qDebug() << event->mimeData() << dynamic_cast<const libraryObjects::LibraryObjectMimeData*>(event->mimeData());
+	event->accept();
+}
+
+void qtengine::FlowScene::dropEvent(QGraphicsSceneDragDropEvent *event)
+{
+	QtNodes::FlowScene::dropEvent(event);
 }
 
 qtengine::ContentPanelWorkflow::ContentPanelWorkflow(QWidget *parent)
@@ -46,7 +71,7 @@ void qtengine::ContentPanelWorkflow::init()
 	menuLayout->setSpacing(16);
 	menuWidget->setLayout(menuLayout);
 
-	auto createMenuFor = [menuLayout](const QString &objectName, std::function<void (void)> onAdd) {
+	auto createMenuFor = [menuLayout](const QString &lblText, std::function<void (void)> onAdd) {
 		auto widget = new QWidget(menuLayout->parentWidget());
 		widget->setLayout(new QVBoxLayout(widget));
 		widget->layout()->setMargin(0);
@@ -59,13 +84,12 @@ void qtengine::ContentPanelWorkflow::init()
 		auto toolbar = new QWidget(widget);
 		auto toolbarLayout = new QHBoxLayout(toolbar);
 		toolbar->setLayout(toolbarLayout);
-		toolbarLayout->addWidget(new QLabel(objectName, widget));
+		toolbarLayout->addWidget(new QLabel(lblText, widget));
 		toolbarLayout->addSpacerItem(new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding));
 		toolbarLayout->addWidget(btnAdd);
 		widget->layout()->addWidget(toolbar);
 
 		auto list = new ListWidget(widget);
-		list->setObjectName(objectName);
 		widget->layout()->addWidget(list);
 		return list;
 	};
@@ -75,7 +99,7 @@ void qtengine::ContentPanelWorkflow::init()
 	_listSlot = createMenuFor("Slot", std::bind(&ContentPanelWorkflow::onAddSlot, this));
 	_listVariable = createMenuFor("Variable", std::bind(&ContentPanelWorkflow::onAddVariable, this));
 
-	_scene = new QtNodes::FlowScene();
+	_scene = new FlowScene(this);
 	_view = new QtNodes::FlowView(_scene, splitter);
 
 	splitter->addWidget(menuWidget);

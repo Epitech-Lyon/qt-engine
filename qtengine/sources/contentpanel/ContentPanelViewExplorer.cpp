@@ -22,6 +22,7 @@
 
 qtengine::TreeViewExplorer::TreeViewExplorer(QWidget *parent)
 	: QTreeWidget(parent)
+	, _itemEditorOpened(nullptr)
 {
 	setRootIsDecorated(true);
 	setAnimated(true);
@@ -30,17 +31,28 @@ qtengine::TreeViewExplorer::TreeViewExplorer(QWidget *parent)
 	setHeaderLabels({"Object name", "Class"});
 	setContextMenuPolicy(Qt::CustomContextMenu);
 
-	connect(this, &QTreeWidget::itemClicked, [this](QTreeWidgetItem *item, int) { emit objectClicked(_objects[item]); });
+	connect(this, &QTreeWidget::itemClicked, [this](QTreeWidgetItem *item, int) {
+		if (item != _itemEditorOpened) {
+			closePersistentEditor(_itemEditorOpened, 0);
+			_itemEditorOpened = nullptr;
+		}
+		emit objectClicked(_objects[item]);
+	});
 	connect(this, &QTreeWidget::itemDoubleClicked, [this](QTreeWidgetItem *item, int column)
 	{
-		if (column == 0)
+		if (column == 0) {
+			_itemEditorOpened = item;
 			openPersistentEditor(item, 0);
+		}
 	});
 	connect(this, &QTreeWidget::itemChanged, [this](QTreeWidgetItem *item, int)
 	{
-		closePersistentEditor(item, 0);
-		_objects[item]->setObjectName(item->text(0));
-		emit objectClicked(_objects[item]);
+		if (isPersistentEditorOpen(item, 0)) {
+			closePersistentEditor(item, 0);
+			_itemEditorOpened = nullptr;
+			_objects[item]->setObjectName(item->text(0));
+			item->setText(0, _objects[item]->objectName());
+		}
 	});
 	connect(this, &QTreeWidget::customContextMenuRequested, [this](const QPoint &pos) {
 		auto objectItem = itemAt(pos);
