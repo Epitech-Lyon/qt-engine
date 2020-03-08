@@ -10,7 +10,8 @@
 
 #include "FlowView.hpp"
 #include "FlowScene.hpp"
-#include "Function.hpp"
+#include "Method.hpp"
+#include "Property.hpp"
 
 #include "Manager.hpp"
 #include "ViewManager.hpp"
@@ -94,10 +95,10 @@ void qtengine::ContentPanelWorkflow::init()
 		return list;
 	};
 
-	_listFunction = createMenuFor("Function", std::bind(&ContentPanelWorkflow::onAddFunction, this));
+	_listMethod = createMenuFor("Method", std::bind(&ContentPanelWorkflow::onAddMethod, this));
 	_listSignal = createMenuFor("Signal", std::bind(&ContentPanelWorkflow::onAddSignal, this));
 	_listSlot = createMenuFor("Slot", std::bind(&ContentPanelWorkflow::onAddSlot, this));
-	_listVariable = createMenuFor("Variable", std::bind(&ContentPanelWorkflow::onAddVariable, this));
+	_listProperty = createMenuFor("Property", std::bind(&ContentPanelWorkflow::onAddProperty, this));
 
 	_scene = new FlowScene(this);
 	_view = new QtNodes::FlowView(_scene, splitter);
@@ -112,34 +113,40 @@ void qtengine::ContentPanelWorkflow::init()
 
 std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistry(const QMetaObject *metaObject, QMetaMethod::Access minimumAccess)
 {
-	auto registry = metaObject->superClass() ? generateRegistry(metaObject->superClass(), minimumAccess) : std::make_shared<QtNodes::DataModelRegistry>();
+	auto registry = std::make_shared<QtNodes::DataModelRegistry>();
 	QMap<QMetaMethod::MethodType, QString> typeToString = {
 		{ QMetaMethod::Method, "Method" },
 		{ QMetaMethod::Signal, "Signal" },
 		{ QMetaMethod::Slot, "Slot" }};
 
-	for (int idx = metaObject->methodOffset(); idx < metaObject->methodCount(); idx += 1) {
+	for (int idx = 0; idx < metaObject->methodCount(); idx += 1) {
 		auto metaMethod = metaObject->method(idx);
 
 		if (metaMethod.access() >= minimumAccess && typeToString.contains(metaMethod.methodType()))
-			registry->registerModel<Function>(typeToString[metaMethod.methodType()], [=]() { return std::unique_ptr<Function>(new Function(metaMethod)); });
+			registry->registerModel<Method>(typeToString[metaMethod.methodType()], [=]() { return std::unique_ptr<Method>(new Method(metaMethod)); });
+	}
+	for (int idx = 0; idx < metaObject->propertyCount(); idx += 1) {
+		auto metaProperty = metaObject->property(idx);
+
+		registry->registerModel<Property>("Property", [=]() { return std::unique_ptr<Property>(new Property(metaProperty)); });
 	}
 	return registry;
 }
 
 void qtengine::ContentPanelWorkflow::onViewObjectChanged(libraryObjects::AObject *viewObject)
 {
-	_listFunction->clear();
+	_listMethod->clear();
 	_listSignal->clear();
 	_listSlot->clear();
-	_listVariable->clear();
+	_listProperty->clear();
+	_scene->clearScene();
 	if (!viewObject) { return; }
 	_viewRegistry = generateRegistry(viewObject->object()->metaObject(), QMetaMethod::Protected);
 
 	_scene->setRegistry(_viewRegistry);
 }
 
-void qtengine::ContentPanelWorkflow::onAddFunction()
+void qtengine::ContentPanelWorkflow::onAddMethod()
 {
 }
 
@@ -151,6 +158,6 @@ void qtengine::ContentPanelWorkflow::onAddSlot()
 {
 }
 
-void qtengine::ContentPanelWorkflow::onAddVariable()
+void qtengine::ContentPanelWorkflow::onAddProperty()
 {
 }

@@ -365,44 +365,46 @@ void FlowScene::load()
 
 QByteArray FlowScene::saveToMemory() const
 {
-	QJsonObject sceneJson;
-	QJsonArray nodesJsonArray;
+	return QJsonDocument(saveToJson()).toJson();
+}
 
-	for (auto const &pair : _nodes) {
-		auto const &node = pair.second;
+QJsonObject FlowScene::saveToJson() const
+{
+	QJsonArray jsonNodes;
+	for (const auto &pair : _nodes) {
+		const auto &node = pair.second;
 
-		nodesJsonArray.append(node->save());
+		jsonNodes.append(node->save());
 	}
 
-	sceneJson["nodes"] = nodesJsonArray;
+	QJsonArray jsonConnections;
+	for (const auto &pair : _connections) {
+		const auto &connection = pair.second;
+		QJsonObject jsonConnection = connection->save();
 
-	QJsonArray connectionJsonArray;
-	for (auto const & pair : _connections) {
-		auto const &connection = pair.second;
-		QJsonObject connectionJson = connection->save();
-
-		if (!connectionJson.isEmpty())
-			connectionJsonArray.append(connectionJson);
+		if (!jsonConnection.isEmpty())
+			jsonConnections.append(jsonConnection);
 	}
-	sceneJson["connections"] = connectionJsonArray;
 
-	return QJsonDocument(sceneJson).toJson();
+	QJsonObject json;
+	json["nodes"] = jsonNodes;
+	json["connections"] = jsonConnections;
+	return json;
 }
 
 void FlowScene::loadFromMemory(const QByteArray& data)
 {
-	QJsonObject const jsonDocument = QJsonDocument::fromJson(data).object();
-	QJsonArray nodesJsonArray = jsonDocument["nodes"].toArray();
-
-	for (QJsonValueRef node : nodesJsonArray)
-		restoreNode(node.toObject());
-
-	QJsonArray connectionJsonArray = jsonDocument["connections"].toArray();
-
-	for (QJsonValueRef connection : connectionJsonArray)
-		restoreConnection(connection.toObject());
+	loadFromJson(QJsonDocument::fromJson(data).object());
 }
 
+void FlowScene::loadFromJson(const QJsonObject &json)
+{
+	for (QJsonValueRef jsonNodeRef : json["nodes"].toArray())
+		restoreNode(jsonNodeRef.toObject());
+
+	for (QJsonValueRef jsonConnectionRef : json["connections"].toArray())
+		restoreConnection(jsonConnectionRef.toObject());
+}
 
 void FlowScene::setupConnectionSignals(Connection const &c)
 {

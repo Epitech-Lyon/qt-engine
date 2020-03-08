@@ -63,9 +63,11 @@ namespace QtNodes {
 
 		void save() const;
 		QByteArray saveToMemory() const;
+		QJsonObject saveToJson() const;
 
 		void load();
 		void loadFromMemory(const QByteArray &data);
+		void loadFromJson(const QJsonObject &json);
 
 	Q_SIGNALS:
 		/**

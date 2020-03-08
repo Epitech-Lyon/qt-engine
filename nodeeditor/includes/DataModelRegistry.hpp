@@ -4,6 +4,7 @@
 #include <memory>
 #include <functional>
 #include <unordered_map>
+#include <map>
 #include <vector>
 
 #include <QtCore/QString>
@@ -20,8 +21,8 @@ namespace QtNodes {
 	public:
 		using RegistryItemPtr = std::unique_ptr<NodeDataModel>;
 		using RegistryItemCreator = std::function<RegistryItemPtr()>;
-		using RegisteredModelCreatorsMap = std::unordered_map<QString, RegistryItemCreator>;
-		using RegisteredModelsCategoryMap = std::unordered_map<QString, QString>;
+		using RegisteredModelCreatorsMap = std::map<QString, RegistryItemCreator>;
+		using RegisteredModelsCategoryMap = std::map<QString, QString>;
 		using CategoriesSet = std::set<QString>;
 		using RegisteredTypeConvertersMap = std::map<TypeConverterId, TypeConverter>;
 

@@ -19,7 +19,6 @@
 #include <cmath>
 
 #include "FlowScene.hpp"
-#include "DataModelRegistry.hpp"
 #include "Node.hpp"
 #include "NodeGraphicsObject.hpp"
 #include "ConnectionGraphicsObject.hpp"

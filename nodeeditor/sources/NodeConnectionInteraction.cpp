@@ -3,7 +3,6 @@
 #include "ConnectionGraphicsObject.hpp"
 #include "NodeGraphicsObject.hpp"
 #include "NodeDataModel.hpp"
-#include "DataModelRegistry.hpp"
 #include "FlowScene.hpp"
 
 using QtNodes::NodeConnectionInteraction;

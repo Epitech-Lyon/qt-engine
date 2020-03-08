@@ -4,7 +4,6 @@
 #include "Connection.hpp"
 
 namespace QtNodes {
-	class DataModelRegistry;
 	class FlowScene;
 	class NodeDataModel;
 
