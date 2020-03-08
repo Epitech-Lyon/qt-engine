@@ -11,6 +11,9 @@
 
 #include <QtGui/QIcon>
 
+#define E_BEGIN_GENERATE(name, date)
+#define E_END_GENERATE
+
 namespace libraryObjects {
 	class LibraryFunction;
 

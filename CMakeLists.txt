@@ -14,6 +14,8 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt5Core CONFIG REQUIRED)
 find_package(Qt5Widgets CONFIG REQUIRED)
 
+list(GET Qt5Widgets_INCLUDE_DIRS 0 QT_INCLUDE_DIR)
+
 #========Custom macros definition==========
 macro(SUBDIRLIST result curdir)
   file(GLOB_RECURSE children ${curdir}/*)
@@ -82,6 +84,16 @@ add_library(nodeEditor SHARED ${SRCS})
 target_link_libraries(nodeEditor ${CONAN_LIBS} Qt5::Widgets Qt5::Core)
 target_include_directories(nodeEditor PRIVATE ${INCS})
 target_compile_options(nodeEditor PRIVATE -Werror -Wall -Wextra)
+
+#=======EngineGenerate=======
+INC_AND_SRC(INCS SRCS "enginegenerate")
+add_executable(engineGenerate ${SRCS})
+target_link_libraries(engineGenerate ${CONAN_LIBS} Qt5::Core)
+target_include_directories(engineGenerate PRIVATE ${INCS})
+target_compile_options(engineGenerate PRIVATE -Werror -Wall -Wextra -g3)
+add_custom_command(TARGET engineGenerate POST_BUILD
+  COMMAND $<TARGET_FILE:engineGenerate> ${QT_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}/libraryobjects/includes/engine/"
+  )
 
 #=======LibraryObjects=======
 INC_AND_SRC(INCS SRCS "libraryobjects")

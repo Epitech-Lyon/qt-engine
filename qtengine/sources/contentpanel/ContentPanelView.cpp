@@ -46,5 +46,7 @@ void qtengine::ContentPanelView::clear()
 		_mainLayout->removeItem(item);
 		if (item->widget())
 			item->widget()->setParent(nullptr);
+		else if (item->layout())
+			item->layout()->setParent(nullptr);
 	}
 }
