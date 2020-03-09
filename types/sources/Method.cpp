@@ -27,7 +27,7 @@ types::Method::Method(const QMetaMethod &metaMethod)
 	, _isConst(false)
 {
 	for (auto parameterName : metaMethod.parameterNames())
-		addParameter(_parameters.size(), static_cast<QMetaType::Type>(metaMethod.parameterType(_parameters.size())), parameterName);
+		addParameter(static_cast<QMetaType::Type>(metaMethod.parameterType(_parameters.size())), parameterName);
 }
 
 types::Method::Method(const Method &method)
@@ -83,26 +83,74 @@ void types::Method::deserialize(const QJsonObject &json)
 	for (auto jsonParameterRef : json["parameters"].toArray()) {
 		auto jsonParameter = jsonParameterRef.toObject();
 
-		addParameter(_parameters.size(), static_cast<QMetaType::Type>(jsonParameter["type"].toInt()), jsonParameter["name"].toString());
+		addParameter(static_cast<QMetaType::Type>(jsonParameter["type"].toInt()), jsonParameter["name"].toString());
 	}
 	_isConst = json["isConst"].toBool();
 }
 
-bool types::Method::addParameter(int index, QMetaType::Type parameterType, const QString &parameterName)
+bool types::Method::isValid() const
 {
-	QPair<QMetaType::Type, QString> parameter(parameterType, parameterName);
-	if (_parameters.contains(parameter) || index < 0 || index > _parameters.size()) { return false; }
+	if (_name.isEmpty()) { return false; }
+	if (_isStatic && _isConst) { return false; }
 
-	_parameters.append(parameter);
+	QStringList parametersName;
+	for (auto &parameter : _parameters) {
+		if (parameter.second.isEmpty() || parametersName.contains(parameter.second)) { return false; }
+
+		parametersName.append(parameter.second);
+	}
 	return true;
 }
 
-bool types::Method::modifyParameter(int index, QMetaType::Type parameterType, const QString &parameterName)
+QString types::Method::signature() const
 {
-	QPair<QMetaType::Type, QString> parameter(parameterType, parameterName);
-	if (_parameters.contains(parameter) || index < 0 || index >= _parameters.size()) { return false; }
+	if (!isValid()) { return ""; }
+	QString signature;
 
-	_parameters[index] = parameter;
+	if (_isStatic)
+		signature += " static";
+	signature += " " + QString(QMetaType::typeName(_returnType)) + " " + _name + "(";
+	for (int i = 0; i < _parameters.size(); i += 1) {
+		if (i)
+			signature += ", ";
+		signature += QString(QMetaType::typeName(_parameters[i].first)) + " " + _parameters[i].second;
+	}
+	signature += ")";
+	if (_isConst)
+		signature += " const";
+	return signature;
+}
+
+bool types::Method::addParameter(QMetaType::Type parameterType, const QString &parameterName)
+{
+	return insertParameter(_parameters.size(), parameterType, parameterName);
+}
+
+bool types::Method::insertParameter(int index, QMetaType::Type parameterType, const QString &parameterName)
+{
+	if (index < 0 || index > _parameters.size()) { return false; }
+	for (auto &parameter : _parameters)
+		if (parameter.second == parameterName) { return false; }
+
+	_parameters.append({parameterType, parameterName});
+	return true;
+}
+
+bool types::Method::modifyParameterType(int index, QMetaType::Type parameterType)
+{
+	if (index < 0 || index >= _parameters.size()) { return false; }
+
+	_parameters[index].first = parameterType;
+	return true;
+}
+
+bool types::Method::modifyParameterName(int index, const QString &parameterName)
+{
+	if (index < 0 || index >= _parameters.size()) { return false; }
+	for (auto &parameter : _parameters)
+		if (parameter.second == parameterName && _parameters.indexOf(parameter) != index) { return false; }
+
+	_parameters[index].second = parameterName;
 	return true;
 }
 
@@ -118,20 +166,7 @@ QDebug operator<<(QDebug debug, const types::Method &method)
 	debug.nospace().noquote() << "Method(";
 	if (method.isValid()) {
 		debug << types::accessToString(method.access()).toLower();
-		if (method.isStatic())
-			debug << " static";
-		debug << " " << QMetaType::typeName(method.returnType()) << " " << method.name() << "(";
-
-		auto parameters = method.parameters();
-		for (int i = 0; i < parameters.size(); i += 1) {
-			if (i)
-				debug << ", ";
-			debug << QMetaType::typeName(parameters[i].first) << " " << parameters[i].second;
-		}
-		debug << ")";
-
-		if (method.isConst())
-			debug << " const";
+		debug << method.signature();
 	} else
 		debug << "INVALID";
 	debug << ")";

@@ -10,6 +10,7 @@
 
 qtengine::DialogBase::DialogBase(QWidget *parent)
 	: QDialog(parent)
+	, _labelsWidth(0)
 {
 	_mainLayout = new QVBoxLayout(this);
 	_mainLayout->setSizeConstraint(QLayout::SetFixedSize);
@@ -23,11 +24,16 @@ qtengine::DialogBase::DialogBase(QWidget *parent)
 	_mainLayout->addWidget(_buttonBox);
 }
 
-void qtengine::DialogBase::addWidgetTo(QWidget *widgetToAdd, const QString &name, QLayout *layoutParent)
+void qtengine::DialogBase::addWidgetTo(QWidget *widgetToAdd, const QString &name, QBoxLayout *layoutParent)
+{
+	insertWidgetTo(layoutParent->count(), widgetToAdd, name, layoutParent);
+}
+
+void qtengine::DialogBase::insertWidgetTo(int index, QWidget *widgetToAdd, const QString &name, QBoxLayout *layoutParent)
 {
 	auto widget = new QWidget(layoutParent->parentWidget());
 	widgetToAdd->setParent(widget);
-	layoutParent->addWidget(widget);
+	layoutParent->insertWidget(index, widget);
 
 	_labels << new QLabel(name, widget);
 
@@ -42,10 +48,9 @@ void qtengine::DialogBase::addWidgetTo(QWidget *widgetToAdd, const QString &name
 
 void qtengine::DialogBase::resizeWidgets()
 {
-	int maxWidth = 0;
-
+	_labelsWidth = 0;
 	for (auto label : _labels)
-		maxWidth = qMax(maxWidth, label->minimumSizeHint().width());
+		_labelsWidth = qMax(_labelsWidth, label->minimumSizeHint().width());
 	for (auto label : _labels)
-		label->setFixedWidth(maxWidth * 1.25);
+		label->setFixedWidth(_labelsWidth * 1.25);
 }

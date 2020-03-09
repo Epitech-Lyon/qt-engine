@@ -29,7 +29,9 @@ namespace types {
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &json) override;
 
-		bool isValid() const { return !(_name.isEmpty() || (_isStatic && _isConst)); }
+		bool isValid() const;
+
+		QString signature() const;
 
 		QMetaMethod::Access access() const { return _access; }
 		void setAccess(QMetaMethod::Access access) { setValue(_access, access, std::bind(&Method::accessChanged, this, _access)); }
@@ -44,9 +46,12 @@ namespace types {
 		void setName(const QString &name) { setValue(_name, name, std::bind(&Method::nameChanged, this, _name)); }
 
 		QList<QPair<QMetaType::Type, QString>> parameters() const { return _parameters; }
+		QPair<QMetaType::Type, QString> parameter(int index) const { return _parameters[index]; }
 		void setParameters(const QList<QPair<QMetaType::Type, QString>> &parameters) { setValue(_parameters, parameters, std::bind(&Method::parametersChanged, this, _parameters)); }
-		bool addParameter(int index, QMetaType::Type parameterType, const QString &parameterName);
-		bool modifyParameter(int index, QMetaType::Type parameterType, const QString &parameterName);
+		bool addParameter(QMetaType::Type parameterType, const QString &parameterName);
+		bool insertParameter(int index, QMetaType::Type parameterType, const QString &parameterName);
+		bool modifyParameterType(int index, QMetaType::Type parameterType);
+		bool modifyParameterName(int index, const QString &parameterName);
 		void removeParameter(int index);
 
 		bool isConst() const { return _isConst; }

@@ -21,6 +21,9 @@ namespace qtengine {
 
 	private:
 		QWidget *initBody();
+		void addParameter();
+		void addParameter(QMetaType::Type parameterType, const QString &parameterName);
 		types::Method _method;
+		QVBoxLayout *_layoutParameters;
 	};
 }

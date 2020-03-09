@@ -28,6 +28,7 @@ namespace types {
 		void deserialize(const QJsonObject &json) override;
 
 		bool isValid() const { return !_name.isEmpty(); }
+		bool isUserType() const { return _userType; }
 
 		QMetaMethod::Access access() const { return _access; }
 		void setAccess(QMetaMethod::Access access) { setValue(_access, access, std::bind(&Property::accessChanged, this, _access)); }
@@ -38,25 +39,28 @@ namespace types {
 		QString name() const { return _name; }
 		void setName(const QString &name) { setValue(_name, name, std::bind(&Property::nameChanged, this, _name)); }
 
-		bool haveSetter() const { return _haveSetter; }
-		void haveSetter(bool haveSetter) { setValue(_haveSetter, haveSetter, std::bind(&Property::haveSetterChanged, this, _haveSetter)); }
+		QString setterSignature() const;
+		QString setterName() const { return _setterName; }
+		void setSetterName(const QString &setterName) { setValue(_setterName, setterName, std::bind(&Property::setterNameChanged, this, _setterName)); }
 
-		bool haveGetter() const { return _haveGetter; }
-		void haveGetter(bool haveGetter) { setValue(_haveGetter, haveGetter, std::bind(&Property::haveGetterChanged, this, _haveGetter)); }
+		QString getterSignature() const;
+		QString getterName() const { return _getterName; }
+		void setGetterName(const QString &getterName) { setValue(_getterName, getterName, std::bind(&Property::getterNameChanged, this, _getterName)); }
 
 	signals:
 		void accessChanged(QMetaMethod::Access access);
 		void typeChanged(QMetaType::Type type);
 		void nameChanged(const QString &name);
-		void haveSetterChanged(bool);
-		void haveGetterChanged(bool);
+		void setterNameChanged(const QString &setterName);
+		void getterNameChanged(const QString &getterName);
 
 	private:
+		bool _userType;
 		QMetaMethod::Access _access;
 		QMetaType::Type _type;
 		QString _name;
-		bool _haveSetter;
-		bool _haveGetter;
+		QString _setterName;
+		QString _getterName;
 	};
 }
 

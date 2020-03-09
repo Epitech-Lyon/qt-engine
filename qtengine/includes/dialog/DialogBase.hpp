@@ -20,12 +20,15 @@ namespace qtengine {
 		~DialogBase() = default;
 
 	protected:
-		void addWidgetTo(QWidget *widgetToAdd, const QString &name, QLayout *layoutParent);
+		int labelsWidth() const { return _labelsWidth; }
+		void addWidgetTo(QWidget *widgetToAdd, const QString &name, QBoxLayout *layoutParent);
+		void insertWidgetTo(int index, QWidget *widgetToAdd, const QString &name, QBoxLayout *layoutParent);
 		QVBoxLayout *_mainLayout;
 		QDialogButtonBox *_buttonBox;
 
 	private:
 		void resizeWidgets();
 		QList<QLabel *> _labels;
+		int _labelsWidth;
 	};
 }
