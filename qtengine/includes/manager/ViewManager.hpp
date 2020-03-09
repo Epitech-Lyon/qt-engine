@@ -16,7 +16,7 @@ namespace libraryObjects {
 }
 
 namespace qtengine {
-    class ViewManager : public QObject, public ISerializable {
+    class ViewManager : public QObject, public types::ISerializable {
 		Q_OBJECT
 
 	// General

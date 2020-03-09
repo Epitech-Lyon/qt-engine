@@ -12,7 +12,7 @@
 #include "ISerializable.hpp"
 
 namespace qtengine {
-	class LayoutPanelBase : public QWidget, public ISerializable {
+	class LayoutPanelBase : public QWidget, public types::ISerializable {
 	public:
 		LayoutPanelBase(QWidget * = nullptr);
 		virtual ~LayoutPanelBase() = default;

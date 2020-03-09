@@ -344,8 +344,10 @@ void FlowScene::save() const
 			fileName += ".flow";
 		QFile file(fileName);
 
-		if (file.open(QIODevice::WriteOnly))
+		if (file.open(QIODevice::WriteOnly)) {
 			file.write(saveToMemory());
+			file.close();
+		}
 	}
 }
 
@@ -357,15 +359,23 @@ void FlowScene::load()
 		return;
 	QFile file(fileName);
 
-	if (!file.open(QIODevice::ReadOnly))
-		return;
-	clearScene();
-	loadFromMemory(file.readAll());
+	if (file.open(QIODevice::ReadOnly)) {
+		auto data = file.readAll();
+
+		file.close();
+		clearScene();
+		loadFromMemory(data);
+	}
 }
 
 QByteArray FlowScene::saveToMemory() const
 {
 	return QJsonDocument(saveToJson()).toJson();
+}
+
+void FlowScene::loadFromMemory(const QByteArray& data)
+{
+	loadFromJson(QJsonDocument::fromJson(data).object());
 }
 
 QJsonObject FlowScene::saveToJson() const
@@ -390,11 +400,6 @@ QJsonObject FlowScene::saveToJson() const
 	json["nodes"] = jsonNodes;
 	json["connections"] = jsonConnections;
 	return json;
-}
-
-void FlowScene::loadFromMemory(const QByteArray& data)
-{
-	loadFromJson(QJsonDocument::fromJson(data).object());
 }
 
 void FlowScene::loadFromJson(const QJsonObject &json)

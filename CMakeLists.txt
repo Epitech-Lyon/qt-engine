@@ -83,6 +83,14 @@ target_link_libraries(nodeEditor ${CONAN_LIBS} Qt5::Widgets Qt5::Core)
 target_include_directories(nodeEditor PRIVATE ${INCS})
 target_compile_options(nodeEditor PRIVATE -Werror -Wall -Wextra)
 
+#=======Types=======
+INC_AND_SRC(INCS SRCS "types")
+set(TYPES_INCS ${INCS})
+add_library(types SHARED ${SRCS})
+target_link_libraries(types ${CONAN_LIBS} Qt5::Widgets Qt5::Core)
+target_include_directories(types PRIVATE ${INCS})
+target_compile_options(types PRIVATE -Werror -Wall -Wextra -g3)
+
 #=======LibraryObjects=======
 INC_AND_SRC(INCS SRCS "libraryobjects")
 set(LIBRARYOBJECTS_INCS ${INCS})
@@ -94,8 +102,8 @@ target_compile_options(libraryObjects PRIVATE -Werror -Wall -Wextra -g3)
 #==========QtEngine==============
 INC_AND_SRC(INCS SRCS "qtengine")
 add_executable(qtEngine ${SRCS})
-target_link_libraries(qtEngine ${CONAN_LIBS} Qt5::Widgets Qt5::Core qtPropertyBrowser nodeEditor libraryObjects)
-target_include_directories(qtEngine PRIVATE ${INCS} ${QTPROPERTYBROWSER_INCS} ${NODEEDITOR_INCS} ${LIBRARYOBJECTS_INCS})
+target_link_libraries(qtEngine ${CONAN_LIBS} Qt5::Widgets Qt5::Core qtPropertyBrowser nodeEditor types libraryObjects)
+target_include_directories(qtEngine PRIVATE ${INCS} ${QTPROPERTYBROWSER_INCS} ${NODEEDITOR_INCS} ${TYPES_INCS} ${LIBRARYOBJECTS_INCS})
 target_compile_options(qtEngine PRIVATE -Werror -Wall -Wextra -g3)
 add_custom_command(TARGET qtEngine POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:qtEngine> ".."

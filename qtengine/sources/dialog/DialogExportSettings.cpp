@@ -25,10 +25,6 @@ qtengine::DialogExportSettings::DialogExportSettings(const QString &outputPath, 
 	setWindowTitle("Export settings");
 }
 
-qtengine::DialogExportSettings::~DialogExportSettings()
-{
-}
-
 QWidget *qtengine::DialogExportSettings::initBody()
 {
 	auto mainWidget = new QWidget(this);

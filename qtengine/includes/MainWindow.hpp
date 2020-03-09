@@ -12,7 +12,7 @@
 
 namespace qtengine {
 	class Manager;
-	class MainWindow : public QMainWindow, public ISerializable {
+	class MainWindow : public QMainWindow, public types::ISerializable {
 	public:
 		MainWindow(Manager *);
 		~MainWindow();

@@ -8,11 +8,11 @@
 #pragma once
 
 #include <QtCore/QObject>
-#include <QtCore/QString>
 #include "ISerializable.hpp"
+#include <QtCore/QString>
 
 namespace qtengine {
-	class ProjectManager : public QObject, public ISerializable {
+	class ProjectManager : public QObject, public types::ISerializable {
 		Q_OBJECT
 
 	public:

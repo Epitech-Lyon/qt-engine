@@ -13,7 +13,7 @@ namespace qtengine {
 	class DialogExportSettings : public DialogBase {
 	public:
 		DialogExportSettings(const QString &outputPath, QWidget *parent = nullptr);
-		~DialogExportSettings();
+		~DialogExportSettings() = default;
 
 		QString outputPath() const { return _outputPath; }
 		bool generateMain() const { return _generateMain; }

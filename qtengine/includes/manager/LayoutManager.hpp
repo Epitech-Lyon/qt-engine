@@ -12,7 +12,7 @@
 #include <QtCore/QString>
 
 namespace qtengine {
-	class LayoutManager : public QObject, public ISerializable {
+	class LayoutManager : public QObject, public types::ISerializable {
 		Q_OBJECT
 
 	public:

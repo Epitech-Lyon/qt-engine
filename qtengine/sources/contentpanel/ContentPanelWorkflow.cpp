@@ -8,6 +8,11 @@
 #include "moc_ContentPanelWorkflow.cpp"
 #include "ContentPanelWorkflow.hpp"
 
+#include "types/includes/Method.hpp"
+#include "DialogMethodSettings.hpp"
+#include "types/includes/Property.hpp"
+#include "DialogPropertySettings.hpp"
+
 #include "FlowView.hpp"
 #include "FlowScene.hpp"
 #include "Method.hpp"
@@ -40,7 +45,6 @@ qtengine::FlowScene::FlowScene(QObject *parent)
 void qtengine::FlowScene::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 {
 	QtNodes::FlowScene::dragEnterEvent(event);
-	qDebug() << event->mimeData();
 }
 
 #include "LibraryObjectMimeData.hpp"
@@ -148,16 +152,36 @@ void qtengine::ContentPanelWorkflow::onViewObjectChanged(libraryObjects::AObject
 
 void qtengine::ContentPanelWorkflow::onAddMethod()
 {
+	DialogMethodSettings dialogMethodSettings;
+
+	if (dialogMethodSettings.exec() == QDialog::Accepted) {
+		qDebug() << dialogMethodSettings.method();
+	}
 }
 
 void qtengine::ContentPanelWorkflow::onAddSignal()
 {
+	DialogMethodSettings dialogMethodSettings;
+
+	if (dialogMethodSettings.exec() == QDialog::Accepted) {
+		qDebug() << dialogMethodSettings.method();
+	}
 }
 
 void qtengine::ContentPanelWorkflow::onAddSlot()
 {
+	DialogMethodSettings dialogMethodSettings;
+
+	if (dialogMethodSettings.exec() == QDialog::Accepted) {
+		qDebug() << dialogMethodSettings.method();
+	}
 }
 
 void qtengine::ContentPanelWorkflow::onAddProperty()
 {
+	DialogPropertySettings dialogPropertySettings;
+
+	if (dialogPropertySettings.exec() == QDialog::Accepted) {
+		qDebug() << dialogPropertySettings.property();
+	}
 }

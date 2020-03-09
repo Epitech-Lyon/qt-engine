@@ -13,7 +13,7 @@
 #include "ISerializable.hpp"
 
 namespace qtengine {
-	class ContentPanelBase : public QWidget, public ISerializable {
+	class ContentPanelBase : public QWidget, public types::ISerializable {
 	public:
 		virtual ~ContentPanelBase() = default;
 

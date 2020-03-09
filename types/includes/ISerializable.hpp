@@ -10,13 +10,13 @@
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonArray>
 
-namespace qtengine {
+namespace types {
 	class ISerializable {
 	public:
 		virtual ~ISerializable() = default;
 
 		virtual QJsonObject serialize() const = 0;
-		virtual void deserialize(const QJsonObject &) = 0;
+		virtual void deserialize(const QJsonObject &json) = 0;
 
     protected:
         ISerializable() = default;
