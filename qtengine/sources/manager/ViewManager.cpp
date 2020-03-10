@@ -18,9 +18,11 @@
 #include <QtWidgets/QInputDialog>
 
 #include "Object.hpp"
+#include "ObjectClass.hpp"
 
 qtengine::ViewManager::ViewManager()
 	: _viewObject(nullptr)
+	, _viewObjectClass(nullptr)
 	, _currentObject(nullptr)
 {
 }
@@ -28,6 +30,7 @@ qtengine::ViewManager::ViewManager()
 qtengine::ViewManager::~ViewManager()
 {
 	delete _viewObject;
+	delete _viewObjectClass;
 }
 
 QJsonObject qtengine::ViewManager::serialize() const
@@ -45,22 +48,26 @@ void qtengine::ViewManager::deserialize(const QJsonObject &json)
 void qtengine::ViewManager::closeView()
 {
 	auto oldViewObject = _viewObject;
+	auto oldViewObjectClass = _viewObjectClass;
 
 	_viewPath.clear();
 	_viewName.clear();
 	_viewObject = nullptr;
+	_viewObjectClass = nullptr;
 	emit viewPathChanged("");
 	emit viewNameChanged("");
 	emit viewObjectChanged(nullptr);
+	emit viewObjectClassChanged(nullptr);
 	setCurrentObject(nullptr);
 
 	delete oldViewObject;
+	delete oldViewObjectClass;
 }
 
 void qtengine::ViewManager::openView(const QString &viewPath)
 {
 	QFileInfo fileInfo(viewPath);
-	if (viewPath.isEmpty() || !fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
+	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
 
 	closeView();
 
@@ -73,18 +80,21 @@ void qtengine::ViewManager::openView(const QString &viewPath)
 		json = QJsonDocument::fromJson(file.readAll()).object();
 		file.close();
 	}
-	_viewObject = libraryObjects::ViewConverter().deserialize(json);
+	_viewObject = libraryObjects::ViewConverter().deserialize(json["Engine"].toObject());
+	_viewObjectClass = new libraryObjects::ObjectClass();
+	_viewObjectClass->deserialize(json["Class"].toObject());
 
 	emit viewPathChanged(_viewPath);
 	emit viewNameChanged(_viewName);
 	emit viewObjectChanged(_viewObject);
+	emit viewObjectClassChanged(_viewObjectClass);
 	setCurrentObject(_viewObject);
 }
 
 void qtengine::ViewManager::onCreateView(const QString &viewPath)
 {
 	QFileInfo fileInfo(viewPath);
-	if (viewPath.isEmpty() || !fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
+	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
 
 	closeView();
 
@@ -101,7 +111,7 @@ void qtengine::ViewManager::onCreateView(const QString &viewPath)
 bool qtengine::ViewManager::createView(libraryObjects::AObject *viewObject)
 {
 	QFileInfo fileInfo(_viewPath);
-	if (_viewPath.isEmpty() || !fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return false; }
+	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return false; }
 
 	_viewObject = viewObject;
 	emit viewObjectChanged(_viewObject);
@@ -113,9 +123,12 @@ bool qtengine::ViewManager::createView(libraryObjects::AObject *viewObject)
 void qtengine::ViewManager::onSaveView()
 {
 	QFileInfo fileInfo(_viewPath);
-	if (_viewPath.isEmpty() || !fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
+	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
 
-	QJsonObject json = libraryObjects::ViewConverter().serialize(_viewObject);
+	QJsonObject json;
+	json["Engine"] = libraryObjects::ViewConverter().serialize(_viewObject);
+	json["Class"] = _viewObjectClass->serialize();
+
 	QFile file(_viewPath);
 	if (file.open(QIODevice::WriteOnly)) {
 		file.write(QJsonDocument(json).toJson());
@@ -126,7 +139,7 @@ void qtengine::ViewManager::onSaveView()
 void qtengine::ViewManager::onSaveViewAs()
 {
 	QFileInfo fileInfo(_viewPath);
-	if (_viewPath.isEmpty() || !fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
+	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
 
 	bool ok = false;
 	auto viewPath = QInputDialog::getText(Manager::instance()->mainWindow(), "Save view as", "Choose a new name", QLineEdit::Normal, _viewPath, &ok);
@@ -141,4 +154,35 @@ void qtengine::ViewManager::setCurrentObject(libraryObjects::AObject *currentObj
 {
 	_currentObject = currentObject;
 	emit currentObjectChanged(currentObject);
+}
+
+libraryObjects::AObject *qtengine::ViewManager::getViewObject(const QString &viewPath)
+{
+	QFileInfo fileInfo(viewPath);
+	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != Manager::instance()->viewManager()->viewExtension()) { return nullptr; }
+
+	QJsonObject json;
+	QFile file(fileInfo.filePath());
+	if (file.open(QIODevice::ReadOnly)) {
+		json = QJsonDocument::fromJson(file.readAll()).object();
+		file.close();
+	}
+	return libraryObjects::ViewConverter().deserialize(json["Engine"].toObject());
+}
+
+libraryObjects::ObjectClass *qtengine::ViewManager::getViewObjectClass(const QString &viewPath)
+{
+	QFileInfo fileInfo(viewPath);
+	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != Manager::instance()->viewManager()->viewExtension()) { return nullptr; }
+
+	QJsonObject json;
+	QFile file(fileInfo.filePath());
+	if (file.open(QIODevice::ReadOnly)) {
+		json = QJsonDocument::fromJson(file.readAll()).object();
+		file.close();
+	}
+	auto objectClass = new libraryObjects::ObjectClass();
+
+	objectClass->deserialize(json["Class"].toObject());
+	return objectClass;
 }

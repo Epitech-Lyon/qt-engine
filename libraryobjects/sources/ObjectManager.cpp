@@ -41,7 +41,6 @@ void libraryObjects::ObjectManager::unregisterObject(AObject *object)
 	_objects.remove(_objects.key(object));
 }
 
-#include <QtCore/QDebug>
 void libraryObjects::ObjectManager::onPropertyUpdated(const QString &propertyName, const QVariant &propertyValue)
 {
 	if (propertyName == "objectName") {
@@ -49,7 +48,6 @@ void libraryObjects::ObjectManager::onPropertyUpdated(const QString &propertyNam
 		auto oldObjectName = objectName(object);
 		auto newObjectName = propertyValue.toString();
 
-		qDebug() << oldObjectName << "-->" << newObjectName;
 		if (oldObjectName != newObjectName) {
 			if (this->object(newObjectName))
 				object->setObjectName(oldObjectName);

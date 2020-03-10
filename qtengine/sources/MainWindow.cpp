@@ -35,6 +35,7 @@ qtengine::MainWindow::MainWindow(Manager *manager)
 qtengine::MainWindow::~MainWindow()
 {
 	_manager->save();
+	_manager->viewManager()->closeView();
 }
 
 void qtengine::MainWindow::initMenuBar()

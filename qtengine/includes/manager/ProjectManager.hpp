@@ -15,6 +15,7 @@ namespace qtengine {
 	class ProjectManager : public QObject, public types::ISerializable {
 		Q_OBJECT
 
+	// General
 	public:
 		ProjectManager() = default;
 		~ProjectManager() = default;
