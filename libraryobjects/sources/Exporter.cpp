@@ -54,7 +54,7 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 		throw "Malformed Json";
 	for (unsigned int i = 0; i < tabWidth; i++)
 		tabs += "\t";
-	stream << tabs << data.keys()[0] << " " << name;
+	stream << tabs << "_" << name << " = new " << data.keys()[0];
 	if (parent) {
 		QJsonObject p_obj = (*parent)[parent->keys()[0]].toObject();
 		QString p_name = libraryObjects::QVariantConverter::deserialize(p_obj[JSON_PROPERTIES_NAME].toObject()[JSON_OBJECT_NAME].toString()).toString();
@@ -63,7 +63,11 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 			p_name = parent->keys()[0]; // TODO FIXME HACK Tempory hack
 		if (p_name.isNull() || p_obj.empty())
 			throw "Malformed Json";
-		stream << "(&" << p_name << ");" << Qt::endl;
+		if (parent->keys()[0].contains(QRegExp("[Ll]ayout"))) {
+			stream << ";" << Qt::endl;
+			stream << tabs << "_" << name << "->setLayout(_" << p_name << ");" << Qt::endl;
+		} else
+			stream << "(_" << p_name << ");" << Qt::endl;
 	} else
 		stream << ";" << Qt::endl;
 	stream << Qt::endl;
@@ -77,19 +81,11 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 		for (auto key : props.keys()) {
 			auto value = libraryObjects::QVariantConverter::deserialize(props[key]);
 
-			if (!value.isNull()) {
-				QString out;
-
-				QDebug(&out).nospace().quote() << value;
-				out = out.section(',', 1);
-				out = out.left(out.indexOf(QChar(')')));
-				stream << tabs << name << ".setProperty(" << key << ", " << out << ");" << Qt::endl;
-			}
+			if (!value.isNull())
+				stream << tabs << "_" << name << "->setProperty(\"" << key << "\", " << libraryObjects::QVariantConverter::toString(value) << ");" << Qt::endl;
 		}
-		stream << Qt::endl;
 	}
 	vars.append(QPair<QString, QString>(data.keys()[0], name));
-	stream << tabs << "_" << name << " = " << name << Qt::endl;
 }
 
 void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonObject data)
@@ -115,22 +111,29 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 		className << "(QWidget *parent) : " << type << "(parent)" << Qt::endl;
 	stream << "{" << Qt::endl;
 	writeObjectSource(stream, vars, data, 1);
+	stream << "}" << Qt::endl << Qt::endl;
+	stream << EXPORT_NAMESPACE << "::" << className << "::~" <<
+		className << "()" << Qt::endl << "{" << Qt::endl;
+	for (const auto &key : vars)
+		stream << "\t" << "delete _" << key.second << ";" << Qt::endl;
 	stream << "}" << Qt::endl;
 	stream.flush();
 
 	for (const auto &key : vars)
 		headerStream << "#include <QtWidgets/" << key.first << ">" << Qt::endl; // TODO FIXME HACK This only work if the widget is from QT's base classes
+	headerStream << "#include <QtCore/QVariant>" << Qt::endl;
+	headerStream << "#include <QtCore/QLocale>" << Qt::endl;
 	headerStream << Qt::endl;
 	headerStream << "namespace " << EXPORT_NAMESPACE << " {" << Qt::endl;
 	headerStream << "\tclass " << className << " : public " << type << " {" << Qt::endl;
 	headerStream << "\t\tQ_OBJECT" << Qt::endl << Qt::endl;
 	headerStream << "\t\tpublic:" << Qt::endl;
 	headerStream << "\t\t\t" << className << "(QWidget *parent = nullptr);" << Qt::endl;
-	headerStream << "\t\t\t~" << className << "() = default;" << Qt::endl << Qt::endl;
+	headerStream << "\t\t\t~" << className << "();" << Qt::endl << Qt::endl;
 	headerStream << "\t\tprivate:" << Qt::endl;
 	for (const auto &key : vars)
-		headerStream << "\t\t\t" << key.first << " _" << key.second << ";" << Qt::endl;
-	headerStream << "\t}" << Qt::endl;
+		headerStream << "\t\t\t" << key.first << " *_" << key.second << ";" << Qt::endl;
+	headerStream << "\t};" << Qt::endl;
 	headerStream << "}" << Qt::endl;
 	sourceFile.close();
 	headerFile.close();
