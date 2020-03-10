@@ -8,7 +8,7 @@
 #include "DialogBase.hpp"
 #include <QtWidgets/QSpacerItem>
 
-qtengine::DialogBase::DialogBase(QWidget *parent)
+qtengine::DialogBase::DialogBase(const QString &windowTitle, QWidget *parent)
 	: QDialog(parent)
 	, _labelsWidth(0)
 {
@@ -22,6 +22,8 @@ qtengine::DialogBase::DialogBase(QWidget *parent)
 	connect(_buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
 	connect(_buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
 	_mainLayout->addWidget(_buttonBox);
+
+	setWindowTitle(windowTitle);
 }
 
 void qtengine::DialogBase::addWidgetTo(QWidget *widgetToAdd, const QString &name, QBoxLayout *layoutParent)

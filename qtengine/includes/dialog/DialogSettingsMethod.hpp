@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** DialogMethodSettings
+** DialogSettingsMethod
 */
 
 #pragma once
@@ -11,17 +11,16 @@
 #include "types/includes/Method.hpp"
 
 namespace qtengine {
-	class DialogMethodSettings : public DialogBase {
+	class DialogSettingsMethod : public DialogBase {
 	public:
-		DialogMethodSettings(const types::Method &method, QWidget *parent = nullptr);
-		DialogMethodSettings(QWidget *parent = nullptr);
-		~DialogMethodSettings() = default;
+		DialogSettingsMethod(const types::Method &method, const QString &windowTitle, QWidget *parent = nullptr);
+		DialogSettingsMethod(const QString &windowTitle, QWidget *parent = nullptr);
+		~DialogSettingsMethod() = default;
 
 		types::Method method() const { return _method; }
 
 	private:
 		QWidget *initBody();
-		void addParameter();
 		void addParameter(QMetaType::Type parameterType, const QString &parameterName);
 		types::Method _method;
 		QVBoxLayout *_layoutParameters;

@@ -2,17 +2,17 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** DialogExportSettings
+** DialogSettingsExport
 */
 
-#include "DialogExportSettings.hpp"
+#include "DialogSettingsExport.hpp"
 #include <QtWidgets/QFileIconProvider>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QFileDialog>
 
-qtengine::DialogExportSettings::DialogExportSettings(const QString &outputPath, QWidget *parent)
-	: DialogBase(parent)
+qtengine::DialogSettingsExport::DialogSettingsExport(const QString &outputPath, QWidget *parent)
+	: DialogBase("Export settings", parent)
 	, _outputPath(outputPath)
 	, _generateMain(true)
 	, _displayProgress(true)
@@ -21,11 +21,9 @@ qtengine::DialogExportSettings::DialogExportSettings(const QString &outputPath, 
 
 	_buttonBox->addButton(QDialogButtonBox::Cancel);
 	_buttonBox->addButton(QDialogButtonBox::Ok);
-
-	setWindowTitle("Export settings");
 }
 
-QWidget *qtengine::DialogExportSettings::initBody()
+QWidget *qtengine::DialogSettingsExport::initBody()
 {
 	auto mainWidget = new QWidget(this);
 	auto mainLayout = new QVBoxLayout(mainWidget);

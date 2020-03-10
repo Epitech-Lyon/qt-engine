@@ -16,12 +16,12 @@
 
 namespace QtNodes {
 	class FlowView;
-	class FlowScene;
 	class DataModelRegistry;
 }
 
 namespace libraryObjects {
 	class AObject;
+	class ObjectClass;
 }
 
 namespace qtengine {
@@ -59,31 +59,25 @@ namespace qtengine {
 
 	private slots:
 		void onViewObjectChanged(libraryObjects::AObject *viewObject);
+		void onViewObjectClassChanged(libraryObjects::ObjectClass *viewObjectClass);
+		void onAddConstructor();
 		void onAddMethod();
 		void onAddSignal();
 		void onAddSlot();
 		void onAddProperty();
 
 	private:
-		typedef struct DataMethod {
-		} DataMethod;
-
-		typedef struct DataProperty {
-		} DataProperty;
-
 		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistry(const QMetaObject *metaObject, QMetaMethod::Access minimumAccess);
 
 		QtNodes::FlowView *_view;
 		FlowScene *_scene;
 		std::shared_ptr<QtNodes::DataModelRegistry> _viewRegistry;
 
+		ListWidget *_listConstructor;
 		ListWidget *_listMethod;
-		QList<DataMethod> _methods;
 		ListWidget *_listSignal;
-		QList<DataMethod> _signals;
 		ListWidget *_listSlot;
-		QList<DataMethod> _slots;
 		ListWidget *_listProperty;
-		QList<DataProperty> _properties;
+		libraryObjects::ObjectClass *_viewObjectClass;
 	};
 }

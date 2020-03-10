@@ -11,7 +11,7 @@
 #include "Manager.hpp"
 #include "ViewManager.hpp"
 #include "MainWindow.hpp"
-#include "DialogExportSettings.hpp"
+#include "DialogSettingsExport.hpp"
 #include "Exporter.hpp"
 
 #include <QtWidgets/QFileDialog>
@@ -96,7 +96,7 @@ void qtengine::ProjectManager::onOpenProject()
 
 void qtengine::ProjectManager::onExportProject()
 {
-	DialogExportSettings dialog(_projectDir + "/build", Manager::instance()->mainWindow());
+	DialogSettingsExport dialog(_projectDir + "/build", Manager::instance()->mainWindow());
 
 	if (dialog.exec() == QDialog::Accepted) {
 		QStringList views;

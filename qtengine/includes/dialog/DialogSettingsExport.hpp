@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** DialogExportSettings
+** DialogSettingsExport
 */
 
 #pragma once
@@ -10,10 +10,10 @@
 #include "DialogBase.hpp"
 
 namespace qtengine {
-	class DialogExportSettings : public DialogBase {
+	class DialogSettingsExport : public DialogBase {
 	public:
-		DialogExportSettings(const QString &outputPath, QWidget *parent = nullptr);
-		~DialogExportSettings() = default;
+		DialogSettingsExport(const QString &outputPath, QWidget *parent = nullptr);
+		~DialogSettingsExport() = default;
 
 		QString outputPath() const { return _outputPath; }
 		bool generateMain() const { return _generateMain; }

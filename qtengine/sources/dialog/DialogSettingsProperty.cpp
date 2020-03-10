@@ -2,33 +2,31 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** DialogPropertySettings
+** DialogSettingsProperty
 */
 
-#include "DialogPropertySettings.hpp"
+#include "DialogSettingsProperty.hpp"
 
 #include "Utils.hpp"
 #include "ComboBoxFilter.hpp"
 #include <QtWidgets/QLineEdit>
 
-qtengine::DialogPropertySettings::DialogPropertySettings(const types::Property &property, QWidget *parent)
-	: DialogBase(parent)
+qtengine::DialogSettingsProperty::DialogSettingsProperty(const types::Property &property, QWidget *parent)
+	: DialogBase("Property settings", parent)
 	, _property(property)
 {
 	_mainLayout->insertWidget(0, initBody());
 
 	_buttonBox->addButton(QDialogButtonBox::Cancel);
 	_buttonBox->addButton(QDialogButtonBox::Ok);
-
-	setWindowTitle("Property settings");
 }
 
-qtengine::DialogPropertySettings::DialogPropertySettings(QWidget *parent)
-	: DialogPropertySettings(types::Property(), parent)
+qtengine::DialogSettingsProperty::DialogSettingsProperty(QWidget *parent)
+	: DialogSettingsProperty(types::Property(), parent)
 {
 }
 
-QWidget *qtengine::DialogPropertySettings::initBody()
+QWidget *qtengine::DialogSettingsProperty::initBody()
 {
 	auto mainWidget = new QWidget(this);
 	auto mainLayout = new QVBoxLayout(mainWidget);

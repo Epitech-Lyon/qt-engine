@@ -2,10 +2,10 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** DialogMethodSettings
+** DialogSettingsConstructor
 */
 
-#include "DialogMethodSettings.hpp"
+#include "DialogSettingsConstructor.hpp"
 
 #include "Utils.hpp"
 #include "ComboBoxFilter.hpp"
@@ -13,24 +13,22 @@
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QPushButton>
 
-qtengine::DialogMethodSettings::DialogMethodSettings(const types::Method &method, QWidget *parent)
-	: DialogBase(parent)
-	, _method(method)
+qtengine::DialogSettingsConstructor::DialogSettingsConstructor(const types::Constructor &constructor, QWidget *parent)
+	: DialogBase("Constructor settings", parent)
+	, _constructor(constructor)
 {
 	_mainLayout->insertWidget(0, initBody());
 
 	_buttonBox->addButton(QDialogButtonBox::Cancel);
 	_buttonBox->addButton(QDialogButtonBox::Ok);
-
-	setWindowTitle("Method settings");
 }
 
-qtengine::DialogMethodSettings::DialogMethodSettings(QWidget *parent)
-	: DialogMethodSettings(types::Method(), parent)
+qtengine::DialogSettingsConstructor::DialogSettingsConstructor(QWidget *parent)
+	: DialogSettingsConstructor(types::Constructor(), parent)
 {
 }
 
-QWidget *qtengine::DialogMethodSettings::initBody()
+QWidget *qtengine::DialogSettingsConstructor::initBody()
 {
 	auto mainWidget = new QWidget(this);
 	auto mainLayout = new QVBoxLayout(mainWidget);
@@ -38,38 +36,15 @@ QWidget *qtengine::DialogMethodSettings::initBody()
 	auto cboxAccess = new QComboBox(mainWidget);
 	for (auto access : {QMetaMethod::Private, QMetaMethod::Protected, QMetaMethod::Public})
 		cboxAccess->addItem(types::accessToString(access));
-	cboxAccess->setCurrentIndex(_method.access());
+	cboxAccess->setCurrentIndex(_constructor.access());
 	connect(cboxAccess, QOverload<int>::of(&QComboBox::currentIndexChanged), [this](int currentIndex) {
-		_method.setAccess(static_cast<QMetaMethod::Access>(currentIndex));
+		_constructor.setAccess(static_cast<QMetaMethod::Access>(currentIndex));
 	});
 	addWidgetTo(cboxAccess, "Access", mainLayout);
 
-	auto checkBoxIsStatic = new QCheckBox(mainWidget);
-	checkBoxIsStatic->setCheckState(_method.isStatic() ? Qt::Checked : Qt::Unchecked);
-	connect(checkBoxIsStatic, &QCheckBox::stateChanged, [this](int state) {
-		_method.setStatic(state == Qt::Checked);
-	});
-	addWidgetTo(checkBoxIsStatic, "Is static", mainLayout);
-
-	auto cboxReturnType = new ComboBoxFilter(mainWidget);
-	QStringList cboxReturnTypeItems;
-	QList<QVariant> cboxReturnTypeDatas;
-	for (int i = 1; i < QMetaType::User; i += 1)
-		if (QMetaType::isRegistered(i)) {
-			cboxReturnTypeItems.append(QMetaType::typeName(i));
-			cboxReturnTypeDatas.append(i);
-		}
-	cboxReturnType->setItems(cboxReturnTypeItems);
-	cboxReturnType->setDatas(cboxReturnTypeDatas);
-	cboxReturnType->setCurrentIndex(cboxReturnTypeDatas.indexOf(static_cast<int>(_method.returnType())));
-	connect(cboxReturnType, &ComboBoxFilter::currentDataChanged, [this](const QVariant &currentData) {
-		_method.setReturnType(static_cast<QMetaType::Type>(currentData.toInt()));
-	});
-	addWidgetTo(cboxReturnType, "Return type", mainLayout);
-
 	auto leName = new QLineEdit(mainWidget);
-	leName->setText(_method.name());
-	connect(leName, &QLineEdit::textChanged, [this](const QString &text) { _method.setName(text); });
+	leName->setText(_constructor.name());
+	connect(leName, &QLineEdit::textChanged, [this](const QString &text) { _constructor.setName(text); });
 	addWidgetTo(leName, "Name", mainLayout);
 
 	auto widgetParameters = new QWidget(mainWidget);
@@ -79,19 +54,12 @@ QWidget *qtengine::DialogMethodSettings::initBody()
 	_layoutParameters->setContentsMargins(0, _layoutParameters->spacing() - mainLayout->spacing(), 0, _layoutParameters->spacing() - mainLayout->spacing());
 	mainLayout->addWidget(widgetParameters);
 
-	auto checkBoxIsConst = new QCheckBox(mainWidget);
-	checkBoxIsConst->setCheckState(_method.isConst() ? Qt::Checked : Qt::Unchecked);
-	connect(checkBoxIsConst, &QCheckBox::stateChanged, [this](int state) {
-		_method.setConst(state == Qt::Checked);
-	});
-	addWidgetTo(checkBoxIsConst, "Is const", mainLayout);
-
 	auto btnAddParameter = new QPushButton("Add parameter", mainWidget);
 	connect(btnAddParameter, &QPushButton::clicked, [this]() {
 		QString parameterName = "variable";
 
 		QStringList parametersName;
-		for (auto &parameter : _method.parameters())
+		for (auto &parameter : _constructor.parameters())
 			parametersName.append(parameter.second);
 		if (parametersName.contains(parameterName)) {
 			int tmp = 1;
@@ -108,7 +76,7 @@ QWidget *qtengine::DialogMethodSettings::initBody()
 	return mainWidget;
 }
 
-void qtengine::DialogMethodSettings::addParameter(QMetaType::Type parameterType, const QString &parameterName)
+void qtengine::DialogSettingsConstructor::addParameter(QMetaType::Type parameterType, const QString &parameterName)
 {
 	int labelsWidth = this->labelsWidth();
 	auto addChildWidgetTo = [labelsWidth](QWidget *widgetToAdd, const QString &name, QLayout *layoutParent) {
@@ -129,7 +97,7 @@ void qtengine::DialogMethodSettings::addParameter(QMetaType::Type parameterType,
 	auto mainLayout = new QVBoxLayout(mainWidget);
 	mainLayout->setMargin(0);
 
-	_method.addParameter(parameterType, parameterName);
+	_constructor.addParameter(parameterType, parameterName);
 	if (_layoutParameters->isEmpty())
 		_layoutParameters->parentWidget()->setVisible(true);
 	_layoutParameters->addWidget(mainWidget);
@@ -149,8 +117,8 @@ void qtengine::DialogMethodSettings::addParameter(QMetaType::Type parameterType,
 	connect(cboxType, &ComboBoxFilter::currentDataChanged, [this, mainWidget, cboxType](const QVariant &currentData) {
 		int index = _layoutParameters->indexOf(mainWidget);
 
-		if (!_method.modifyParameterType(index, static_cast<QMetaType::Type>(currentData.toInt())))
-			cboxType->setCurrentText(QMetaType::typeName(_method.parameter(index).first));
+		if (!_constructor.modifyParameterType(index, static_cast<QMetaType::Type>(currentData.toInt())))
+			cboxType->setCurrentText(QMetaType::typeName(_constructor.parameter(index).first));
 	});
 	cboxType->setCurrentText(QMetaType::typeName(parameterType));
 	addChildWidgetTo(cboxType, "Type", mainLayout);
@@ -159,15 +127,15 @@ void qtengine::DialogMethodSettings::addParameter(QMetaType::Type parameterType,
 	connect(leName, &QLineEdit::textChanged, [this, mainWidget, leName](const QString &text) {
 		int index = _layoutParameters->indexOf(mainWidget);
 
-		if (!_method.modifyParameterName(index, text))
-			leName->setText(_method.parameter(index).second);
+		if (!_constructor.modifyParameterName(index, text))
+			leName->setText(_constructor.parameter(index).second);
 	});
 	leName->setText(parameterName);
 	addChildWidgetTo(leName, "Name", mainLayout);
 
 	auto btnRemove = new QPushButton("Remove", mainWidget);
 	connect(btnRemove, &QPushButton::clicked, [this, mainWidget]() {
-		_method.removeParameter(_layoutParameters->indexOf(mainWidget));
+		_constructor.removeParameter(_layoutParameters->indexOf(mainWidget));
 		_layoutParameters->removeWidget(mainWidget);
 		if (_layoutParameters->isEmpty())
 			_layoutParameters->parentWidget()->setVisible(false);

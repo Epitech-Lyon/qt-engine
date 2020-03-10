@@ -8,10 +8,10 @@
 #include "moc_ContentPanelWorkflow.cpp"
 #include "ContentPanelWorkflow.hpp"
 
-#include "types/includes/Method.hpp"
-#include "DialogMethodSettings.hpp"
-#include "types/includes/Property.hpp"
-#include "DialogPropertySettings.hpp"
+#include "ObjectClass.hpp"
+#include "DialogSettingsConstructor.hpp"
+#include "DialogSettingsMethod.hpp"
+#include "DialogSettingsProperty.hpp"
 
 #include "FlowView.hpp"
 #include "FlowScene.hpp"
@@ -67,6 +67,8 @@ qtengine::ContentPanelWorkflow::ContentPanelWorkflow(QWidget *parent)
 
 void qtengine::ContentPanelWorkflow::init()
 {
+	_viewObjectClass = nullptr;
+
 	auto splitter = new QSplitter(this);
 	_mainLayout->addWidget(splitter);
 
@@ -99,6 +101,7 @@ void qtengine::ContentPanelWorkflow::init()
 		return list;
 	};
 
+	_listConstructor = createMenuFor("Constructor", std::bind(&ContentPanelWorkflow::onAddConstructor, this));
 	_listMethod = createMenuFor("Method", std::bind(&ContentPanelWorkflow::onAddMethod, this));
 	_listSignal = createMenuFor("Signal", std::bind(&ContentPanelWorkflow::onAddSignal, this));
 	_listSlot = createMenuFor("Slot", std::bind(&ContentPanelWorkflow::onAddSlot, this));
@@ -113,6 +116,9 @@ void qtengine::ContentPanelWorkflow::init()
 
 	onViewObjectChanged(Manager::instance()->viewManager()->viewObject());
 	connect(Manager::instance()->viewManager(), &ViewManager::viewObjectChanged, this, &ContentPanelWorkflow::onViewObjectChanged);
+
+	onViewObjectClassChanged(Manager::instance()->viewManager()->viewObjectClass());
+	connect(Manager::instance()->viewManager(), &ViewManager::viewObjectClassChanged, this, &ContentPanelWorkflow::onViewObjectClassChanged);
 }
 
 std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistry(const QMetaObject *metaObject, QMetaMethod::Access minimumAccess)
@@ -150,38 +156,52 @@ void qtengine::ContentPanelWorkflow::onViewObjectChanged(libraryObjects::AObject
 	_scene->setRegistry(_viewRegistry);
 }
 
+void qtengine::ContentPanelWorkflow::onViewObjectClassChanged(libraryObjects::ObjectClass *viewObjectClass)
+{
+	_viewObjectClass = viewObjectClass;
+}
+
+void qtengine::ContentPanelWorkflow::onAddConstructor()
+{
+	DialogSettingsConstructor dialog(Manager::instance()->mainWindow());
+
+	if (dialog.exec() == QDialog::Accepted) {
+		qDebug() << dialog.constructor();
+	}
+}
+
 void qtengine::ContentPanelWorkflow::onAddMethod()
 {
-	DialogMethodSettings dialogMethodSettings;
+	DialogSettingsMethod dialog("Method settings", Manager::instance()->mainWindow());
 
-	if (dialogMethodSettings.exec() == QDialog::Accepted) {
-		qDebug() << dialogMethodSettings.method();
+	if (dialog.exec() == QDialog::Accepted) {
+		qDebug() << dialog.method();
 	}
 }
 
 void qtengine::ContentPanelWorkflow::onAddSignal()
 {
-	DialogMethodSettings dialogMethodSettings;
+	DialogSettingsMethod dialog("Signal settings", Manager::instance()->mainWindow());
 
-	if (dialogMethodSettings.exec() == QDialog::Accepted) {
-		qDebug() << dialogMethodSettings.method();
+	if (dialog.exec() == QDialog::Accepted) {
+		qDebug() << dialog.method();
 	}
 }
 
 void qtengine::ContentPanelWorkflow::onAddSlot()
 {
-	DialogMethodSettings dialogMethodSettings;
+	DialogSettingsMethod dialog("Slot settings", Manager::instance()->mainWindow());
 
-	if (dialogMethodSettings.exec() == QDialog::Accepted) {
-		qDebug() << dialogMethodSettings.method();
+	if (dialog.exec() == QDialog::Accepted) {
+		qDebug() << dialog.method();
 	}
 }
 
 void qtengine::ContentPanelWorkflow::onAddProperty()
 {
-	DialogPropertySettings dialogPropertySettings;
+	DialogSettingsProperty dialog(Manager::instance()->mainWindow());
 
-	if (dialogPropertySettings.exec() == QDialog::Accepted) {
-		qDebug() << dialogPropertySettings.property();
+	if (dialog.exec() == QDialog::Accepted) {
+		qDebug() << dialog.property();
 	}
 }

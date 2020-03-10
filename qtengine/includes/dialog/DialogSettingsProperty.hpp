@@ -2,7 +2,7 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** DialogPropertySettings
+** DialogSettingsProperty
 */
 
 #pragma once
@@ -11,11 +11,11 @@
 #include "types/includes/Property.hpp"
 
 namespace qtengine {
-	class DialogPropertySettings : public DialogBase {
+	class DialogSettingsProperty : public DialogBase {
 	public:
-		DialogPropertySettings(const types::Property &property, QWidget *parent = nullptr);
-		DialogPropertySettings(QWidget *parent = nullptr);
-		~DialogPropertySettings() = default;
+		DialogSettingsProperty(const types::Property &property, QWidget *parent = nullptr);
+		DialogSettingsProperty(QWidget *parent = nullptr);
+		~DialogSettingsProperty() = default;
 
 		types::Property property() const { return _property; }
 
