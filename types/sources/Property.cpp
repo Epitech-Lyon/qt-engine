@@ -52,6 +52,11 @@ types::Property &types::Property::operator=(const Property &property)
 	return *this;
 }
 
+bool types::Property::operator==(const Property &property)
+{
+	return _type == property.type() && _name == property.name();
+}
+
 QJsonObject types::Property::serialize() const
 {
 	if (!_userType) { return QJsonObject(); }
@@ -108,5 +113,10 @@ QDebug operator<<(QDebug debug, const types::Property &property)
 	} else
 		debug << "INVALID";
 	debug << ")";
-	return debug;
+	return debug.maybeSpace().maybeQuote();
+}
+
+QDebug operator<<(QDebug debug, const types::Property *property)
+{
+	return debug << *property;
 }

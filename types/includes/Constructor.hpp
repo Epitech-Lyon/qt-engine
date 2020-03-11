@@ -25,6 +25,7 @@ namespace types {
 		~Constructor() = default;
 
 		Constructor &operator=(const Constructor &constructor);
+		bool operator==(const Constructor &constructor);
 
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &json) override;
@@ -36,8 +37,8 @@ namespace types {
 		QMetaMethod::Access access() const { return _access; }
 		void setAccess(QMetaMethod::Access access) { setValue(_access, access, std::bind(&Constructor::accessChanged, this, _access)); }
 
-		QString name() const { return _name; }
-		void setName(const QString &name) { setValue(_name, name, std::bind(&Constructor::nameChanged, this, _name)); }
+		QString className() const { return _className; }
+		void setClassName(const QString &className) { setValue(_className, className, std::bind(&Constructor::classNameChanged, this, _className)); }
 
 		QList<QPair<QMetaType::Type, QString>> parameters() const { return _parameters; }
 		QPair<QMetaType::Type, QString> parameter(int index) const { return _parameters[index]; }
@@ -50,14 +51,15 @@ namespace types {
 
 	signals:
 		void accessChanged(QMetaMethod::Access access);
-		void nameChanged(const QString &name);
+		void classNameChanged(const QString &name);
 		void parametersChanged(const QList<QPair<QMetaType::Type, QString>> &parameters);
 
 	private:
 		QMetaMethod::Access _access;
-		QString _name;
+		QString _className;
 		QList<QPair<QMetaType::Type, QString>> _parameters;
 	};
 }
 
 QDebug operator<<(QDebug debug, const types::Constructor &constructor);
+QDebug operator<<(QDebug debug, const types::Constructor *constructor);

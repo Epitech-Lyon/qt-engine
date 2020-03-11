@@ -20,7 +20,7 @@ QJsonObject libraryObjects::ObjectClass::serialize() const
 
 void libraryObjects::ObjectClass::deserialize(const QJsonObject &json)
 {
-	_constructors = deserializeTypes<types::Method>(json["constructors"].toArray());
+	_constructors = deserializeTypes<types::Constructor>(json["constructors"].toArray());
 	_methods = deserializeTypes<types::Method>(json["methods"].toArray());
 	_signals = deserializeTypes<types::Method>(json["signals"].toArray());
 	_slots = deserializeTypes<types::Method>(json["slots"].toArray());

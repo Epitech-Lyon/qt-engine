@@ -16,6 +16,7 @@
 #include <QtCore/QFileInfo>
 #include <QtCore/QJsonDocument>
 #include <QtWidgets/QInputDialog>
+#include <QtCore/QDebug>
 
 #include "Object.hpp"
 #include "ObjectClass.hpp"
@@ -71,16 +72,16 @@ void qtengine::ViewManager::openView(const QString &viewPath)
 
 	closeView();
 
-	_viewPath = fileInfo.filePath();
-	_viewName = fileInfo.baseName();
-
 	QJsonObject json;
-	QFile file(_viewPath);
+	QFile file(fileInfo.absoluteFilePath());
 	if (file.open(QIODevice::ReadOnly)) {
 		json = QJsonDocument::fromJson(file.readAll()).object();
 		file.close();
 	}
 	_viewObject = libraryObjects::ViewConverter().deserialize(json["Engine"].toObject());
+	if (!_viewObject) { qCritical() << "Impossible to open" << _viewPath; return; }
+	_viewPath = fileInfo.absoluteFilePath();
+	_viewName = fileInfo.baseName();
 	_viewObjectClass = new libraryObjects::ObjectClass();
 	_viewObjectClass->deserialize(json["Class"].toObject());
 

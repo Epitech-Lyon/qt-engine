@@ -25,6 +25,7 @@ namespace types {
 		~Method() = default;
 
 		Method &operator=(const Method &method);
+		bool operator==(const Method &method);
 
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &json) override;
@@ -76,3 +77,4 @@ namespace types {
 }
 
 QDebug operator<<(QDebug debug, const types::Method &method);
+QDebug operator<<(QDebug debug, const types::Method *method);

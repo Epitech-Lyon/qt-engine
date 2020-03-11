@@ -166,7 +166,13 @@ void qtengine::ContentPanelWorkflow::onAddConstructor()
 	DialogSettingsConstructor dialog(Manager::instance()->mainWindow());
 
 	if (dialog.exec() == QDialog::Accepted) {
-		qDebug() << dialog.constructor();
+		auto constructor = dialog.constructor();
+
+		constructor.setClassName(Manager::instance()->viewManager()->viewName());
+		if (constructor.isValid())
+			_viewObjectClass->addConstructor(new types::Constructor(constructor));
+		_viewObjectClass->addConstructor(new types::Constructor(constructor));
+		_viewObjectClass->addConstructor(new types::Constructor(constructor));
 	}
 }
 
@@ -174,8 +180,8 @@ void qtengine::ContentPanelWorkflow::onAddMethod()
 {
 	DialogSettingsMethod dialog("Method settings", Manager::instance()->mainWindow());
 
-	if (dialog.exec() == QDialog::Accepted) {
-		qDebug() << dialog.method();
+	if (dialog.exec() == QDialog::Accepted && dialog.method().isValid()) {
+		_viewObjectClass->addMethod(new types::Method(dialog.method()));
 	}
 }
 
@@ -183,8 +189,8 @@ void qtengine::ContentPanelWorkflow::onAddSignal()
 {
 	DialogSettingsMethod dialog("Signal settings", Manager::instance()->mainWindow());
 
-	if (dialog.exec() == QDialog::Accepted) {
-		qDebug() << dialog.method();
+	if (dialog.exec() == QDialog::Accepted && dialog.method().isValid()) {
+		_viewObjectClass->addSlot(new types::Method(dialog.method()));
 	}
 }
 
@@ -192,8 +198,8 @@ void qtengine::ContentPanelWorkflow::onAddSlot()
 {
 	DialogSettingsMethod dialog("Slot settings", Manager::instance()->mainWindow());
 
-	if (dialog.exec() == QDialog::Accepted) {
-		qDebug() << dialog.method();
+	if (dialog.exec() == QDialog::Accepted && dialog.method().isValid()) {
+		_viewObjectClass->addSignal(new types::Method(dialog.method()));
 	}
 }
 
@@ -201,7 +207,7 @@ void qtengine::ContentPanelWorkflow::onAddProperty()
 {
 	DialogSettingsProperty dialog(Manager::instance()->mainWindow());
 
-	if (dialog.exec() == QDialog::Accepted) {
-		qDebug() << dialog.property();
+	if (dialog.exec() == QDialog::Accepted && dialog.property().isValid()) {
+		_viewObjectClass->addProperty(new types::Property(dialog.property()));
 	}
 }

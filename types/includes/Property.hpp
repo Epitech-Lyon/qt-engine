@@ -23,6 +23,7 @@ namespace types {
 		~Property() = default;
 
 		Property &operator=(const Property &property);
+		bool operator==(const Property &property);
 
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &json) override;
@@ -65,3 +66,4 @@ namespace types {
 }
 
 QDebug operator<<(QDebug debug, const types::Property &property);
+QDebug operator<<(QDebug debug, const types::Property *property);

@@ -54,6 +54,11 @@ types::Method &types::Method::operator=(const Method &method)
 	return *this;
 }
 
+bool types::Method::operator==(const Method &method)
+{
+	return _returnType == method.returnType() && _name == method.name() && _parameters == method.parameters() && _isConst == method.isConst();
+}
+
 QJsonObject types::Method::serialize() const
 {
 	QJsonArray jsonParameters;
@@ -165,10 +170,15 @@ QDebug operator<<(QDebug debug, const types::Method &method)
 {
 	debug.nospace().noquote() << "Method(";
 	if (method.isValid()) {
-		debug << types::accessToString(method.access()).toLower();
+		debug << types::accessToString(method.access()).toLower() << " ";
 		debug << method.signature();
 	} else
 		debug << "INVALID";
 	debug << ")";
-	return debug;
+	return debug.maybeSpace().maybeQuote();
+}
+
+QDebug operator<<(QDebug debug, const types::Method *method)
+{
+	return debug << *method;
 }

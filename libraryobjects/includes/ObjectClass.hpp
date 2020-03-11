@@ -9,6 +9,7 @@
 
 #include <QtCore/QList>
 #include "ISerializable.hpp"
+#include "types/includes/Constructor.hpp"
 #include "types/includes/Method.hpp"
 #include "types/includes/Property.hpp"
 
@@ -21,25 +22,33 @@ namespace libraryObjects {
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &json) override;
 
-		QList<types::Method*> getContructors() const { return _constructors; }
-		void addConstructor(types::Method *constructor) { _constructors.append(constructor); }
-		void removeConstructor(types::Method *constructor) { _constructors.removeAll(constructor); }
+		QList<types::Constructor*> getContructors() const { return _constructors; }
+		void addConstructor(types::Constructor *constructor) { if (constructor->isValid() && !contains(_constructors, constructor)) _constructors.append(constructor); }
+		void removeConstructor(types::Constructor *constructor) { _constructors.removeAll(constructor); }
 
 		QList<types::Method*> getMethods() const { return _methods; }
-		void addMethod(types::Method *method) { _methods.append(method); }
+		void addMethod(types::Method *method) { if (method->isValid() && !contains(_methods, method)) _methods.append(method); }
 		void removeMethod(types::Method *method) { _methods.removeAll(method); }
 
 		QList<types::Method*> getSignals() const { return _signals; }
-		void addSignal(types::Method *signal) { _signals.append(signal); }
+		void addSignal(types::Method *signal) { if (signal->isValid() && !contains(_signals, signal)) _signals.append(signal); }
 		void removeSignal(types::Method *signal) { _signals.removeAll(signal); }
 
 		QList<types::Method*> getSlots() const { return _slots; }
-		void addSlot(types::Method *slot) { _slots.append(slot); }
+		void addSlot(types::Method *slot) { if (slot->isValid() && !contains(_slots, slot)) _slots.append(slot); }
 		void removeSlot(types::Method *slot) { _slots.removeAll(slot); }
 
 		QList<types::Property*> getProperties() const { return _properties; }
-		void addProperty(types::Property *property) { _properties.append(property); }
+		void addProperty(types::Property *property) { if (property->isValid() && !contains(_properties, property)) _properties.append(property); }
 		void removeProperty(types::Property *property) { _properties.removeAll(property); }
+
+		template <typename T> static bool contains(const QList<T> &types, T type)
+		{
+			for (const auto &tmpType : types)
+				if (*tmpType == *type)
+					return true;
+			return false;
+		}
 
 	private:
 		template <typename T> QJsonArray serializeTypes(const QList<T> &types) const
@@ -66,7 +75,7 @@ namespace libraryObjects {
 			return types;
 		}
 
-		QList<types::Method*> _constructors;
+		QList<types::Constructor*> _constructors;
 		QList<types::Method*> _methods;
 		QList<types::Method*> _signals;
 		QList<types::Method*> _slots;

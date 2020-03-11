@@ -18,7 +18,7 @@ types::Constructor::Constructor()
 
 types::Constructor::Constructor(const QMetaMethod &metaMethod)
 	: _access(metaMethod.access())
-	, _name(metaMethod.name())
+	, _className(metaMethod.name())
 {
 	for (auto parameterName : metaMethod.parameterNames())
 		addParameter(static_cast<QMetaType::Type>(metaMethod.parameterType(_parameters.size())), parameterName);
@@ -27,7 +27,7 @@ types::Constructor::Constructor(const QMetaMethod &metaMethod)
 types::Constructor::Constructor(const Constructor &constructor)
 	: IType()
 	, _access(constructor.access())
-	, _name(constructor.name())
+	, _className(constructor.className())
 	, _parameters(constructor.parameters())
 {
 }
@@ -36,10 +36,15 @@ types::Constructor &types::Constructor::operator=(const Constructor &constructor
 {
 	if (constructor.isValid()) {
 		setAccess(constructor.access());
-		setName(constructor.name());
+		setClassName(constructor.className());
 		setParameters(constructor.parameters());
 	}
 	return *this;
+}
+
+bool types::Constructor::operator==(const Constructor &constructor)
+{
+	return _className == constructor.className() && _parameters == constructor.parameters();
 }
 
 QJsonObject types::Constructor::serialize() const
@@ -54,7 +59,7 @@ QJsonObject types::Constructor::serialize() const
 
 	QJsonObject json;
 	json["access"] = static_cast<int>(_access);
-	json["name"] = _name;
+	json["className"] = _className;
 	json["parameters"] = jsonParameters;
 	return json;
 }
@@ -62,7 +67,7 @@ QJsonObject types::Constructor::serialize() const
 void types::Constructor::deserialize(const QJsonObject &json)
 {
 	_access = static_cast<QMetaMethod::Access>(json["access"].toInt());
-	_name = json["name"].toString();
+	_className = json["className"].toString();
 	for (auto jsonParameterRef : json["parameters"].toArray()) {
 		auto jsonParameter = jsonParameterRef.toObject();
 
@@ -72,7 +77,7 @@ void types::Constructor::deserialize(const QJsonObject &json)
 
 bool types::Constructor::isValid() const
 {
-	if (_name.isEmpty()) { return false; }
+	if (_className.isEmpty()) { return false; }
 
 	QStringList parametersName;
 	for (auto &parameter : _parameters) {
@@ -88,7 +93,7 @@ QString types::Constructor::signature() const
 	if (!isValid()) { return ""; }
 	QString signature;
 	
-	signature += _name + "::" + _name + "(";
+	signature += _className + "::" + _className + "(";
 	for (int i = 0; i < _parameters.size(); i += 1) {
 		if (i)
 			signature += ", ";
@@ -142,10 +147,15 @@ QDebug operator<<(QDebug debug, const types::Constructor &constructor)
 {
 	debug.nospace().noquote() << "Constructor(";
 	if (constructor.isValid()) {
-		debug << types::accessToString(constructor.access()).toLower();
+		debug << types::accessToString(constructor.access()).toLower() << " ";
 		debug << constructor.signature();
 	} else
 		debug << "INVALID";
 	debug << ")";
-	return debug;
+	return debug.maybeSpace().maybeQuote();
+}
+
+QDebug operator<<(QDebug debug, const types::Constructor *constructor)
+{
+	return debug << *constructor;
 }

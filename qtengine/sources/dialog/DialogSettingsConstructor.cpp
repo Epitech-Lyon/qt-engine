@@ -42,11 +42,6 @@ QWidget *qtengine::DialogSettingsConstructor::initBody()
 	});
 	addWidgetTo(cboxAccess, "Access", mainLayout);
 
-	auto leName = new QLineEdit(mainWidget);
-	leName->setText(_constructor.name());
-	connect(leName, &QLineEdit::textChanged, [this](const QString &text) { _constructor.setName(text); });
-	addWidgetTo(leName, "Name", mainLayout);
-
 	auto widgetParameters = new QWidget(mainWidget);
 	widgetParameters->setVisible(false);
 	_layoutParameters = new QVBoxLayout(widgetParameters);
