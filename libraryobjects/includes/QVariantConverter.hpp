@@ -15,5 +15,6 @@ namespace libraryObjects {
 	public:
 		static QJsonValue serialize(const QVariant &variant);
 		static QVariant deserialize(const QJsonValue &value);
+		static QString toString(const QVariant &value);
 	};
 }
