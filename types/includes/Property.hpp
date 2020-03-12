@@ -31,6 +31,8 @@ namespace types {
 		bool isValid() const { return !_name.isEmpty(); }
 		bool isUserType() const { return _userType; }
 
+		QString signature() const;
+
 		QMetaMethod::Access access() const { return _access; }
 		void setAccess(QMetaMethod::Access access) { setValue(_access, access, std::bind(&Property::accessChanged, this, _access)); }
 

@@ -76,6 +76,8 @@ QWidget *qtengine::DialogSettingsMethod::initBody()
 	_layoutParameters->setSpacing(_layoutParameters->contentsMargins().top() * 2);
 	_layoutParameters->setContentsMargins(0, _layoutParameters->spacing() - mainLayout->spacing(), 0, _layoutParameters->spacing() - mainLayout->spacing());
 	mainLayout->addWidget(widgetParameters);
+	for (auto &parameter : _method.parameters())
+		addParameter(parameter.first, parameter.second);
 
 	auto checkBoxIsConst = new QCheckBox(mainWidget);
 	checkBoxIsConst->setCheckState(_method.isConst() ? Qt::Checked : Qt::Unchecked);

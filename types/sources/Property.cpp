@@ -80,6 +80,11 @@ void types::Property::deserialize(const QJsonObject &json)
 	_getterName = json["getterName"].toString();
 }
 
+QString types::Property::signature() const
+{
+	return QString(QMetaType::typeName(_type)) + " " + _name;
+}
+
 QString types::Property::setterSignature() const
 {
 	if (!isValid() || _setterName.isEmpty()) { return ""; }
@@ -103,7 +108,7 @@ QDebug operator<<(QDebug debug, const types::Property &property)
 	debug.nospace().noquote() << "Property(";
 	if (property.isValid()) {
 		debug << types::accessToString(property.access()).toLower();
-		debug << " " << QMetaType::typeName(property.type()) << " " << property.name();
+		debug << " " << property.signature();
 
 		QString accesseur = property.setterSignature();
 		accesseur = accesseur.isEmpty() ? accesseur : accesseur + ", ";
