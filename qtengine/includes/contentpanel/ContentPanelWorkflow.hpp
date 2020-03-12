@@ -10,9 +10,10 @@
 #include "ContentPanelBase.hpp"
 #include "FlowScene.hpp"
 
-#include <QtWidgets/QListWidget>
+#include <QtWidgets/QTreeWidget>
 #include <QtCore/QMetaObject>
 #include <QtCore/QMetaMethod>
+#include <QtCore/QMap>
 
 namespace QtNodes {
 	class FlowView;
@@ -21,19 +22,10 @@ namespace QtNodes {
 
 namespace libraryObjects {
 	class AObject;
-	class ObjectClass;
 }
 
 namespace qtengine {
-	class ListWidget : public QListWidget {
-		Q_OBJECT
-
-	public:
-		ListWidget(QWidget *parent = nullptr);
-		~ListWidget() = default;
-
-	private:
-	};
+	class TreeWidgetWorkflow;
 
 	class FlowScene : public QtNodes::FlowScene {
 		Q_OBJECT
@@ -59,12 +51,6 @@ namespace qtengine {
 
 	private slots:
 		void onViewObjectChanged(libraryObjects::AObject *viewObject);
-		void onViewObjectClassChanged(libraryObjects::ObjectClass *viewObjectClass);
-		void onAddConstructor();
-		void onAddMethod();
-		void onAddSignal();
-		void onAddSlot();
-		void onAddProperty();
 
 	private:
 		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistry(const QMetaObject *metaObject, QMetaMethod::Access minimumAccess);
@@ -73,11 +59,6 @@ namespace qtengine {
 		FlowScene *_scene;
 		std::shared_ptr<QtNodes::DataModelRegistry> _viewRegistry;
 
-		ListWidget *_listConstructor;
-		ListWidget *_listMethod;
-		ListWidget *_listSignal;
-		ListWidget *_listSlot;
-		ListWidget *_listProperty;
-		libraryObjects::ObjectClass *_viewObjectClass;
+		TreeWidgetWorkflow *_tree;
 	};
 }
