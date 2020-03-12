@@ -113,8 +113,8 @@ QString types::Method::signature() const
 	QString signature;
 
 	if (_isStatic)
-		signature += " static";
-	signature += " " + QString(QMetaType::typeName(_returnType)) + " " + _name + "(";
+		signature += "static ";
+	signature += QString(QMetaType::typeName(_returnType)) + " " + _name + "(";
 	for (int i = 0; i < _parameters.size(); i += 1) {
 		if (i)
 			signature += ", ";

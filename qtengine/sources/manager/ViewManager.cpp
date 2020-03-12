@@ -101,12 +101,10 @@ void qtengine::ViewManager::onCreateView(const QString &viewPath)
 
 	_viewPath = fileInfo.filePath();
 	_viewName = fileInfo.baseName();
-	_viewObject = nullptr;
 
 	emit viewPathChanged(_viewPath);
 	emit viewNameChanged(_viewName);
 	emit viewObjectChanged(nullptr);
-	setCurrentObject(nullptr);
 }
 
 bool qtengine::ViewManager::createView(libraryObjects::AObject *viewObject)
@@ -115,7 +113,14 @@ bool qtengine::ViewManager::createView(libraryObjects::AObject *viewObject)
 	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return false; }
 
 	_viewObject = viewObject;
+	_viewObjectClass = new libraryObjects::ObjectClass();
+
+	auto constructor = new types::Constructor();
+	constructor->setClassName(_viewName);
+	_viewObjectClass->addConstructor(constructor);
+
 	emit viewObjectChanged(_viewObject);
+	emit viewObjectClassChanged(_viewObjectClass);
 	setCurrentObject(_viewObject);
 	onSaveView();
 	return true;

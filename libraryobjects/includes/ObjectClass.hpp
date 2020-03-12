@@ -23,34 +23,45 @@ namespace libraryObjects {
 		void deserialize(const QJsonObject &json) override;
 
 		QList<types::Constructor*> getContructors() const { return _constructors; }
-		void addConstructor(types::Constructor *constructor) { if (constructor->isValid() && !contains(_constructors, constructor)) _constructors.append(constructor); }
+		types::Constructor *addConstructor(types::Constructor *constructor) { return addType(_constructors, constructor); }
 		void removeConstructor(types::Constructor *constructor) { _constructors.removeAll(constructor); }
 
 		QList<types::Method*> getMethods() const { return _methods; }
-		void addMethod(types::Method *method) { if (method->isValid() && !contains(_methods, method)) _methods.append(method); }
+		types::Method *addMethod(types::Method *method) { return addType(_methods, method); }
 		void removeMethod(types::Method *method) { _methods.removeAll(method); }
 
 		QList<types::Method*> getSignals() const { return _signals; }
-		void addSignal(types::Method *signal) { if (signal->isValid() && !contains(_signals, signal)) _signals.append(signal); }
+		types::Method *addSignal(types::Method *signal) { return addType(_signals, signal); }
 		void removeSignal(types::Method *signal) { _signals.removeAll(signal); }
 
 		QList<types::Method*> getSlots() const { return _slots; }
-		void addSlot(types::Method *slot) { if (slot->isValid() && !contains(_slots, slot)) _slots.append(slot); }
+		types::Method *addSlot(types::Method *slot) { return addType(_slots, slot); }
 		void removeSlot(types::Method *slot) { _slots.removeAll(slot); }
 
 		QList<types::Property*> getProperties() const { return _properties; }
-		void addProperty(types::Property *property) { if (property->isValid() && !contains(_properties, property)) _properties.append(property); }
+		types::Property *addProperty(types::Property *property) { return addType(_properties, property); }
 		void removeProperty(types::Property *property) { _properties.removeAll(property); }
 
-		template <typename T> static bool contains(const QList<T> &types, T type)
+	private:
+		template <typename T> T findExisting(const QList<T> &types, T type)
 		{
 			for (const auto &tmpType : types)
 				if (*tmpType == *type)
-					return true;
-			return false;
+					return tmpType;
+			return nullptr;
 		}
 
-	private:
+		template <typename T> T addType(QList<T> &types, T type)
+		{
+			if (!type->isValid()) { return nullptr; }
+
+			auto existingType = findExisting(types, type);
+			if (existingType) { return existingType; }
+
+			types.append(type);
+			return type;
+		}
+
 		template <typename T> QJsonArray serializeTypes(const QList<T> &types) const
 		{
 			QJsonArray jsonArray;

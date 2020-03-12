@@ -62,8 +62,7 @@ namespace qtengine {
 			auto parentItem = itemsType[type->access()];
 			auto item = new QTreeWidgetItem(parentItem, { type->signature() });
 
-			parentItem->parent()->setExpanded(true);
-			parentItem->setExpanded(true);
+			setCurrentItem(item);
 			childItemsType[item] = type;
 		}
 

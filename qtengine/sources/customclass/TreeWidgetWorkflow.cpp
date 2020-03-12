@@ -75,6 +75,10 @@ void qtengine::TreeWidgetWorkflow::clear()
 void qtengine::TreeWidgetWorkflow::onCustomContextMenuRequested(const QPoint &pos)
 {
 	auto item = itemAt(pos);
+	if (!item) { return; }
+
+	setCurrentItem(item);
+	if (_childItemsConstructor.contains(item) && _childItemsConstructor[item]->parameters().size() == 0) { return; }
 
 	QMenu menu;
 	menu.addAction("Settings", [this, item]() {
@@ -99,7 +103,9 @@ void qtengine::TreeWidgetWorkflow::onViewObjectClassChanged(libraryObjects::Obje
 	_viewObjectClass = viewObjectClass;
 	clear();
 
+	setEnabled(_viewObjectClass);
 	if (!_viewObjectClass) { return; }
+
 	for (auto constructor : _viewObjectClass->getContructors())
 		addTypeItem(_itemsConstructor, _childItemsConstructor, constructor);
 	for (auto method : _viewObjectClass->getMethods())
@@ -110,6 +116,8 @@ void qtengine::TreeWidgetWorkflow::onViewObjectClassChanged(libraryObjects::Obje
 		addTypeItem(_itemsSlot, _childItemsSlot, slot);
 	for (auto property : _viewObjectClass->getProperties())
 		addTypeItem(_itemsProperty, _childItemsProperty, property);
+	setCurrentItem(nullptr);
+	expandAll();
 }
 
 void qtengine::TreeWidgetWorkflow::onAddConstructorClicked()
@@ -120,11 +128,15 @@ void qtengine::TreeWidgetWorkflow::onAddConstructorClicked()
 		auto constructor = new types::Constructor(dialog.constructor());
 
 		constructor->setClassName(Manager::instance()->viewManager()->viewName());
-		if (constructor->isValid()) {
-			_viewObjectClass->addConstructor(constructor);
+		auto constructorRet = _viewObjectClass->addConstructor(constructor);
+
+		if (constructor == constructorRet)
 			addTypeItem(_itemsConstructor, _childItemsConstructor, constructor);
-		} else
+		else {
 			delete constructor;
+			if (constructorRet)
+				setCurrentItem(_childItemsConstructor.key(constructorRet));
+		}
 	}
 }
 
@@ -134,9 +146,15 @@ void qtengine::TreeWidgetWorkflow::onAddMethodClicked()
 
 	if (dialog.exec() == QDialog::Accepted && dialog.method().isValid()) {
 		auto method = new types::Method(dialog.method());
+		auto methodRet = _viewObjectClass->addMethod(method);
 
-		_viewObjectClass->addMethod(method);
-		addTypeItem(_itemsMethod, _childItemsMethod, method);
+		if (method == methodRet)
+			addTypeItem(_itemsMethod, _childItemsMethod, method);
+		else {
+			delete method;
+			if (methodRet)
+				setCurrentItem(_childItemsMethod.key(methodRet));
+		}
 	}
 }
 
@@ -146,9 +164,15 @@ void qtengine::TreeWidgetWorkflow::onAddSignalClicked()
 
 	if (dialog.exec() == QDialog::Accepted && dialog.method().isValid()) {
 		auto signal = new types::Method(dialog.method());
+		auto signalRet = _viewObjectClass->addSignal(signal);
 
-		_viewObjectClass->addSignal(signal);
-		addTypeItem(_itemsSignal, _childItemsSignal, signal);
+		if (signal == signalRet)
+			addTypeItem(_itemsSignal, _childItemsSignal, signal);
+		else {
+			delete signal;
+			if (signalRet)
+				setCurrentItem(_childItemsSignal.key(signalRet));
+		}
 	}
 }
 
@@ -158,9 +182,15 @@ void qtengine::TreeWidgetWorkflow::onAddSlotClicked()
 
 	if (dialog.exec() == QDialog::Accepted && dialog.method().isValid()) {
 		auto slot = new types::Method(dialog.method());
+		auto slotRet = _viewObjectClass->addSlot(slot);
 
-		_viewObjectClass->addSlot(slot);
-		addTypeItem(_itemsSlot, _childItemsSlot, slot);
+		if (slot == slotRet)
+			addTypeItem(_itemsSlot, _childItemsSlot, slot);
+		else {
+			delete slot;
+			if (slotRet)
+				setCurrentItem(_childItemsSlot.key(slotRet));
+		}
 	}
 }
 
@@ -170,9 +200,15 @@ void qtengine::TreeWidgetWorkflow::onAddPropertyClicked()
 
 	if (dialog.exec() == QDialog::Accepted && dialog.property().isValid()) {
 		auto property = new types::Property(dialog.property());
+		auto propertyRet = _viewObjectClass->addProperty(property);
 
-		_viewObjectClass->addProperty(property);
-		addTypeItem(_itemsProperty, _childItemsProperty, property);
+		if (property == propertyRet)
+			addTypeItem(_itemsProperty, _childItemsProperty, property);
+		else {
+			delete property;
+			if (propertyRet)
+				setCurrentItem(_childItemsProperty.key(propertyRet));
+		}
 	}
 }
 
