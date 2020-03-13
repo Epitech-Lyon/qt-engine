@@ -41,10 +41,10 @@ void qtengine::ContentPanelView::onViewObjectChanged(libraryObjects::AObject *ob
 void qtengine::ContentPanelView::clear()
 {
 	while (!_mainLayout->isEmpty()) {
-		auto item = _mainLayout->itemAt(0);
+		auto item = _mainLayout->takeAt(0);
 
-		_mainLayout->removeItem(item);
 		if (item->widget())
 			item->widget()->setParent(nullptr);
+		delete item;
 	}
 }

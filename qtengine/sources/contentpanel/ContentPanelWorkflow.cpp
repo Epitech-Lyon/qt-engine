@@ -21,6 +21,7 @@
 #include "Constructor.hpp"
 #include "Method.hpp"
 #include "Property.hpp"
+#include "BuiltIn.hpp"
 
 #include <QtWidgets/QSplitter>
 #include <QtWidgets/QGraphicsSceneDragDropEvent>
@@ -63,6 +64,8 @@ void qtengine::ContentPanelWorkflow::init()
 	_scene = new FlowScene(splitter);
 	_view = new QtNodes::FlowView(_scene, splitter);
 
+	_registryBuiltIn = generateRegistryBuiltIn();
+
 	splitter->addWidget(_tree);
 	splitter->addWidget(_view);
 	splitter->setSizes({_tree->sizeHint().width(), _tree->sizeHint().width() * 4});
@@ -74,7 +77,34 @@ void qtengine::ContentPanelWorkflow::init()
 	connect(Manager::instance()->viewManager(), &ViewManager::viewObjectClassChanged, _tree, &TreeWidgetWorkflow::onViewObjectClassChanged);
 }
 
-std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistry(const QMetaObject *metaObject, QMetaMethod::Access minimumAccess)
+std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistryBuiltIn() const
+{
+	auto registry = std::make_shared<QtNodes::DataModelRegistry>();
+
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Int)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Double)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Bool)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::String)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Date)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Time)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::DateTime)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::KeySequence)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Char)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Locale)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Point)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::PointF)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Size)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::SizeF)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Rect)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::RectF)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Color)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::SizePolicy)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Font)); });
+	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Cursor)); });
+	return registry;
+}
+
+std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistryView(const QMetaObject *metaObject, QMetaMethod::Access minimumAccess) const
 {
 	auto registry = std::make_shared<QtNodes::DataModelRegistry>();
 	QString prefix("base class/");
@@ -104,7 +134,10 @@ void qtengine::ContentPanelWorkflow::onViewObjectChanged(libraryObjects::AObject
 	_tree->clear();
 	_scene->clearScene();
 	if (!viewObject) { return; }
-	_viewRegistry = generateRegistry(viewObject->object()->metaObject(), QMetaMethod::Protected);
+	auto registryView = generateRegistryView(viewObject->object()->metaObject(), QMetaMethod::Protected);
+	auto registry = std::make_shared<QtNodes::DataModelRegistry>();
 
-	_scene->setRegistry(_viewRegistry);
+	registry->concatenate(registryView.get());
+	registry->concatenate(_registryBuiltIn.get());
+	_scene->setRegistry(registry);
 }

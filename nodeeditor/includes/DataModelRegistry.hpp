@@ -57,6 +57,8 @@ namespace QtNodes {
 			_registeredTypeConverters[id] = std::move(typeConverter);
 		}
 
+		void concatenate(DataModelRegistry *registry);
+
 		std::unique_ptr<NodeDataModel> create(QString const &modelName);
 		RegisteredModelCreatorsMap const &registeredModelCreators() const;
 		RegisteredModelsCategoryMap const &registeredModelsCategoryAssociation() const;

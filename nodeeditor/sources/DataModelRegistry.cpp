@@ -1,12 +1,21 @@
 #include "DataModelRegistry.hpp"
 
-#include <QtCore/QFile>
-#include <QtWidgets/QMessageBox>
-
 using QtNodes::DataModelRegistry;
 using QtNodes::NodeDataModel;
 using QtNodes::NodeDataType;
 using QtNodes::TypeConverter;
+
+void DataModelRegistry::concatenate(DataModelRegistry *registry)
+{
+	for (auto tmp : registry->_registeredModelsCategory)
+		_registeredModelsCategory[tmp.first] = tmp.second;
+	for (auto tmp : registry->_categories)
+		_categories.insert(tmp);
+	for (auto tmp : registry->_registeredItemCreators)
+		_registeredItemCreators[tmp.first] = tmp.second;
+	for (auto tmp : registry->_registeredTypeConverters)
+		_registeredTypeConverters[tmp.first] = tmp.second;
+}
 
 std::unique_ptr<NodeDataModel> DataModelRegistry::create(QString const &modelName)
 {

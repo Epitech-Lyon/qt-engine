@@ -250,8 +250,7 @@ public:
     void clear();
 
     template <class PropertyManager>
-    void setFactoryForManager(PropertyManager *manager,
-                    QtAbstractEditorFactory<PropertyManager> *factory) {
+    void setFactoryForManager(PropertyManager *manager, QtAbstractEditorFactory<PropertyManager> *factory) {
         QtAbstractPropertyManager *abstractManager = manager;
         QtAbstractEditorFactoryBase *abstractFactory = factory;
 

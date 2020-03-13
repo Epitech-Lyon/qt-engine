@@ -1342,8 +1342,7 @@ QVariant QtVariantPropertyManager::value(const QtProperty *property) const
         return colorManager->value(internProp);
     } else if (QtEnumPropertyManager *enumManager = qobject_cast<QtEnumPropertyManager *>(manager)) {
         return enumManager->value(internProp);
-    } else if (QtSizePolicyPropertyManager *sizePolicyManager =
-               qobject_cast<QtSizePolicyPropertyManager *>(manager)) {
+    } else if (QtSizePolicyPropertyManager *sizePolicyManager = qobject_cast<QtSizePolicyPropertyManager *>(manager)) {
         return sizePolicyManager->value(internProp);
     } else if (QtFontPropertyManager *fontManager = qobject_cast<QtFontPropertyManager *>(manager)) {
         return fontManager->value(internProp);

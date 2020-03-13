@@ -53,11 +53,12 @@ namespace qtengine {
 		void onViewObjectChanged(libraryObjects::AObject *viewObject);
 
 	private:
-		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistry(const QMetaObject *metaObject, QMetaMethod::Access minimumAccess);
+		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryBuiltIn() const;
+		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryView(const QMetaObject *metaObject, QMetaMethod::Access minimumAccess) const;
 
 		QtNodes::FlowView *_view;
 		FlowScene *_scene;
-		std::shared_ptr<QtNodes::DataModelRegistry> _viewRegistry;
+		std::shared_ptr<QtNodes::DataModelRegistry> _registryBuiltIn;
 
 		TreeWidgetWorkflow *_tree;
 	};
