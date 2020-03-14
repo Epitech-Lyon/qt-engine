@@ -10,15 +10,20 @@
 #include "NodeDataModel.hpp"
 #include <QtCore/QMetaProperty>
 
+namespace types {
+	class Property;
+}
+
 namespace qtengine {
 	class Property : public QtNodes::NodeDataModel {
 	public:
+		Property(types::Property *property);
 		Property(const QMetaProperty &metaProperty);
 		~Property() = default;
 
-		QString name() const override { return _metaProperty.name(); }
+		QString name() const override;
 
-		QString caption() const override { return QString(_metaProperty.typeName()) + " " + _metaProperty.name(); }
+		QString caption() const override;
 		bool captionVisible() const override { return true; }
 
 		unsigned int nPorts(QtNodes::PortType portType) const override;
@@ -30,6 +35,6 @@ namespace qtengine {
 		QtNodes::NodeDataModel::ConnectionPolicy portOutConnectionPolicy(QtNodes::PortIndex portIndex) const override;
 
 	private:
-		QMetaProperty _metaProperty;
+		types::Property *_property;
 	};
 }

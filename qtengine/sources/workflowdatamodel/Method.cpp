@@ -6,18 +6,36 @@
 */
 
 #include "Method.hpp"
+#include "types/includes/Method.hpp"
+
 #include "FlowController.hpp"
 #include "Type.hpp"
 
 #include "Connection.hpp"
 
-qtengine::Method::Method(const QMetaMethod &metaMethod)
+qtengine::Method::Method(types::Method *method)
 	: _flowControllerFill(false)
-	, _metaMethod(metaMethod)
+	, _method(method)
 {
 	for (unsigned int i = 0; i < nPorts(QtNodes::PortType::In); i += 1)
 		_inputsFill << false;
 	refreshState();
+}
+
+qtengine::Method::Method(const QMetaMethod &metaMethod)
+	: Method(new types::Method(metaMethod))
+{
+	connect(this, &QObject::destroyed, _method, &QObject::deleteLater);
+}
+
+QString qtengine::Method::name() const
+{
+	return _method->name();
+}
+
+QString qtengine::Method::caption() const
+{
+	return _method->signature();
 }
 
 unsigned int qtengine::Method::nPorts(QtNodes::PortType portType) const
@@ -28,10 +46,10 @@ unsigned int qtengine::Method::nPorts(QtNodes::PortType portType) const
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = _metaMethod.parameterCount() + 1;
+		ret = _method->parameters().count() + 1;
 		break;
 	case QtNodes::PortType::Out:
-		ret = _metaMethod.returnType() == QMetaType::Void ? 1 : 2;
+		ret = _method->returnType() == QMetaType::Void ? 1 : 2;
 		break;
 	}
 	return ret;
@@ -45,10 +63,10 @@ QtNodes::NodeDataType qtengine::Method::dataType(QtNodes::PortType portType, QtN
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = portIndex == 0 ? FlowController().type() : Type(_metaMethod.parameterType(portIndex - 1)).type();
+		ret = portIndex == 0 ? FlowController().type() : Type(_method->parameters()[portIndex - 1].first).type();
 		break;
 	case QtNodes::PortType::Out:
-		ret = portIndex == 0 ? FlowController().type() : Type(_metaMethod.returnType()).type();
+		ret = portIndex == 0 ? FlowController().type() : Type(_method->returnType()).type();
 		break;
 	}
 	return ret;
@@ -62,7 +80,7 @@ QString qtengine::Method::portCaption(QtNodes::PortType portType, QtNodes::PortI
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = portIndex == 0 ? "" : dataType(portType, portIndex).name + " " + _metaMethod.parameterNames()[portIndex - 1];
+		ret = portIndex == 0 ? "" : dataType(portType, portIndex).name + " " + _method->parameters()[portIndex - 1].second;
 		break;
 	case QtNodes::PortType::Out:
 		ret = portIndex == 0 ? "" : dataType(portType, portIndex).name;

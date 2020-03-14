@@ -133,8 +133,9 @@ QWidget *types::Slot::initEditor()
 
 				property->setValue(name);
 				propertySubGroup->addSubProperty(property);
-				(*propertySlot)[property] = [this, propertyGroup, propertySubGroup](const QVariant &value) {
-					modifyParameterName(propertyGroup->subProperties().indexOf(propertySubGroup) - 1, value.toString());
+				(*propertySlot)[property] = [this, propertyGroup, propertySubGroup, property](const QVariant &value) {
+					if (!modifyParameterName(propertyGroup->subProperties().indexOf(propertySubGroup) - 1, value.toString()))
+						property->setValue(_parameters[propertyGroup->subProperties().indexOf(propertySubGroup) - 1].second);
 				};
 			}
 			propertyGroup->addSubProperty(propertySubGroup);
@@ -198,9 +199,11 @@ bool types::Slot::isValid() const
 
 	QStringList parametersName;
 	for (auto &parameter : _parameters) {
-		if (parameter.second.isEmpty() || parametersName.contains(parameter.second)) { return false; }
+		if (!parameter.second.isEmpty()) {
+			if (parametersName.contains(parameter.second)) { return false; }
 
-		parametersName.append(parameter.second);
+			parametersName.append(parameter.second);
+		}
 	}
 	return true;
 }
@@ -214,7 +217,9 @@ QString types::Slot::signature() const
 	for (int i = 0; i < _parameters.size(); i += 1) {
 		if (i)
 			signature += ", ";
-		signature += QString(QMetaType::typeName(_parameters[i].first)) + " " + _parameters[i].second;
+		signature += QString(QMetaType::typeName(_parameters[i].first));
+		if (!_parameters[i].second.isEmpty())
+			signature += " " + _parameters[i].second;
 	}
 	signature += ")";
 	if (_isConst)

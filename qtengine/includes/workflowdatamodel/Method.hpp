@@ -10,15 +10,20 @@
 #include "NodeDataModel.hpp"
 #include <QtCore/QMetaMethod>
 
+namespace types {
+	class Method;
+}
+
 namespace qtengine {
 	class Method : public QtNodes::NodeDataModel {
 	public:
+		Method(types::Method *method);
 		Method(const QMetaMethod &metaMethod);
 		~Method() = default;
 
-		QString name() const override { return _metaMethod.name(); }
+		QString name() const override;
 
-		QString caption() const override { return _metaMethod.name(); }
+		QString caption() const override;
 		bool captionVisible() const override { return true; }
 
 		unsigned int nPorts(QtNodes::PortType portType) const override;
@@ -37,6 +42,6 @@ namespace qtengine {
 		void refreshState();
 		bool _flowControllerFill;
 		QVector<bool> _inputsFill;
-		QMetaMethod _metaMethod;
+		types::Method *_method;
 	};
 }

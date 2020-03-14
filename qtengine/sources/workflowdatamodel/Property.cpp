@@ -6,14 +6,32 @@
 */
 
 #include "Property.hpp"
+#include "types/includes/Property.hpp"
+
 #include "FlowController.hpp"
 #include "Type.hpp"
 
 #include "Connection.hpp"
 
-qtengine::Property::Property(const QMetaProperty &metaProperty)
-	: _metaProperty(metaProperty)
+qtengine::Property::Property(types::Property *property)
+	: _property(property)
 {
+}
+
+qtengine::Property::Property(const QMetaProperty &metaProperty)
+	: Property(new types::Property(metaProperty))
+{
+	connect(this, &QObject::destroyed, _property, &QObject::deleteLater);
+}
+
+QString qtengine::Property::name() const
+{
+	return _property->name();
+}
+
+QString qtengine::Property::caption() const
+{
+	return _property->signature();
 }
 
 unsigned int qtengine::Property::nPorts(QtNodes::PortType portType) const
@@ -24,10 +42,10 @@ unsigned int qtengine::Property::nPorts(QtNodes::PortType portType) const
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = _metaProperty.isWritable() + 1;
+		ret = !_property->setterName().isEmpty() + 1;
 		break;
 	case QtNodes::PortType::Out:
-		ret = _metaProperty.isReadable() + 1;
+		ret = !_property->getterName().isEmpty() + 1;
 		break;
 	}
 	return ret;
@@ -41,10 +59,10 @@ QtNodes::NodeDataType qtengine::Property::dataType(QtNodes::PortType portType, Q
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = portIndex == 0 ? FlowController().type() : Type(_metaProperty.type()).type();
+		ret = portIndex == 0 ? FlowController().type() : Type(_property->type()).type();
 		break;
 	case QtNodes::PortType::Out:
-		ret = portIndex == 0 ? FlowController().type() : Type(_metaProperty.type()).type();
+		ret = portIndex == 0 ? FlowController().type() : Type(_property->type()).type();
 		break;
 	}
 	return ret;

@@ -18,7 +18,7 @@
 #include "ObjectClass.hpp"
 
 #include "Utils.hpp"
-#include "Constructor.hpp"
+
 #include "Method.hpp"
 #include "Property.hpp"
 #include "BuiltIn.hpp"
@@ -101,6 +101,9 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::SizePolicy)); });
 	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Font)); });
 	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Cursor)); });
+
+	// TODO Add some constructors like QWidget
+
 	return registry;
 }
 
@@ -111,8 +114,13 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 
 	for (int idx = 0; idx < metaObject->constructorCount(); idx += 1) {
 		auto metaMethod = metaObject->constructor(idx);
+		if (metaMethod.access() < minimumAccess) { continue; }
 
-		if (metaMethod.access() >= minimumAccess)
+		if (metaMethod.methodType() == QMetaMethod::Method)
+			registry->registerModel<Method>(prefix + types::typeToString(metaMethod.methodType()), [=]() { return std::unique_ptr<Method>(new Method(metaMethod)); });
+		else if (metaMethod.methodType() == QMetaMethod::Signal)
+			registry->registerModel<Method>(prefix + types::typeToString(metaMethod.methodType()), [=]() { return std::unique_ptr<Method>(new Method(metaMethod)); });
+		else if (metaMethod.methodType() == QMetaMethod::Slot)
 			registry->registerModel<Method>(prefix + types::typeToString(metaMethod.methodType()), [=]() { return std::unique_ptr<Method>(new Method(metaMethod)); });
 	}
 	for (int idx = 0; idx < metaObject->methodCount(); idx += 1) {
