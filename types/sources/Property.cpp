@@ -80,7 +80,7 @@ QWidget *types::Property::initEditor()
 	{
 		QStringList typeString;
 		QList<QMetaType::Type> types;
-		for (int i = 1; i < QMetaType::User; i += 1)
+		for (int i = QMetaType::UnknownType + 1; i < QMetaType::User + 1; i += 1)
 			if (QMetaType::isRegistered(i) && i != QMetaType::Void) {
 				typeString.append(QMetaType::typeName(i));
 				types.append(static_cast<QMetaType::Type>(i));

@@ -100,20 +100,17 @@ QWidget *types::Method::initEditor()
 		};
 	}
 	{
-		QStringList typeString;
-		QList<QMetaType::Type> types;
-		for (int i = 1; i < QMetaType::User; i += 1)
-			if (QMetaType::isRegistered(i) && i != QMetaType::Void) {
-				typeString.append(QMetaType::typeName(i));
-				types.append(static_cast<QMetaType::Type>(i));
-			}
+		QMap<QString, QMetaType::Type> types;
+		for (int i = QMetaType::UnknownType + 1; i < QMetaType::User + 1; i += 1)
+			if (QMetaType::isRegistered(i) && i != QMetaType::Void)
+				types[QMetaType::typeName(i)] = static_cast<QMetaType::Type>(i);
 		auto property = propertyManager->addProperty(QtVariantPropertyManager::enumTypeId(), "Return type");
 
-		property->setAttribute("enumNames", typeString);
-		property->setValue(typeString.indexOf(QMetaType::typeName(_returnType)));
+		property->setAttribute("enumNames", QStringList(types.keys()));
+		property->setValue(types.keys().indexOf(QMetaType::typeName(_returnType)));
 		propertyEditor->addProperty(property);
 		(*propertySlot)[property] = [this, types](const QVariant &value) {
-			setReturnType(types[value.toInt()]);
+			setReturnType(types.values()[value.toInt()]);
 		};
 	}
 	{
@@ -131,20 +128,17 @@ QWidget *types::Method::initEditor()
 			this->addParameter(type, name);
 			auto propertySubGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId());
 			{
-				QStringList typeString;
-				QList<QMetaType::Type> types;
-				for (int i = 1; i < QMetaType::User; i += 1)
-					if (QMetaType::isRegistered(i) && i != QMetaType::Void) {
-						typeString.append(QMetaType::typeName(i));
-						types.append(static_cast<QMetaType::Type>(i));
-					}
+				QMap<QString, QMetaType::Type> types;
+				for (int i = QMetaType::UnknownType + 1; i < QMetaType::User + 1; i += 1)
+					if (QMetaType::isRegistered(i) && i != QMetaType::Void)
+						types[QMetaType::typeName(i)] = static_cast<QMetaType::Type>(i);
 				auto property = propertyManager->addProperty(QtVariantPropertyManager::enumTypeId(), "Type");
 
-				property->setAttribute("enumNames", typeString);
-				property->setValue(typeString.indexOf(QMetaType::typeName(type)));
+				property->setAttribute("enumNames", QStringList(types.keys()));
+				property->setValue(types.keys().indexOf(QMetaType::typeName(type)));
 				propertySubGroup->addSubProperty(property);
 				(*propertySlot)[property] = [this, propertyGroup, propertySubGroup, types](const QVariant &value) {
-					modifyParameterType(propertyGroup->subProperties().indexOf(propertySubGroup) - 1, types[value.toInt()]);
+					modifyParameterType(propertyGroup->subProperties().indexOf(propertySubGroup) - 1, types.values()[value.toInt()]);
 				};
 			}
 			{
