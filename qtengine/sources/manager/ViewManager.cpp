@@ -20,6 +20,7 @@
 
 #include "Object.hpp"
 #include "ObjectClass.hpp"
+#include "types/includes/Constructor.hpp"
 
 qtengine::ViewManager::ViewManager()
 	: _viewObject(nullptr)
@@ -117,7 +118,7 @@ bool qtengine::ViewManager::createView(libraryObjects::AObject *viewObject)
 
 	auto constructor = new types::Constructor();
 	constructor->setClassName(_viewName);
-	_viewObjectClass->addConstructor(constructor);
+	_viewObjectClass->addClassType(constructor);
 
 	emit viewObjectChanged(_viewObject);
 	emit viewObjectClassChanged(_viewObjectClass);

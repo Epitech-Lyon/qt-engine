@@ -9,10 +9,11 @@
 
 #include "NodeDataModel.hpp"
 #include <QtCore/QMetaType>
+#include <QtCore/QVariant>
 
-#include "qtpropertymanager.h"
-#include "qtvariantproperty.h"
-#include "qtgroupboxpropertybrowser.h"
+class QtGroupBoxPropertyBrowser;
+class QtVariantEditorFactory;
+class QtVariantPropertyManager;
 
 namespace qtengine {
 	class BuiltIn : public QtNodes::NodeDataModel {
@@ -33,7 +34,7 @@ namespace qtengine {
 
 		QtNodes::NodeDataModel::ConnectionPolicy portOutConnectionPolicy(QtNodes::PortIndex portIndex) const override;
 
-		QWidget *embeddedWidget() override { return _propertyEditor; }
+		QWidget *embeddedWidget() override;
 
 	private:
 		QVariant::Type _type;

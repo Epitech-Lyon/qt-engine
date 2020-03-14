@@ -8,14 +8,14 @@
 #include "TreeWidgetWorkflow.hpp"
 
 #include "ObjectClass.hpp"
-#include "DialogSettingsConstructor.hpp"
-#include "DialogSettingsMethod.hpp"
-#include "DialogSettingsProperty.hpp"
+#include "DialogSettingsClassType.hpp"
 #include "Utils.hpp"
 
 #include "Manager.hpp"
 #include "ViewManager.hpp"
 #include "MainWindow.hpp"
+
+#include "types/includes/Constructor.hpp"
 
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QPushButton>
@@ -41,60 +41,49 @@ qtengine::TreeWidgetWorkflow::TreeWidgetWorkflow(QWidget *parent)
 
 void qtengine::TreeWidgetWorkflow::clear()
 {
-	auto initBranch = [this](const QString &branchName, std::function<void ()> signalToEmit) {
+	auto initBranch = [this](const QString &branchName, std::function<void ()> callBack) {
 		auto parentItem = new QTreeWidgetItem(invisibleRootItem(), { branchName });
 		parentItem->setFlags(Qt::ItemIsEnabled);
 
 		auto btnAdd = new QPushButton("+");
-		connect(btnAdd, &QPushButton::clicked, btnAdd, [signalToEmit]() { emit signalToEmit(); });
+		connect(btnAdd, &QPushButton::clicked, btnAdd, callBack);
 		setItemWidget(parentItem, 1, btnAdd);
 		setColumnWidth(1, btnAdd->height());
 
-		QMap<QMetaMethod::Access, QTreeWidgetItem *> items;
+		QMap<QMetaMethod::Access, QTreeWidgetItem *> itemMap;
 		for (auto access : {QMetaMethod::Private, QMetaMethod::Protected, QMetaMethod::Public}) {
-			items[access] = new QTreeWidgetItem(parentItem, { types::accessToString(access) });
-			items[access]->setFlags(Qt::ItemIsEnabled);
+			itemMap[access] = new QTreeWidgetItem(parentItem, { types::accessToString(access) });
+			itemMap[access]->setFlags(Qt::ItemIsEnabled);
 		}
-		return items;
+		return itemMap;
 	};
 
 	QTreeWidget::clear();
-	_childItemsConstructor.clear();
-	_childItemsMethod.clear();
-	_childItemsSignal.clear();
-	_childItemsSlot.clear();
-	_childItemsProperty.clear();
+	_childItems.clear();
 
-	_itemsConstructor = initBranch("Constructor", std::bind(&TreeWidgetWorkflow::onAddConstructorClicked, this));
-	_itemsMethod = initBranch("Method", std::bind(&TreeWidgetWorkflow::onAddMethodClicked, this));
-	_itemsSignal = initBranch("Signal", std::bind(&TreeWidgetWorkflow::onAddSignalClicked, this));
-	_itemsSlot = initBranch("Slot", std::bind(&TreeWidgetWorkflow::onAddSlotClicked, this));
-	_itemsProperty = initBranch("Property", std::bind(&TreeWidgetWorkflow::onAddPropertyClicked, this));
+	_items[types::ClassType::CONSTRUCTOR] = initBranch("Constructor", [this]() {
+		auto constructor = new types::Constructor();
+
+		constructor->setClassName(Manager::instance()->viewManager()->viewName());
+		onAddClicked(constructor);
+	});
+	_items[types::ClassType::METHOD] = initBranch("Method", [this]() { onAddClicked(types::ClassType::construct(types::ClassType::METHOD)); });
+	_items[types::ClassType::SIGNAL] = initBranch("Signal", [this]() { onAddClicked(types::ClassType::construct(types::ClassType::SIGNAL)); });
+	_items[types::ClassType::SLOT] = initBranch("Slot", [this]() { onAddClicked(types::ClassType::construct(types::ClassType::SLOT)); });
+	_items[types::ClassType::PROPERTY] = initBranch("Property", [this]() { onAddClicked(types::ClassType::construct(types::ClassType::PROPERTY)); });
 }
 
 void qtengine::TreeWidgetWorkflow::onCustomContextMenuRequested(const QPoint &pos)
 {
 	auto item = itemAt(pos);
-	if (!item) { return; }
+	if (!item || !_childItems.contains(item)) { return; }
 
 	setCurrentItem(item);
-	if (_childItemsConstructor.contains(item) && _childItemsConstructor[item]->parameters().size() == 0) { return; }
+	if (_childItems[item]->type() == types::ClassType::CONSTRUCTOR && dynamic_cast<types::Constructor*>(_childItems[item])->parameters().size() == 0) { return; }
 
 	QMenu menu;
-	menu.addAction("Settings", [this, item]() {
-		if (_childItemsConstructor.contains(item)) { onSettingsConstructorClicked(item, _childItemsConstructor[item]); }
-		if (_childItemsMethod.contains(item)) { onSettingsMethodClicked(item, _childItemsMethod[item]); }
-		if (_childItemsSignal.contains(item)) { onSettingsSignalClicked(item, _childItemsSignal[item]); }
-		if (_childItemsSlot.contains(item)) { onSettingsSlotClicked(item, _childItemsSlot[item]); }
-		if (_childItemsProperty.contains(item)) { onSettingsPropertyClicked(item, _childItemsProperty[item]); }
-	});
-	menu.addAction("Delete", [this, item]() {
-		if (_childItemsConstructor.contains(item)) { onDeleteConstructorClicked(item, _childItemsConstructor[item]); }
-		if (_childItemsMethod.contains(item)) { onDeleteMethodClicked(item, _childItemsMethod[item]); }
-		if (_childItemsSignal.contains(item)) { onDeleteSignalClicked(item, _childItemsSignal[item]); }
-		if (_childItemsSlot.contains(item)) { onDeleteSlotClicked(item, _childItemsSlot[item]); }
-		if (_childItemsProperty.contains(item)) { onDeletePropertyClicked(item, _childItemsProperty[item]); }
-	});
+	menu.addAction("Settings", [this, item]() { onSettingsClicked(item); });
+	menu.addAction("Delete", [this, item]() { onDeleteClicked(item); });
 	menu.exec(mapToGlobal(pos));
 }
 
@@ -106,203 +95,60 @@ void qtengine::TreeWidgetWorkflow::onViewObjectClassChanged(libraryObjects::Obje
 	setEnabled(_viewObjectClass);
 	if (!_viewObjectClass) { return; }
 
-	for (auto constructor : _viewObjectClass->getContructors())
-		addTypeItem(_itemsConstructor, _childItemsConstructor, constructor);
-	for (auto method : _viewObjectClass->getMethods())
-		addTypeItem(_itemsMethod, _childItemsMethod, method);
-	for (auto signal : _viewObjectClass->getSignals())
-		addTypeItem(_itemsSignal, _childItemsSignal, signal);
-	for (auto slot : _viewObjectClass->getSlots())
-		addTypeItem(_itemsSlot, _childItemsSlot, slot);
-	for (auto property : _viewObjectClass->getProperties())
-		addTypeItem(_itemsProperty, _childItemsProperty, property);
+	for (int i = 0; i < QMetaEnum::fromType<types::ClassType::Type>().keyCount(); i += 1)
+		for (auto classType : _viewObjectClass->getClassType(static_cast<types::ClassType::Type>(i)))
+			addTypeItem(classType);
+
 	setCurrentItem(nullptr);
 	expandAll();
 }
 
-void qtengine::TreeWidgetWorkflow::onAddConstructorClicked()
+void qtengine::TreeWidgetWorkflow::addTypeItem(types::ClassType *classType)
 {
-	DialogSettingsConstructor dialog(Manager::instance()->mainWindow());
+	auto parentItem = _items[classType->type()][classType->access()];
+	auto item = new QTreeWidgetItem(parentItem, { classType->signature() });
 
-	if (dialog.exec() == QDialog::Accepted) {
-		auto constructor = new types::Constructor(dialog.constructor());
+	setCurrentItem(item);
+	_childItems[item] = classType;
+}
 
-		constructor->setClassName(Manager::instance()->viewManager()->viewName());
-		auto constructorRet = _viewObjectClass->addConstructor(constructor);
+void qtengine::TreeWidgetWorkflow::onAddClicked(types::ClassType *classType)
+{
+	DialogSettingsClassType dialog(classType, Manager::instance()->mainWindow());
 
-		if (constructor == constructorRet)
-			addTypeItem(_itemsConstructor, _childItemsConstructor, constructor);
+	if (dialog.exec() == QDialog::Accepted && classType->isValid()) {
+		auto classTypeRet = _viewObjectClass->addClassType(classType);
+
+		if (classType == classTypeRet)
+			addTypeItem(classType);
 		else {
-			delete constructor;
-			if (constructorRet)
-				setCurrentItem(_childItemsConstructor.key(constructorRet));
+			delete classType;
+			if (classTypeRet)
+				setCurrentItem(_childItems.key(classTypeRet));
 		}
-	}
+	} else
+		delete classType;
 }
 
-void qtengine::TreeWidgetWorkflow::onAddMethodClicked()
+void qtengine::TreeWidgetWorkflow::onSettingsClicked(QTreeWidgetItem *item)
 {
-	DialogSettingsMethod dialog("Method settings", Manager::instance()->mainWindow());
+	auto classType = _childItems[item];
+	auto classTypeSave = classType->serialize();
+	DialogSettingsClassType dialog(classType, Manager::instance()->mainWindow());
 
-	if (dialog.exec() == QDialog::Accepted && dialog.method().isValid()) {
-		auto method = new types::Method(dialog.method());
-		auto methodRet = _viewObjectClass->addMethod(method);
-
-		if (method == methodRet)
-			addTypeItem(_itemsMethod, _childItemsMethod, method);
-		else {
-			delete method;
-			if (methodRet)
-				setCurrentItem(_childItemsMethod.key(methodRet));
-		}
-	}
-}
-
-void qtengine::TreeWidgetWorkflow::onAddSignalClicked()
-{
-	DialogSettingsMethod dialog("Signal settings", Manager::instance()->mainWindow());
-
-	if (dialog.exec() == QDialog::Accepted && dialog.method().isValid()) {
-		auto signal = new types::Method(dialog.method());
-		auto signalRet = _viewObjectClass->addSignal(signal);
-
-		if (signal == signalRet)
-			addTypeItem(_itemsSignal, _childItemsSignal, signal);
-		else {
-			delete signal;
-			if (signalRet)
-				setCurrentItem(_childItemsSignal.key(signalRet));
-		}
-	}
-}
-
-void qtengine::TreeWidgetWorkflow::onAddSlotClicked()
-{
-	DialogSettingsMethod dialog("Slot settings", Manager::instance()->mainWindow());
-
-	if (dialog.exec() == QDialog::Accepted && dialog.method().isValid()) {
-		auto slot = new types::Method(dialog.method());
-		auto slotRet = _viewObjectClass->addSlot(slot);
-
-		if (slot == slotRet)
-			addTypeItem(_itemsSlot, _childItemsSlot, slot);
-		else {
-			delete slot;
-			if (slotRet)
-				setCurrentItem(_childItemsSlot.key(slotRet));
-		}
-	}
-}
-
-void qtengine::TreeWidgetWorkflow::onAddPropertyClicked()
-{
-	DialogSettingsProperty dialog(Manager::instance()->mainWindow());
-
-	if (dialog.exec() == QDialog::Accepted && dialog.property().isValid()) {
-		auto property = new types::Property(dialog.property());
-		auto propertyRet = _viewObjectClass->addProperty(property);
-
-		if (property == propertyRet)
-			addTypeItem(_itemsProperty, _childItemsProperty, property);
-		else {
-			delete property;
-			if (propertyRet)
-				setCurrentItem(_childItemsProperty.key(propertyRet));
-		}
-	}
-}
-
-void qtengine::TreeWidgetWorkflow::onSettingsConstructorClicked(QTreeWidgetItem *item, types::Constructor *constructor)
-{
-	DialogSettingsConstructor dialog(*constructor, Manager::instance()->mainWindow());
-
-	if (dialog.exec() == QDialog::Accepted && dialog.constructor().isValid()) {
-		*constructor = dialog.constructor();
-		_childItemsConstructor.remove(item);
-		addTypeItem(_itemsConstructor, _childItemsConstructor, constructor);
+	if (dialog.exec() == QDialog::Accepted && classType->isValid()) {
+		_childItems.remove(item);
+		addTypeItem(classType);
 		delete item;
-	}
+	} else
+		classType->deserialize(classTypeSave);
 }
 
-void qtengine::TreeWidgetWorkflow::onSettingsMethodClicked(QTreeWidgetItem *item, types::Method *method)
+void qtengine::TreeWidgetWorkflow::onDeleteClicked(QTreeWidgetItem *item)
 {
-	DialogSettingsMethod dialog(*method, "Method settings", Manager::instance()->mainWindow());
+	auto classType = _childItems[item];
 
-	if (dialog.exec() == QDialog::Accepted && dialog.method().isValid()) {
-		*method = dialog.method();
-		_childItemsMethod.remove(item);
-		addTypeItem(_itemsMethod, _childItemsMethod, method);
-		delete item;
-	}
-}
-
-void qtengine::TreeWidgetWorkflow::onSettingsSignalClicked(QTreeWidgetItem *item, types::Method *signal)
-{
-	DialogSettingsMethod dialog(*signal, "Signal settings", Manager::instance()->mainWindow());
-
-	if (dialog.exec() == QDialog::Accepted && dialog.method().isValid()) {
-		*signal = dialog.method();
-		_childItemsSignal.remove(item);
-		addTypeItem(_itemsSignal, _childItemsSignal, signal);
-		delete item;
-	}
-}
-
-void qtengine::TreeWidgetWorkflow::onSettingsSlotClicked(QTreeWidgetItem *item, types::Method *slot)
-{
-	DialogSettingsMethod dialog(*slot, "Slot settings", Manager::instance()->mainWindow());
-
-	if (dialog.exec() == QDialog::Accepted && dialog.method().isValid()) {
-		*slot = dialog.method();
-		_childItemsSlot.remove(item);
-		addTypeItem(_itemsSlot, _childItemsSlot, slot);
-		delete item;
-	}
-}
-
-void qtengine::TreeWidgetWorkflow::onSettingsPropertyClicked(QTreeWidgetItem *item, types::Property *property)
-{
-	DialogSettingsProperty dialog(*property, Manager::instance()->mainWindow());
-
-	if (dialog.exec() == QDialog::Accepted && dialog.property().isValid()) {
-		*property = dialog.property();
-		_childItemsProperty.remove(item);
-		addTypeItem(_itemsProperty, _childItemsProperty, property);
-		delete item;
-	}
-}
-
-void qtengine::TreeWidgetWorkflow::onDeleteConstructorClicked(QTreeWidgetItem *item, types::Constructor *constructor)
-{
-	_viewObjectClass->removeConstructor(constructor);
-	_childItemsConstructor.remove(item);
-	delete item;
-}
-
-void qtengine::TreeWidgetWorkflow::onDeleteMethodClicked(QTreeWidgetItem *item, types::Method *method)
-{
-	_viewObjectClass->removeMethod(method);
-	_childItemsMethod.remove(item);
-	delete item;
-}
-
-void qtengine::TreeWidgetWorkflow::onDeleteSignalClicked(QTreeWidgetItem *item, types::Method *signal)
-{
-	_viewObjectClass->removeSignal(signal);
-	_childItemsSignal.remove(item);
-	delete item;
-}
-
-void qtengine::TreeWidgetWorkflow::onDeleteSlotClicked(QTreeWidgetItem *item, types::Method *slot)
-{
-	_viewObjectClass->removeSlot(slot);
-	_childItemsSlot.remove(item);
-	delete item;
-}
-
-void qtengine::TreeWidgetWorkflow::onDeletePropertyClicked(QTreeWidgetItem *item, types::Property *property)
-{
-	_viewObjectClass->removeProperty(property);
-	_childItemsProperty.remove(item);
+	_viewObjectClass->removeClassType(classType);
+	_childItems.remove(item);
 	delete item;
 }

@@ -7,31 +7,29 @@
 
 #pragma once
 
-#include "IType.hpp"
+#include "ClassType.hpp"
 #include <QtCore/QMetaMethod>
 #include <QtCore/QMetaType>
 #include <QtCore/QString>
 
 namespace types {
-	class Property : public IType {
+	class Property : public ClassType {
 		Q_OBJECT
 
 	public:
 		Property();
 		Property(const QMetaProperty &metaProperty);
-		Property(const Property &property);
 		~Property() = default;
-
-		Property &operator=(const Property &property);
-		bool operator==(const Property &property);
 
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &json) override;
 
-		bool isValid() const { return !_name.isEmpty(); }
-		bool isUserType() const { return _userType; }
+		QWidget *initEditor() override;
 
-		QString signature() const;
+		bool isValid() const override { return !_name.isEmpty(); }
+		QString signature() const override { return QString(QMetaType::typeName(_type)) + " " + _name; }
+
+		bool isUserType() const { return _userType; }
 
 		QMetaMethod::Access access() const { return _access; }
 		void setAccess(QMetaMethod::Access access) { setValue(_access, access, std::bind(&Property::accessChanged, this, _access)); }

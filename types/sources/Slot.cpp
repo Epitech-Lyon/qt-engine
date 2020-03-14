@@ -2,11 +2,11 @@
 ** EPITECH PROJECT, 2020
 ** qt-engine
 ** File description:
-** Method
+** Slot
 */
 
-#include "moc_Method.cpp"
-#include "Method.hpp"
+#include "moc_Slot.cpp"
+#include "Slot.hpp"
 
 #include "qtpropertymanager.h"
 #include "qtvariantproperty.h"
@@ -15,17 +15,15 @@
 #include "Utils.hpp"
 #include <QtCore/QDebug>
 
-types::Method::Method()
-	: ClassType(QMetaMethod::Access::Public, Type::METHOD)
-	, _isStatic(false)
+types::Slot::Slot()
+	: ClassType(QMetaMethod::Access::Public, Type::SLOT)
 	, _returnType(QMetaType::Type::Void)
 	, _isConst(false)
 {
 }
 
-types::Method::Method(const QMetaMethod &metaMethod)
-	: ClassType(metaMethod.access(), Type::METHOD)
-	, _isStatic(false)
+types::Slot::Slot(const QMetaMethod &metaMethod)
+	: ClassType(metaMethod.access(), Type::SLOT)
 	, _returnType(static_cast<QMetaType::Type>(metaMethod.returnType()))
 	, _name(metaMethod.name())
 	, _isConst(false)
@@ -34,7 +32,7 @@ types::Method::Method(const QMetaMethod &metaMethod)
 		addParameter(static_cast<QMetaType::Type>(metaMethod.parameterType(_parameters.size())), parameterName);
 }
 
-QJsonObject types::Method::serialize() const
+QJsonObject types::Slot::serialize() const
 {
 	QJsonArray jsonParameters;
 	for (const auto &parameter : _parameters) {
@@ -46,7 +44,6 @@ QJsonObject types::Method::serialize() const
 
 	QJsonObject json;
 	json["access"] = static_cast<int>(_access);
-	json["isStatic"] = _isStatic;
 	json["returnType"] = static_cast<int>(_returnType);
 	json["name"] = _name;
 	json["parameters"] = jsonParameters;
@@ -54,10 +51,9 @@ QJsonObject types::Method::serialize() const
 	return json;
 }
 
-void types::Method::deserialize(const QJsonObject &json)
+void types::Slot::deserialize(const QJsonObject &json)
 {
 	_access = static_cast<QMetaMethod::Access>(json["access"].toInt());
-	_isStatic = json["isStatic"].toBool();
 	_returnType = static_cast<QMetaType::Type>(json["returnType"].toInt());
 	_name = json["name"].toString();
 	for (auto jsonParameterRef : json["parameters"].toArray()) {
@@ -68,7 +64,7 @@ void types::Method::deserialize(const QJsonObject &json)
 	_isConst = json["isConst"].toBool();
 }
 
-QWidget *types::Method::initEditor()
+QWidget *types::Slot::initEditor()
 {
 	auto propertyEditor = new QtGroupBoxPropertyBrowser();
 	auto propertyFactory = new QtVariantEditorFactory(propertyEditor);
@@ -88,15 +84,6 @@ QWidget *types::Method::initEditor()
 		propertyEditor->addProperty(property);
 		(*propertySlot)[property] = [this](const QVariant &value) {
 			setAccess(static_cast<QMetaMethod::Access>(value.toInt()));
-		};
-	}
-	{
-		auto property = propertyManager->addProperty(QVariant::Bool, "Is static");
-
-		property->setValue(_isStatic);
-		propertyEditor->addProperty(property);
-		(*propertySlot)[property] = [this](const QVariant &value) {
-			setStatic(value.toBool());
 		};
 	}
 	{
@@ -211,10 +198,9 @@ QWidget *types::Method::initEditor()
 	return propertyEditor;
 }
 
-bool types::Method::isValid() const
+bool types::Slot::isValid() const
 {
 	if (_name.isEmpty()) { return false; }
-	if (_isStatic && _isConst) { return false; }
 
 	QStringList parametersName;
 	for (auto &parameter : _parameters) {
@@ -225,13 +211,11 @@ bool types::Method::isValid() const
 	return true;
 }
 
-QString types::Method::signature() const
+QString types::Slot::signature() const
 {
 	if (!isValid()) { return ""; }
 	QString signature;
 
-	if (_isStatic)
-		signature += "static ";
 	signature += QString(QMetaType::typeName(_returnType)) + " " + _name + "(";
 	for (int i = 0; i < _parameters.size(); i += 1) {
 		if (i)
@@ -244,7 +228,7 @@ QString types::Method::signature() const
 	return signature;
 }
 
-bool types::Method::addParameter(QMetaType::Type parameterType, const QString &parameterName)
+bool types::Slot::addParameter(QMetaType::Type parameterType, const QString &parameterName)
 {
 	for (auto &parameter : _parameters)
 		if (parameter.second == parameterName) { return false; }
@@ -254,7 +238,7 @@ bool types::Method::addParameter(QMetaType::Type parameterType, const QString &p
 	return true;
 }
 
-bool types::Method::modifyParameterType(int index, QMetaType::Type parameterType)
+bool types::Slot::modifyParameterType(int index, QMetaType::Type parameterType)
 {
 	if (index < 0 || index >= _parameters.size()) { return false; }
 
@@ -263,7 +247,7 @@ bool types::Method::modifyParameterType(int index, QMetaType::Type parameterType
 	return true;
 }
 
-bool types::Method::modifyParameterName(int index, const QString &parameterName)
+bool types::Slot::modifyParameterName(int index, const QString &parameterName)
 {
 	if (index < 0 || index >= _parameters.size()) { return false; }
 	for (auto &parameter : _parameters)
@@ -274,7 +258,7 @@ bool types::Method::modifyParameterName(int index, const QString &parameterName)
 	return true;
 }
 
-void types::Method::removeParameter()
+void types::Slot::removeParameter()
 {
 	if (_parameters.size() == 0) { return; }
 
@@ -282,19 +266,19 @@ void types::Method::removeParameter()
 	emit parametersChanged(_parameters);
 }
 
-QDebug operator<<(QDebug debug, const types::Method &method)
+QDebug operator<<(QDebug debug, const types::Slot &slot)
 {
 	debug.nospace().noquote() << "Method(";
-	if (method.isValid()) {
-		debug << types::accessToString(method.access()).toLower() << " ";
-		debug << method.signature();
+	if (slot.isValid()) {
+		debug << types::accessToString(slot.access()).toLower() << " ";
+		debug << slot.signature();
 	} else
 		debug << "INVALID";
 	debug << ")";
 	return debug.maybeSpace().maybeQuote();
 }
 
-QDebug operator<<(QDebug debug, const types::Method *method)
+QDebug operator<<(QDebug debug, const types::Slot *slot)
 {
-	return debug << *method;
+	return debug << *slot;
 }

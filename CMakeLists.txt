@@ -87,8 +87,8 @@ target_compile_options(nodeEditor PRIVATE -Werror -Wall -Wextra)
 INC_AND_SRC(INCS SRCS "types")
 set(TYPES_INCS ${INCS})
 add_library(types SHARED ${SRCS})
-target_link_libraries(types ${CONAN_LIBS} Qt5::Widgets Qt5::Core)
-target_include_directories(types PRIVATE ${INCS})
+target_link_libraries(types ${CONAN_LIBS} Qt5::Widgets Qt5::Core qtPropertyBrowser)
+target_include_directories(types PRIVATE ${INCS} ${QTPROPERTYBROWSER_INCS})
 target_compile_options(types PRIVATE -Werror -Wall -Wextra -g3)
 
 #=======LibraryObjects=======

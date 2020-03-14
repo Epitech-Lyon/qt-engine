@@ -11,6 +11,9 @@
 
 #include "Connection.hpp"
 
+#include "qtpropertymanager.h"
+#include "qtvariantproperty.h"
+#include "qtgroupboxpropertybrowser.h"
 #include <QtWidgets/QGridLayout>
 
 qtengine::BuiltIn::BuiltIn(QVariant::Type type)
@@ -27,7 +30,7 @@ qtengine::BuiltIn::BuiltIn(QVariant::Type type)
 	_propertyEditor->setFactoryForManager(_propertyManager, _propertyFactory);
 	_propertyEditor->addProperty(_propertyManager->addProperty(type));
 	gridLayout->setMargin(0);
-	_propertyEditor->resize(_propertyEditor->minimumSizeHint());
+	_propertyEditor->resize(_propertyEditor->sizeHint());
 }
 
 unsigned int qtengine::BuiltIn::nPorts(QtNodes::PortType portType) const
@@ -80,4 +83,9 @@ QString qtengine::BuiltIn::portCaption(QtNodes::PortType portType, QtNodes::Port
 QtNodes::NodeDataModel::ConnectionPolicy qtengine::BuiltIn::portOutConnectionPolicy(QtNodes::PortIndex portIndex) const
 {
 	return portIndex > 0 ? ConnectionPolicy::Many : ConnectionPolicy::One;
+}
+
+QWidget *qtengine::BuiltIn::embeddedWidget()
+{
+	return _propertyEditor;
 }
