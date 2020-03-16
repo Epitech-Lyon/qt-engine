@@ -28,7 +28,7 @@ qtengine::BuiltIn::BuiltIn(QVariant::Type type)
 		delete gridLayout->takeAt(0);
 
 	_propertyEditor->setFactoryForManager(_propertyManager, _propertyFactory);
-	_propertyEditor->addProperty(_propertyManager->addProperty(type));
+	_propertyEditor->addProperty(_propertyManager->addProperty(type, QVariant::typeToName(_type)));
 	gridLayout->setMargin(0);
 	_propertyEditor->resize(_propertyEditor->sizeHint());
 }

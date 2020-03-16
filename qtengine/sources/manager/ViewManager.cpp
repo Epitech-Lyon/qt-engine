@@ -9,6 +9,7 @@
 #include "ViewManager.hpp"
 
 #include "ViewConverter.hpp"
+#include "CustomObject.hpp"
 
 #include "Manager.hpp"
 #include "MainWindow.hpp"
@@ -120,10 +121,12 @@ bool qtengine::ViewManager::createView(libraryObjects::AObject *viewObject)
 	constructor->setClassName(_viewName);
 	_viewObjectClass->addClassType(constructor);
 
+	onSaveView();
+	libraryObjects::CustomObject::registerAsLibraryObject(fileInfo.absoluteFilePath());
+
 	emit viewObjectChanged(_viewObject);
 	emit viewObjectClassChanged(_viewObjectClass);
 	setCurrentObject(_viewObject);
-	onSaveView();
 	return true;
 }
 

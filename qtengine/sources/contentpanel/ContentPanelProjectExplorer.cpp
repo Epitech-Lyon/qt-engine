@@ -11,6 +11,8 @@
 #include "ProjectManager.hpp"
 #include "ViewManager.hpp"
 
+#include "LibraryObjectManager.hpp"
+
 #include <QtWidgets/QToolBar>
 #include <QtWidgets/QLineEdit>
 
@@ -131,6 +133,7 @@ void qtengine::ContentPanelProjectExplorer::onDeleteFile()
 	if (index.isValid()) {
 		_fsModel->remove(index);
 		_treeView->setCurrentIndex(QModelIndex());
+		libraryObjects::LibraryObjectManager::instance()->unregisterCustomObject(index.data(Qt::DisplayRole).toString());
 		Manager::instance()->viewManager()->closeView();
 	}
 }

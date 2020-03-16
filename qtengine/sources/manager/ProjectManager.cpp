@@ -14,6 +14,9 @@
 #include "DialogSettingsExport.hpp"
 #include "Exporter.hpp"
 
+#include "LibraryObjectManager.hpp"
+#include "CustomObject.hpp"
+
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressDialog>
@@ -52,9 +55,13 @@ void qtengine::ProjectManager::openProject(const QString &projectPath)
 		_recentsProject.pop_back();
 
 	// Create View folder if not exist
-	QDir dir(_projectDir + "/views");
-	if (!dir.exists())
-		dir.mkpath(".");
+	QDir dirViews(_projectDir + "/views");
+	if (!dirViews.exists())
+		dirViews.mkpath(".");
+
+	libraryObjects::LibraryObjectManager::instance()->unregisterAllCustomObjects();
+	for (auto viewInfo : dirViews.entryInfoList({"*" + Manager::instance()->viewManager()->viewExtension()}, QDir::Files))
+		libraryObjects::CustomObject::registerAsLibraryObject(viewInfo.absoluteFilePath());
 
 	emit projectChanged();
 	emit projectDirChanged(_projectDir);

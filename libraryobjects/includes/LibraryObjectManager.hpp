@@ -9,6 +9,7 @@
 
 #include <QtCore/QString>
 #include <QtCore/QList>
+#include <QtCore/QMap>
 
 #include "LibraryObject.hpp"
 
@@ -18,9 +19,13 @@ namespace libraryObjects {
 		~LibraryObjectManager();
 		static LibraryObjectManager *instance();
 
-		QList<LibraryObject *> libraryObjects() const { return _libraryObjects; }
+		QList<LibraryObject *> libraryObjects() const;
 		LibraryObject *libraryObjectOf(const QString &classHierarchy) const;
 		LibraryObject *libraryObjectOfClassName(const QString &className) const;
+
+		void registerCustomObject(const QString &name, LibraryObject *libraryObject);
+		void unregisterCustomObject(const QString &name);
+		void unregisterAllCustomObjects();
 
 	private:
 		LibraryObjectManager();
@@ -32,5 +37,6 @@ namespace libraryObjects {
 		}
 
 		QList<LibraryObject *> _libraryObjects;
+		QMap<QString, LibraryObject *> _customObjects;
 	};
 }

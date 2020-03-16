@@ -6,6 +6,10 @@
 */
 
 #include "LibraryObjectManager.hpp"
+#include <QtCore/QFile>
+#include <QtCore/QFileInfo>
+#include <QtCore/QJsonDocument>
+#include <QtCore/QJsonObject>
 
 #include "EFileSystemModel.hpp"
 
@@ -72,6 +76,15 @@ libraryObjects::LibraryObjectManager *libraryObjects::LibraryObjectManager::inst
 	return &libraryObjectManager;
 }
 
+QList<libraryObjects::LibraryObject *> libraryObjects::LibraryObjectManager::libraryObjects() const
+{
+	auto libraryObjects = _libraryObjects;
+
+	for (auto customObject : _customObjects)
+		libraryObjects.removeAll(customObject);
+	return libraryObjects;
+}
+
 libraryObjects::LibraryObject *libraryObjects::LibraryObjectManager::libraryObjectOf(const QString &classHierarchy) const
 {
 	for (auto libraryObject : _libraryObjects)
@@ -86,4 +99,27 @@ libraryObjects::LibraryObject *libraryObjects::LibraryObjectManager::libraryObje
 		if (libraryObject->className() == className)
 			return libraryObject;
 	return nullptr;
+}
+
+void libraryObjects::LibraryObjectManager::registerCustomObject(const QString &name, LibraryObject *libraryObject)
+{
+	_customObjects[name] = libraryObject;
+	_libraryObjects.append(libraryObject);
+}
+
+void libraryObjects::LibraryObjectManager::unregisterCustomObject(const QString &name)
+{
+	auto libraryObject = _customObjects.take(name);
+
+	_libraryObjects.removeAll(libraryObject);
+	delete libraryObject;
+}
+
+void libraryObjects::LibraryObjectManager::unregisterAllCustomObjects()
+{
+	for (auto libraryObject : _customObjects) {
+		_libraryObjects.removeAll(libraryObject);
+		delete libraryObject;
+	}
+	_customObjects.clear();
 }

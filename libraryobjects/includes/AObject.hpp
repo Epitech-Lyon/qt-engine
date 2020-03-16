@@ -17,11 +17,13 @@
 namespace libraryObjects {
 	class AObject : public QObject {
 		Q_OBJECT
+
 	// General management
 	public:
 		virtual ~AObject();
 
 		QObject *object() const { return _object; }
+		void removeObject() { _object = nullptr; for (auto child : _children) child->removeObject(); }
 		QString objectName() const { return _object->objectName(); }
 		QString classHierarchy() const { return _classHierarchy; }
 		QString className() const { return _className; }

@@ -136,8 +136,6 @@ void FlowView::openMenu(const QPoint &pos)
 		items[assoc.first] = item;
 	}
 
-	treeView->expandAll();
-
 	connect(treeView, &QTreeWidget::itemClicked, [&](QTreeWidgetItem *item, int)
 	{
 		QString modelName = item->data(0, Qt::UserRole).toString();
