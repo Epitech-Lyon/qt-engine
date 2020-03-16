@@ -23,13 +23,13 @@ QJsonObject libraryObjects::ViewConverter::serialize(AObject *object)
 	for (auto child : object->children())
 		childJsonArray << serialize(child);
 
-	QJsonObject jsonData;
-	jsonData["Children"] = childJsonArray;
-	jsonData["Data"] = libraryObject->serializeData(object);
-	jsonData["Properties"] = object->serializeProperties();
+	QJsonObject jsonBody;
+	jsonBody["Children"] = childJsonArray;
+	jsonBody["Data"] = libraryObject->serializeData(object);
+	jsonBody["Properties"] = object->serializeProperties();
 
 	QJsonObject json;
-	json[object->className()] = jsonData;
+	json[object->className()] = jsonBody;
 	return json;
 }
 
@@ -42,10 +42,10 @@ libraryObjects::AObject *libraryObjects::ViewConverter::deserialize(const QJsonO
 	auto object = libraryObject ? libraryObject->constructor() : nullptr;
 	if (!object) { return nullptr; }
 
-	auto jsonData = json[className].toObject();
+	auto jsonBody = json[className].toObject();
 	int index = 0;
 
-	for (auto childRef : jsonData["Children"].toArray()) {
+	for (auto childRef : jsonBody["Children"].toArray()) {
 		auto child = deserialize(childRef.toObject(), false);
 
 		if (child) {
@@ -57,8 +57,8 @@ libraryObjects::AObject *libraryObjects::ViewConverter::deserialize(const QJsonO
 			_objectProperties[child]();
 		}
 	}
-	_objectData[object] = std::bind(&LibraryObject::deserializeData, libraryObject, jsonData["Data"].toObject(), object);
-	_objectProperties[object] = std::bind(&AObject::deserializeProperties, object, jsonData["Properties"].toObject());
+	_objectData[object] = std::bind(&LibraryObject::deserializeData, libraryObject, jsonBody["Data"].toObject(), object);
+	_objectProperties[object] = std::bind(&AObject::deserializeProperties, object, jsonBody["Properties"].toObject());
 	if (isRoot) {
 		_objectData[object]();
 		_objectProperties[object]();

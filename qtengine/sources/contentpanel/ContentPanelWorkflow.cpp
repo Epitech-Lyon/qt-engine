@@ -37,11 +37,11 @@ void qtengine::FlowScene::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
 	QtNodes::FlowScene::dragEnterEvent(event);
 }
 
-#include "LibraryObjectMimeData.hpp"
+#include "MimeDataObject.hpp"
 void qtengine::FlowScene::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
 {
 //	QtNodes::FlowScene::dragMoveEvent(event);
-	qDebug() << event->mimeData() << dynamic_cast<const libraryObjects::LibraryObjectMimeData*>(event->mimeData());
+	qDebug() << event->mimeData() << dynamic_cast<const MimeDataObject*>(event->mimeData());
 	event->accept();
 }
 
