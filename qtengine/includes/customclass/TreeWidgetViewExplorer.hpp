@@ -24,6 +24,10 @@ namespace qtengine {
 
 		QTreeWidgetItem *createItemFor(libraryObjects::AObject *object, QTreeWidgetItem *parent, bool recursively = true, int index = -1);
 		QTreeWidgetItem *createItemFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, bool recursively = true, int index = -1);
+
+		QTreeWidgetItem *itemFor(libraryObjects::AObject *object) const;
+		void expandRecursivelyItemFor(libraryObjects::AObject *object) const;
+
 		void removeItemFor(libraryObjects::AObject *object);
 
 	public slots:
@@ -32,7 +36,7 @@ namespace qtengine {
 	signals:
 		void objectClicked(libraryObjects::AObject *object);
 		void openMenuFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, const QPoint &pos);
-		void libraryObjectDropped(libraryObjects::AObject *parent, int index, libraryObjects::LibraryObject *libraryObject);
+		void libraryObjectDropped(libraryObjects::AObject *parent, int index, libraryObjects::LibraryObject *libraryObject, libraryObjects::AObject *reference);
 
 	private slots:
 		void onPropertyUpdated(const QString &propertyName, const QVariant &propertyValue);
@@ -40,6 +44,7 @@ namespace qtengine {
 	private:
 		void dragMoveEvent(QDragMoveEvent *event);
 		bool dropMimeData(QTreeWidgetItem *parent, int index, const QMimeData *data, Qt::DropAction action) override;
+		QMimeData *mimeData(const QList<QTreeWidgetItem *> items) const override;
 		QMap<QTreeWidgetItem *, libraryObjects::AObject *> _objects;
 		QTreeWidgetItem *_itemEditorOpened;
 	};

@@ -42,7 +42,11 @@ void qtengine::ContentPanelViewExplorer::init()
 void qtengine::ContentPanelViewExplorer::onViewObjectChanged(libraryObjects::AObject *viewObject)
 {
 	_tree->clear();
-	_tree->createItemFor(viewObject, _tree->invisibleRootItem());
+
+	auto rootItem = _tree->createItemFor(viewObject, _tree->invisibleRootItem());
+	if (rootItem)
+		rootItem->setFlags(rootItem->flags() ^ Qt::ItemIsDragEnabled);
+
 	_tree->expandAll();
 }
 
@@ -87,7 +91,7 @@ void qtengine::ContentPanelViewExplorer::onOpenMenuFor(libraryObjects::AObject *
 		menu.exec(pos);
 }
 
-void qtengine::ContentPanelViewExplorer::onLibraryObjectDropped(libraryObjects::AObject *parent, int index, libraryObjects::LibraryObject *child)
+void qtengine::ContentPanelViewExplorer::onLibraryObjectDropped(libraryObjects::AObject *parent, int index, libraryObjects::LibraryObject *child, libraryObjects::AObject *reference)
 {
 	auto libraryObject = libraryObjects::LibraryObjectManager::instance()->libraryObjectOf(parent->classHierarchy());
 	if (!libraryObject) { return; }
@@ -95,15 +99,34 @@ void qtengine::ContentPanelViewExplorer::onLibraryObjectDropped(libraryObjects::
 	auto function = libraryObject->libraryFunction()->functionDragFor(child->classHierarchy());
 	if (!function.isValid) { return; }
 
-	auto childObject = child->constructor();
-	if (!childObject) { return; }
+	if (reference) {
+		function.functionRemove(parent, reference);
+		auto childItem = _tree->itemFor(reference);
+		auto newParentItem = _tree->itemFor(parent);
 
-	if (!function.functionAdd(parent, index, childObject)) { delete childObject; return; }
+		auto oldParentItem = childItem->parent();
+		auto oldIndex = oldParentItem->indexOfChild(childItem);
 
-	auto childObjectItem = _tree->createItemFor(childObject, parent, false, index);
-	if (childObjectItem) {
-		childObjectItem->parent()->setExpanded(true);
-		_tree->setCurrentItem(childObjectItem);
-		Manager::instance()->viewManager()->setCurrentObject(childObject);
+		index = newParentItem == oldParentItem && index > oldIndex ? index - 1 : index;
+		oldParentItem->removeChild(childItem);
+
+		function.functionAdd(parent, index, reference);
+		newParentItem->insertChild(index, childItem);
+		newParentItem->setExpanded(true);
+		_tree->expandRecursivelyItemFor(reference);
+		_tree->setCurrentItem(newParentItem);
+		Manager::instance()->viewManager()->setCurrentObject(reference);
+	} else {
+		auto childObject = child->constructor();
+		if (!childObject) { return; }
+
+		if (!function.functionAdd(parent, index, childObject)) { delete childObject; return; }
+
+		auto childObjectItem = _tree->createItemFor(childObject, parent, false, index);
+		if (childObjectItem) {
+			childObjectItem->parent()->setExpanded(true);
+			_tree->setCurrentItem(childObjectItem);
+			Manager::instance()->viewManager()->setCurrentObject(childObject);
+		}
 	}
 }

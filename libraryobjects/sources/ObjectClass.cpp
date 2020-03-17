@@ -13,7 +13,7 @@
 #include "Slot.hpp"
 #include "Property.hpp"
 
-libraryObjects::ObjectClass::ObjectClass(QMetaObject *metaObject)
+libraryObjects::ObjectClass::ObjectClass(const QMetaObject *metaObject)
 {
 	for (int idx = 0; idx < metaObject->constructorCount(); idx += 1)
 		addClassType(new types::Constructor(metaObject->constructor(idx)));

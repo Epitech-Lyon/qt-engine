@@ -17,7 +17,7 @@ namespace libraryObjects {
 	class ObjectClass : public types::ISerializable {
 	public:
 		ObjectClass() = default;
-		ObjectClass(QMetaObject *metaObject);
+		ObjectClass(const QMetaObject *metaObject);
 		~ObjectClass();
 
 		QJsonObject serialize() const override;

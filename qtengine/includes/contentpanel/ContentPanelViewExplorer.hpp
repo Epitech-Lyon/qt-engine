@@ -29,7 +29,7 @@ namespace qtengine {
 	private slots:
 		void onViewObjectChanged(libraryObjects::AObject *viewObject);
 		void onOpenMenuFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, const QPoint &pos);
-		void onLibraryObjectDropped(libraryObjects::AObject *parent, int index, libraryObjects::LibraryObject *libraryObject);
+		void onLibraryObjectDropped(libraryObjects::AObject *parent, int index, libraryObjects::LibraryObject *libraryObject, libraryObjects::AObject *reference);
 
 	private:
 		TreeWidgetViewExplorer *_tree;
