@@ -14,6 +14,7 @@
 namespace libraryObjects {
 	class AObject;	
 	class ObjectClass;
+	class LibraryObject;
 }
 
 namespace qtengine {
@@ -28,23 +29,24 @@ namespace qtengine {
 		QJsonObject serialize() const override;
 		void deserialize(const QJsonObject &json) override;
 
+		void createView(const QString &viewPath, libraryObjects::LibraryObject *libraryObject);
+		void createViewFrom(const QString &viewPath, const QString &viewPathSource);
+		void saveView();
 		void closeView();
-		void openView(const QString &viewPath);
-		bool createView(libraryObjects::AObject *viewObject);
 
 		QString viewExtension() const { return _viewExt; }
 
+		bool viewIsOpened() const { return _viewIsOpened; }
 		QString viewPath() const { return _viewPath; }
 		QString viewName() const { return _viewName; }
 		libraryObjects::AObject *viewObject() const { return _viewObject; }
 		libraryObjects::ObjectClass *viewObjectClass() const { return _viewObjectClass; }
 
 	public slots:
-		void onCreateView(const QString &viewPath);
-		void onSaveView();
-		void onSaveViewAs();
+		void onOpenView(const QString &viewPath);
 
 	signals:
+		void viewOpened(bool isOpened);
 		void viewPathChanged(const QString &viewPath);
 		void viewNameChanged(const QString &viewName);
 		void viewObjectChanged(libraryObjects::AObject *viewObject);
@@ -52,6 +54,7 @@ namespace qtengine {
 
 	private:
 		const QString _viewExt = ".view";
+		bool _viewIsOpened = false;
 		QString _viewPath;
 		QString _viewName;
 		libraryObjects::AObject *_viewObject;

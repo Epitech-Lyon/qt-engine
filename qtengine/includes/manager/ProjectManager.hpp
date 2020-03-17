@@ -11,6 +11,10 @@
 #include "ISerializable.hpp"
 #include <QtCore/QString>
 
+namespace libraryObjects {
+	class LibraryObject;
+}
+
 namespace qtengine {
 	class ProjectManager : public QObject, public types::ISerializable {
 		Q_OBJECT
@@ -21,33 +25,50 @@ namespace qtengine {
 		~ProjectManager() = default;
 
 		QJsonObject serialize() const override;
-		void deserialize(const QJsonObject &) override;
+		void deserialize(const QJsonObject &json) override;
 
-		void openProject(const QString &);
+		void openProject(const QString &projectPath);
 
-		QString projectDir() const { return _projectDir; }
+		bool projectIsOpened() const { return _projectIsOpened; }
 		QString projectPath() const { return _projectPath; }
 		QString projectName() const { return _projectName; }
 		QStringList recentsProject() const { return _recentsProject; }
 
 	signals:
-		void projectChanged();
-		void projectDirChanged(const QString &);
-		void projectPathChanged(const QString &);
-		void projectNameChanged(const QString &);
-		void recentProjectsChanged(const QStringList &);
+		void projectOpened(bool isOpened);
+		void projectPathChanged(const QString &projectPath);
+		void projectNameChanged(const QString &projectName);
+		void recentProjectsChanged(const QStringList &views);
 
 	public slots:
 		void onNewProject();
 		void onOpenProject();
+		void onSaveProject();
 		void onExportProject();
+		void onCloseProject();
 
 	private:
 		const QString _projectExt = ".prj";
-		QString _projectDir;
+		const int _maxRecentsProject = 5;
+		bool _projectIsOpened = false;
 		QString _projectPath;
 		QString _projectName;
-		const int _maxRecentsProject = 5;
 		QStringList _recentsProject;
+
+	// Views management
+	public:
+		QStringList views() const { return _views; }
+
+	public slots:
+		void onCreateView();
+		void onImportView();
+		void onRemoveView(const QString &viewPath);
+
+	signals:
+		void viewsChanged(const QStringList &viewsPath);
+
+	private:
+		void emitViewsChanged();
+		QStringList _views;
 	};
 }

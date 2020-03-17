@@ -24,6 +24,8 @@ namespace libraryObjects {
 		LibraryObject *libraryObjectOfClassName(const QString &className) const;
 
 		void registerCustomObject(const QString &name, LibraryObject *libraryObject);
+		LibraryObject *customObject(const QString &name) const { return _customObjects[name]; }
+		QList<LibraryObject *> customObjects() const { return _customObjects.values(); }
 		void unregisterCustomObject(const QString &name);
 		void unregisterAllCustomObjects();
 

@@ -28,7 +28,6 @@ qtengine::ContentPanelViewExplorer::ContentPanelViewExplorer(QWidget *parent)
 void qtengine::ContentPanelViewExplorer::init()
 {
 	_tree = new TreeWidgetViewExplorer(this);
-	_tree->setHeaderLabels({"Object name", "Class"});
 	_mainLayout->addWidget(_tree);
 
 	onViewObjectChanged(Manager::instance()->viewManager()->viewObject());
@@ -43,7 +42,6 @@ void qtengine::ContentPanelViewExplorer::init()
 void qtengine::ContentPanelViewExplorer::onViewObjectChanged(libraryObjects::AObject *viewObject)
 {
 	_tree->clear();
-	_tree->invisibleRootItem()->setFlags(viewObject || Manager::instance()->viewManager()->viewName().isEmpty() ? Qt::NoItemFlags : Qt::ItemIsDropEnabled);
 	_tree->createItemFor(viewObject, _tree->invisibleRootItem());
 	_tree->expandAll();
 }
@@ -91,28 +89,21 @@ void qtengine::ContentPanelViewExplorer::onOpenMenuFor(libraryObjects::AObject *
 
 void qtengine::ContentPanelViewExplorer::onLibraryObjectDropped(libraryObjects::AObject *parent, int index, libraryObjects::LibraryObject *child)
 {
-	if (!parent) {
-		auto viewObject = child->constructor();
+	auto libraryObject = libraryObjects::LibraryObjectManager::instance()->libraryObjectOf(parent->classHierarchy());
+	if (!libraryObject) { return; }
 
-		if (!Manager::instance()->viewManager()->createView(viewObject))
-			delete viewObject;
-	} else {
-		auto libraryObject = libraryObjects::LibraryObjectManager::instance()->libraryObjectOf(parent->classHierarchy());
-		if (!libraryObject) { return; }
+	auto function = libraryObject->libraryFunction()->functionDragFor(child->classHierarchy());
+	if (!function.isValid) { return; }
 
-		auto function = libraryObject->libraryFunction()->functionDragFor(child->classHierarchy());
-		if (!function.isValid) { return; }
+	auto childObject = child->constructor();
+	if (!childObject) { return; }
 
-		auto childObject = child->constructor();
-		if (!childObject) { return; }
+	if (!function.functionAdd(parent, index, childObject)) { delete childObject; return; }
 
-		if (!function.functionAdd(parent, index, childObject)) { delete childObject; return; }
-
-		auto childObjectItem = _tree->createItemFor(childObject, parent, false, index);
-		if (childObjectItem) {
-			childObjectItem->parent()->setExpanded(true);
-			_tree->setCurrentItem(childObjectItem);
-			Manager::instance()->viewManager()->setCurrentObject(childObject);
-		}
+	auto childObjectItem = _tree->createItemFor(childObject, parent, false, index);
+	if (childObjectItem) {
+		childObjectItem->parent()->setExpanded(true);
+		_tree->setCurrentItem(childObjectItem);
+		Manager::instance()->viewManager()->setCurrentObject(childObject);
 	}
 }

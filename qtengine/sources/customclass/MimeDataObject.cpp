@@ -9,9 +9,8 @@
 
 #include "ObjectClass.hpp"
 
-qtengine::MimeDataObject::MimeDataObject(const QObject *sender, libraryObjects::ObjectClass *objectClass, libraryObjects::LibraryObject *libraryObject, libraryObjects::AObject *reference)
-	: _sender(sender)
-	, _objectClass(objectClass)
+qtengine::MimeDataObject::MimeDataObject(libraryObjects::ObjectClass *objectClass, libraryObjects::LibraryObject *libraryObject, libraryObjects::AObject *reference)
+	: _objectClass(objectClass)
 	, _libraryObject(libraryObject)
 	, _reference(reference)
 {

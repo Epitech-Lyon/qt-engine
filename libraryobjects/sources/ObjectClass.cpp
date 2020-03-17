@@ -7,6 +7,37 @@
 
 #include "ObjectClass.hpp"
 
+#include "Constructor.hpp"
+#include "Method.hpp"
+#include "Signal.hpp"
+#include "Slot.hpp"
+#include "Property.hpp"
+
+libraryObjects::ObjectClass::ObjectClass(QMetaObject *metaObject)
+{
+	for (int idx = 0; idx < metaObject->constructorCount(); idx += 1)
+		addClassType(new types::Constructor(metaObject->constructor(idx)));
+	for (int idx = 0; idx < metaObject->methodCount(); idx += 1) {
+		auto metaMethod = metaObject->method(idx);
+
+		if (metaMethod.methodType() == QMetaMethod::Method)
+			addClassType(new types::Method(metaMethod));
+		else if (metaMethod.methodType() == QMetaMethod::Signal)
+			addClassType(new types::Signal(metaMethod));
+		else if (metaMethod.methodType() == QMetaMethod::Slot)
+			addClassType(new types::Slot(metaMethod));
+	}
+	for (int idx = 0; idx < metaObject->propertyCount(); idx += 1)
+		addClassType(new types::Property(metaObject->property(idx)));
+}
+
+libraryObjects::ObjectClass::~ObjectClass()
+{
+	for (auto classTypeList : _classTypes)
+		for (auto classType : classTypeList)
+			delete classType;
+}
+
 QJsonObject libraryObjects::ObjectClass::serialize() const
 {
 	auto serializeList = [](const QList<types::ClassType *> &classTypes) {

@@ -17,10 +17,12 @@
 #include "LibraryObjectManager.hpp"
 #include "CustomObject.hpp"
 
+#include "DialogSettingsCreateView.hpp"
+
 #include <QtWidgets/QFileDialog>
-#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QProgressDialog>
 #include <QtCore/QDebug>
+#include <QtCore/QJsonDocument>
 
 QJsonObject qtengine::ProjectManager::serialize() const
 {
@@ -36,9 +38,10 @@ QJsonObject qtengine::ProjectManager::serialize() const
 
 void qtengine::ProjectManager::deserialize(const QJsonObject &json)
 {
-	openProject(json["Current project"].toString());
 	for (auto recentFileRef : json["Recent projects"].toArray())
-		_recentsProject << recentFileRef.toString();
+		if (QFileInfo::exists(recentFileRef.toString()))
+			_recentsProject << recentFileRef.toString();
+	openProject(json["Current project"].toString());
 }
 
 void qtengine::ProjectManager::openProject(const QString &projectPath)
@@ -46,54 +49,54 @@ void qtengine::ProjectManager::openProject(const QString &projectPath)
 	QFileInfo fileInfo(projectPath);
 	if (projectPath.isEmpty() || !fileInfo.exists()) { return; }
 
-	_projectDir = fileInfo.absolutePath();
-	_projectPath = fileInfo.filePath();
+	_projectIsOpened = true;
+	_projectPath = fileInfo.absoluteFilePath();
 	_projectName = fileInfo.baseName();
 	_recentsProject.removeAll(_projectPath);
 	_recentsProject.push_front(_projectPath);
 	while (_recentsProject.size() > _maxRecentsProject)
 		_recentsProject.pop_back();
 
-	// Create View folder if not exist
-	QDir dirViews(_projectDir + "/views");
-	if (!dirViews.exists())
-		dirViews.mkpath(".");
+	QFile file(projectPath);
+	QJsonObject json;
+	if (file.open(QIODevice::ReadOnly)) {
+		json = QJsonDocument::fromJson(file.readAll()).object();
+		file.close();
+	}
 
-	libraryObjects::LibraryObjectManager::instance()->unregisterAllCustomObjects();
-	for (auto viewInfo : dirViews.entryInfoList({"*" + Manager::instance()->viewManager()->viewExtension()}, QDir::Files))
-		libraryObjects::CustomObject::registerAsLibraryObject(viewInfo.absoluteFilePath());
+	for (auto viewPathRef : json["Views"].toArray()) {
+		QFileInfo fileInfo(viewPathRef.toString());
+		if (!fileInfo.exists()) { continue; }
 
-	emit projectChanged();
-	emit projectDirChanged(_projectDir);
+		_views.append(fileInfo.absoluteFilePath());
+		libraryObjects::CustomObject::registerAsLibraryObject(fileInfo.absoluteFilePath());
+	}
+
+	emit projectOpened(_projectIsOpened);
 	emit projectPathChanged(_projectPath);
 	emit projectNameChanged(_projectName);
 	emit recentProjectsChanged(_recentsProject);
+	emitViewsChanged();
 }
 
 void qtengine::ProjectManager::onNewProject()
 {
-	QFileDialog dialog(Manager::instance()->mainWindow(), "New project", QDir::homePath(), "Project (*" + _projectExt + ")");
-	dialog.setFileMode(QFileDialog::DirectoryOnly);
-	dialog.setOption(QFileDialog::DontUseNativeDialog, true);
-	dialog.setOption(QFileDialog::ShowDirsOnly, false);
-	if (dialog.exec() != QDialog::Accepted) { return; }
-	auto selectedDirectory = dialog.selectedFiles().front();
+	auto projectPath = QFileDialog::getSaveFileName(Manager::instance()->mainWindow(), "New project", QDir::homePath(), "Project (*" + _projectExt + ")");
+	if (projectPath.isEmpty()) { return; }
 
 	// Create directory
-	QDir dir(selectedDirectory);
-	if (QFile(dir.path() + "/" + dir.dirName() + _projectExt).exists())
-		if (QMessageBox::warning(Manager::instance()->mainWindow(), "New project", dir.path() + "/" + dir.dirName() + _projectExt + " already exists, Do you want to replace it ?", QMessageBox::No, QMessageBox::Yes) == QMessageBox::No)
-			return;
-	QFile::remove(dir.path() + "/" + dir.dirName() + _projectExt);
-	dir.mkpath(".");
+	QFileInfo fileInfo(projectPath.endsWith(_projectExt) ? projectPath : projectPath + _projectExt);
+	if (fileInfo.exists())
+		QFile::remove(fileInfo.absoluteFilePath());
 
 	// Create projectFile
-	QFile file(dir.path() + "/" + dir.dirName() + _projectExt);
+	QFile file(fileInfo.absoluteFilePath());
 	if (!file.open(QIODevice::WriteOnly)) {
-		qWarning() << "Can't create project path at" << dir.path() + "/" + dir.dirName() + _projectExt;
+		qWarning() << "Can't create project at" << fileInfo.absoluteFilePath();
 		return;
 	}
-	openProject(file.fileName());
+	file.close();
+	openProject(fileInfo.absoluteFilePath());
 }
 
 void qtengine::ProjectManager::onOpenProject()
@@ -101,33 +104,108 @@ void qtengine::ProjectManager::onOpenProject()
 	openProject(QFileDialog::getOpenFileName(Manager::instance()->mainWindow(), "Open project", QDir::homePath(), "Project (*" + _projectExt + ")"));
 }
 
+void qtengine::ProjectManager::onSaveProject()
+{
+	QJsonArray jsonViews;
+	for (auto view : _views)
+		jsonViews.append(view);
+
+	QJsonObject json;
+	json["Views"] = jsonViews;
+
+	QFile file(_projectPath);
+	if (file.open(QIODevice::WriteOnly)) {
+		file.write(QJsonDocument(json).toJson());
+		file.close();
+	}
+}
+
 void qtengine::ProjectManager::onExportProject()
 {
-	DialogSettingsExport dialog(_projectDir + "/build", Manager::instance()->mainWindow());
+	QFileInfo fileInfo(_projectPath);
+	DialogSettingsExport dialog(fileInfo.absolutePath() + "/build", Manager::instance()->mainWindow());
 
 	if (dialog.exec() == QDialog::Accepted) {
-		QStringList views;
-		auto viewsInfo = QDir(_projectDir + "/views/", "*" + Manager::instance()->viewManager()->viewExtension()).entryInfoList(QDir::Files);
-		for (auto viewInfo : viewsInfo)
-			views << viewInfo.absoluteFilePath();
-
-		auto exporter = new libraryObjects::Exporter(dialog.outputPath(), dialog.generateMain(), views);
+		auto exporter = new libraryObjects::Exporter(dialog.outputPath(), dialog.generateMain(), _views);
 
 		if (dialog.displayProgress()) {
 			auto progressDialog = new QProgressDialog(Manager::instance()->mainWindow());
-			connect(exporter, &libraryObjects::Exporter::currentViewExportedChanged, [progressDialog, viewsInfo](int index) {
-				progressDialog->setLabelText("Export " + viewsInfo[index].completeBaseName());
+			connect(exporter, &libraryObjects::Exporter::currentViewExportedChanged, [this, progressDialog](int index) {
+				progressDialog->setLabelText("Export " + QFileInfo(_views[index]).completeBaseName());
 			});
 			connect(exporter, &libraryObjects::Exporter::currentViewExportedChanged, progressDialog, &QProgressDialog::setValue);
 			connect(exporter, &QThread::finished, progressDialog, &QWidget::close);
 			progressDialog->setWindowFlags(Qt::Window);
 			progressDialog->setAttribute(Qt::WA_DeleteOnClose);
 			progressDialog->setCancelButton(nullptr);
-			progressDialog->setMaximum(views.size());
+			progressDialog->setMaximum(_views.size());
 			progressDialog->show();
 		}
 
 		connect(exporter, &QThread::finished, exporter, &QObject::deleteLater);
 		exporter->start();
 	}
+}
+
+void qtengine::ProjectManager::onCloseProject()
+{
+	onSaveProject();
+
+	Manager::instance()->viewManager()->closeView();
+	_projectIsOpened = false;
+	_projectPath.clear();
+	_projectName.clear();
+	_views.clear();
+	libraryObjects::LibraryObjectManager::instance()->unregisterAllCustomObjects();
+	emit projectOpened(_projectIsOpened);
+	emit projectPathChanged(_projectPath);
+	emit projectPathChanged(_projectName);
+	emitViewsChanged();
+}
+
+void qtengine::ProjectManager::onCreateView()
+{
+	QString viewPath = QFileInfo(_projectPath).absolutePath() + "/untitled";
+	DialogSettingsCreateView dialog(viewPath + Manager::instance()->viewManager()->viewExtension(), Manager::instance()->mainWindow());
+
+	if (dialog.exec() == QDialog::Accepted) {
+		viewPath = QFileInfo(dialog.viewPath()).absoluteFilePath();
+
+		if (dialog.isCopy())
+			Manager::instance()->viewManager()->createViewFrom(viewPath, dialog.copyFromView());
+		else
+			Manager::instance()->viewManager()->createView(viewPath, dialog.libraryObject());
+		libraryObjects::CustomObject::registerAsLibraryObject(viewPath);
+		_views.append(viewPath);
+		emitViewsChanged();
+	}
+}
+
+void qtengine::ProjectManager::onImportView()
+{
+	QString viewPath = QFileDialog::getOpenFileName(Manager::instance()->mainWindow(), "Import view", QDir::homePath(), "View (*" + Manager::instance()->viewManager()->viewExtension() + ")");
+	QFileInfo fileInfo(viewPath);
+	if (!fileInfo.exists()) { return; }
+
+	viewPath = fileInfo.absoluteFilePath();
+	libraryObjects::CustomObject::registerAsLibraryObject(viewPath);
+	_views.append(viewPath);
+	emitViewsChanged();
+}
+
+void qtengine::ProjectManager::onRemoveView(const QString &viewPath)
+{
+	QFileInfo fileInfo(viewPath);
+	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != Manager::instance()->viewManager()->viewExtension()) { return; }
+
+	libraryObjects::LibraryObjectManager::instance()->unregisterCustomObject(fileInfo.fileName());
+	_views.removeAll(fileInfo.absoluteFilePath());
+	emitViewsChanged();
+}
+
+void qtengine::ProjectManager::emitViewsChanged()
+{
+	_views.removeDuplicates();
+	_views.sort();
+	emit viewsChanged(_views);
 }

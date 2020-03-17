@@ -21,8 +21,8 @@ namespace qtengine {
 
 	protected:
 		int labelsWidth() const { return _labelsWidth; }
-		void addWidgetTo(QWidget *widgetToAdd, const QString &name, QBoxLayout *layoutParent);
-		void insertWidgetTo(int index, QWidget *widgetToAdd, const QString &name, QBoxLayout *layoutParent);
+		QWidget *addWidgetTo(QWidget *widgetToAdd, const QString &name, QBoxLayout *layoutParent);
+		QWidget *insertWidgetTo(int index, QWidget *widgetToAdd, const QString &name, QBoxLayout *layoutParent);
 		QVBoxLayout *_mainLayout;
 		QDialogButtonBox *_buttonBox;
 

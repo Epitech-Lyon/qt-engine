@@ -26,12 +26,12 @@ qtengine::DialogBase::DialogBase(const QString &windowTitle, QWidget *parent)
 	setWindowTitle(windowTitle);
 }
 
-void qtengine::DialogBase::addWidgetTo(QWidget *widgetToAdd, const QString &name, QBoxLayout *layoutParent)
+QWidget *qtengine::DialogBase::addWidgetTo(QWidget *widgetToAdd, const QString &name, QBoxLayout *layoutParent)
 {
-	insertWidgetTo(layoutParent->count(), widgetToAdd, name, layoutParent);
+	return insertWidgetTo(layoutParent->count(), widgetToAdd, name, layoutParent);
 }
 
-void qtengine::DialogBase::insertWidgetTo(int index, QWidget *widgetToAdd, const QString &name, QBoxLayout *layoutParent)
+QWidget *qtengine::DialogBase::insertWidgetTo(int index, QWidget *widgetToAdd, const QString &name, QBoxLayout *layoutParent)
 {
 	auto widget = new QWidget(layoutParent->parentWidget());
 	widgetToAdd->setParent(widget);
@@ -46,6 +46,7 @@ void qtengine::DialogBase::insertWidgetTo(int index, QWidget *widgetToAdd, const
 	widget->setLayout(layout);
 
 	resizeWidgets();
+	return widget;
 }
 
 void qtengine::DialogBase::resizeWidgets()

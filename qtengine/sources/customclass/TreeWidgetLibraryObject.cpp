@@ -10,6 +10,7 @@
 #include "LibraryObject.hpp"
 #include "MimeDataObject.hpp"
 #include "ObjectClass.hpp"
+#include "types/includes/Constructor.hpp"
 
 qtengine::TreeWidgetLibraryObject::TreeWidgetLibraryObject(QWidget *parent)
 	: QTreeWidget(parent)
@@ -47,9 +48,15 @@ QTreeWidgetItem *qtengine::TreeWidgetLibraryObject::addItem(QTreeWidgetItem *par
 
 QMimeData *qtengine::TreeWidgetLibraryObject::mimeData(const QList<QTreeWidgetItem *> items) const
 {
-	QMimeData *mimeData = QTreeWidget::mimeData(items);
-	auto mimeDataObject = new MimeDataObject(this, new libraryObjects::ObjectClass(), _libraryObjects[items.front()]);
+	auto libraryObject = _libraryObjects[items.front()];
 
+	auto objectClass = new libraryObjects::ObjectClass();
+	auto constructor = new types::Constructor();
+	constructor->setClassName(libraryObject->className());
+	objectClass->addClassType(constructor);
+
+	QMimeData *mimeData = QTreeWidget::mimeData(items);
+	auto mimeDataObject = new MimeDataObject(objectClass, libraryObject);
 	for (auto format : mimeData->formats())
 		mimeDataObject->setData(format, mimeData->data(format));
 	return mimeDataObject;

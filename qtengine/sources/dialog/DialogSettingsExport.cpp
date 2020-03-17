@@ -33,7 +33,7 @@ QWidget *qtengine::DialogSettingsExport::initBody()
 	auto btnOutputPath = new QPushButton(QFileIconProvider().icon(QFileIconProvider::Folder), "", widgetOutputPath);
 	btnOutputPath->setFixedSize(btnOutputPath->minimumSizeHint());
 	connect(btnOutputPath, &QPushButton::clicked, [this, lblOutputPath]() {
-		auto outputPath = QFileDialog::getExistingDirectory(nullptr, "Choose output path");
+		auto outputPath = QFileDialog::getExistingDirectory(this, "Choose output path");
 
 		if (!outputPath.isEmpty()) {
 			_outputPath = outputPath;

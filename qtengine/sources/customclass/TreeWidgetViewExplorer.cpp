@@ -14,6 +14,7 @@
 #include "LibraryFunction.hpp"
 #include "MimeDataObject.hpp"
 
+#include <QtGui/QDragEnterEvent>
 #include <QtGui/QDragMoveEvent>
 
 qtengine::TreeWidgetViewExplorer::TreeWidgetViewExplorer(QWidget *parent)
@@ -26,6 +27,7 @@ qtengine::TreeWidgetViewExplorer::TreeWidgetViewExplorer(QWidget *parent)
 	setDropIndicatorShown(true);
 	setHeaderLabels({"Object name", "Class"});
 	setContextMenuPolicy(Qt::CustomContextMenu);
+	invisibleRootItem()->setFlags(Qt::NoItemFlags);
 
 	connect(this, &QTreeWidget::itemClicked, [this](QTreeWidgetItem *item, int) {
 		if (item != _itemEditorOpened) {

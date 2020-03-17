@@ -7,32 +7,11 @@
 
 #include "ContentPanelProjectExplorer.hpp"
 
+#include "TreeWidgetProjectExplorer.hpp"
+
 #include "Manager.hpp"
 #include "ProjectManager.hpp"
 #include "ViewManager.hpp"
-
-#include "LibraryObjectManager.hpp"
-
-#include <QtWidgets/QToolBar>
-#include <QtWidgets/QLineEdit>
-
-QString qtengine::ContentPanelProjectExplorer::TreeViewItemDelegate::displayText(const QVariant &value, const QLocale &locale) const
-{
-	return QFileInfo(QStyledItemDelegate::displayText(value, locale)).completeBaseName();
-}
-
-void qtengine::ContentPanelProjectExplorer::TreeViewItemDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
-{
-	QFileInfo fileInfos(index.data().toString());
-
-	const_cast<TreeViewItemDelegate*>(this)->_extension = fileInfos.suffix();
-	dynamic_cast<QLineEdit *>(editor)->setText(fileInfos.completeBaseName());
-}
-
-void qtengine::ContentPanelProjectExplorer::TreeViewItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
-{
-	model->setData(index, dynamic_cast<QLineEdit *>(editor)->text() + "." + _extension);
-}
 
 qtengine::ContentPanelProjectExplorer::ContentPanelProjectExplorer(QWidget *parent)
 	: ContentPanelBase("Project Explorer", parent)
@@ -41,35 +20,13 @@ qtengine::ContentPanelProjectExplorer::ContentPanelProjectExplorer(QWidget *pare
 
 void qtengine::ContentPanelProjectExplorer::init()
 {
-	_treeView = new QTreeView(this);
-	_fsModel = new QFileSystemModel(_treeView);
-	auto onProjectDirChanged = [this](const QString &projectDir) {
-		if (projectDir.isEmpty())
-			_treeView->setModel(nullptr);
-		else {
-			_treeView->setModel(_fsModel);
-			_treeView->setRootIndex(_fsModel->setRootPath(projectDir + "/views"));
-		}
-	};
+	_tree = new TreeWidgetProjectExplorer(this);
+	_tree->setEditTriggers(QTreeWidget::NoEditTriggers);
+	_mainLayout->addWidget(_tree);
 
-	_fsModel->setNameFilters({"*" + Manager::instance()->viewManager()->viewExtension()});
-	_fsModel->setNameFilterDisables(false);
-	_fsModel->setReadOnly(false);
-	_treeView->setItemDelegate(new TreeViewItemDelegate(_treeView));
-	_treeView->setModel(_fsModel);
-	_treeView->setHeaderHidden(true);
-	_treeView->setDropIndicatorShown(true);
-	_treeView->setDragDropMode(QAbstractItemView::InternalMove);
-	_treeView->setEditTriggers(QTreeView::NoEditTriggers);
-	for (int i = 1; i < _fsModel->columnCount(); ++i)
-		_treeView->hideColumn(i);
-	_mainLayout->addWidget(_treeView);
-
-	onProjectDirChanged(Manager::instance()->projectManager()->projectDir());
-	connect(Manager::instance()->projectManager(), &ProjectManager::projectDirChanged, onProjectDirChanged);
-
-	_treeView->setCurrentIndex(_fsModel->index(Manager::instance()->viewManager()->viewPath()));
-	connect(_treeView, &QTreeView::doubleClicked, this, &ContentPanelProjectExplorer::onModelIndexDoubleClicked);
+	onViewsChanged(Manager::instance()->projectManager()->views());
+	connect(Manager::instance()->projectManager(), &ProjectManager::viewsChanged, this, &ContentPanelProjectExplorer::onViewsChanged);
+	connect(_tree, &TreeWidgetProjectExplorer::viewDoubleClicked, Manager::instance()->viewManager(), &ViewManager::onOpenView);
 
 	ContentPanelBase::init();
 }
@@ -77,63 +34,37 @@ void qtengine::ContentPanelProjectExplorer::init()
 QToolBar *qtengine::ContentPanelProjectExplorer::initToolBar()
 {
 	auto toolbar = new QToolBar(this);
+	QList<QAction *> actions;
 
-	toolbar->addAction(QIcon(":icon_collapse"), "", _treeView, &QTreeView::collapseAll);
-	toolbar->addAction(QIcon(":icon_expand"), "", _treeView, &QTreeView::expandAll);
+	actions << toolbar->addAction(QIcon(":icon_collapse"), "", _tree, &QTreeWidget::collapseAll);
+	actions << toolbar->addAction(QIcon(":icon_expand"), "", _tree, &QTreeWidget::expandAll);
 	toolbar->addSeparator();
-	toolbar->addAction(QIcon(":icon_create"), "", this, &ContentPanelProjectExplorer::onCreateFile);
-	toolbar->addAction(QIcon(":icon_rename"), "", this, &ContentPanelProjectExplorer::onRenameFile);
-	toolbar->addAction(QIcon(":icon_delete"), "", this, &ContentPanelProjectExplorer::onDeleteFile);
+	actions << toolbar->addAction(QIcon(":icon_create"), "", Manager::instance()->projectManager(), &ProjectManager::onCreateView);
+	actions << toolbar->addAction(QIcon(":icon_import"), "", Manager::instance()->projectManager(), &ProjectManager::onImportView);
+//	actions << toolbar->addAction(QIcon(":icon_rename"), "", this, &ContentPanelProjectExplorer::onRenameFile);
+	actions << toolbar->addAction(QIcon(":icon_remove"), "", [this]() {
+		Manager::instance()->projectManager()->onRemoveView(_tree->currentView());
+		Manager::instance()->viewManager()->closeView();
+	});
+
+	auto onProjectChanged = [actions](bool isOpened) {
+		for (auto action : actions)
+			action->setEnabled(isOpened);
+	};
+
+	onProjectChanged(Manager::instance()->projectManager()->projectIsOpened());
+	connect(Manager::instance()->projectManager(), &ProjectManager::projectOpened, this, onProjectChanged);
 	return toolbar;
 }
 
-void qtengine::ContentPanelProjectExplorer::onModelIndexDoubleClicked(const QModelIndex &modelIndex)
+void qtengine::ContentPanelProjectExplorer::onViewsChanged(const QStringList &viewsPath)
 {
-	Manager::instance()->viewManager()->openView(_fsModel->filePath(modelIndex));
-}
-
-void qtengine::ContentPanelProjectExplorer::onCreateFile()
-{
-	auto connection = new QMetaObject::Connection;
-	auto onFileRenamed = [this, connection](const QString &path, const QString &, const QString &newName) {
-		Manager::instance()->viewManager()->onCreateView(path + "/" + newName);
-		disconnect(*connection);
-		delete connection;
-	};
-	auto path = _fsModel->rootPath() + "/untitled" + Manager::instance()->viewManager()->viewExtension();
-	QFile file(path);
-	file.open(QIODevice::WriteOnly);
-	file.close();
-
-	*connection = connect(_fsModel, &QFileSystemModel::fileRenamed, onFileRenamed);
-
-	auto index = _fsModel->index(path);
-	if (index.isValid()) {
-		_treeView->setCurrentIndex(index);
-		_treeView->edit(index);
-	} else {
-		QFile::remove(path);
-		disconnect(*connection);
-		delete connection;
-	}
+	_tree->clearViews();
+	for (auto view : viewsPath)
+		_tree->addView(view);
+	_tree->setCurrentView(Manager::instance()->viewManager()->viewPath());
 }
 
 void qtengine::ContentPanelProjectExplorer::onRenameFile()
 {
-	auto index = _treeView->currentIndex();
-
-	if (index.isValid())
-		_treeView->edit(index);
-}
-
-void qtengine::ContentPanelProjectExplorer::onDeleteFile()
-{
-	auto index = _treeView->currentIndex();
-
-	if (index.isValid()) {
-		_fsModel->remove(index);
-		_treeView->setCurrentIndex(QModelIndex());
-		libraryObjects::LibraryObjectManager::instance()->unregisterCustomObject(index.data(Qt::DisplayRole).toString());
-		Manager::instance()->viewManager()->closeView();
-	}
 }

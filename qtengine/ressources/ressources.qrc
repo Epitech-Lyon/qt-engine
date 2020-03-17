@@ -6,8 +6,9 @@
         <file>icon_collapse.png</file>
         <file>icon_expand.png</file>
         <file>icon_create.png</file>
+        <file>icon_import.png</file>
         <file>icon_rename.png</file>
-        <file>icon_delete.png</file>
+        <file>icon_remove.png</file>
 
         <file>theme/dark/style.qss</file>
 

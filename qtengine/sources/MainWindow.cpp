@@ -9,7 +9,6 @@
 
 #include "Manager.hpp"
 #include "ProjectManager.hpp"
-#include "ViewManager.hpp"
 #include "LayoutManager.hpp"
 
 #include "LayoutPanelTabber.hpp"
@@ -35,26 +34,32 @@ qtengine::MainWindow::MainWindow(Manager *manager)
 qtengine::MainWindow::~MainWindow()
 {
 	_manager->save();
-	_manager->viewManager()->closeView();
+	_manager->projectManager()->onCloseProject();
 }
 
 void qtengine::MainWindow::initMenuBar()
 {
+	QList<QAction *> projectActions;
 	auto projectManager = _manager->projectManager();
-	auto viewManager = _manager->viewManager();
 	auto layoutManager = _manager->layoutManager();
 
 	auto menuFile = menuBar()->addMenu("File");
 	menuFile->addAction("New project", projectManager, &ProjectManager::onNewProject, QKeySequence::New);
 	menuFile->addAction("Open project", projectManager, &ProjectManager::onOpenProject, QKeySequence::Open);
 	auto menuFileRecents = menuFile->addMenu("Open recent project");
-	menuFile->addSeparator();
-	menuFile->addAction("Save view", viewManager, &ViewManager::onSaveView, QKeySequence::Save);
-	menuFile->addAction("Save view as", viewManager, &ViewManager::onSaveViewAs, QKeySequence::SaveAs);
-	menuFile->addSeparator();
-	menuFile->addAction("Export project", projectManager, &ProjectManager::onExportProject, QKeySequence("Ctrl+E"));
+	projectActions << menuFile->addAction("Save project", projectManager, &ProjectManager::onSaveProject, QKeySequence::Save);
+	projectActions << menuFile->addAction("Export project", projectManager, &ProjectManager::onExportProject, QKeySequence("Ctrl+E"));
+	projectActions << menuFile->addAction("Close project", projectManager, &ProjectManager::onSaveProject, QKeySequence::Close);
 	menuFile->addSeparator();
 	menuFile->addAction("Exit", this, &QMainWindow::close, QKeySequence::Quit);
+
+	auto onProjectChanged = [projectActions](bool isOpened) {
+		for (auto action : projectActions)
+			action->setEnabled(isOpened);
+	};
+
+	onProjectChanged(projectManager->projectIsOpened());
+	connect(projectManager, &ProjectManager::projectOpened, this, onProjectChanged);
 
 	auto initMenuFileRecents = [projectManager, menuFileRecents](const QStringList &recentsProject) {
 		menuFileRecents->clear();

@@ -9,7 +9,6 @@
 #include "ViewManager.hpp"
 
 #include "ViewConverter.hpp"
-#include "CustomObject.hpp"
 
 #include "Manager.hpp"
 #include "MainWindow.hpp"
@@ -19,12 +18,14 @@
 #include <QtWidgets/QInputDialog>
 #include <QtCore/QDebug>
 
+#include "LibraryObject.hpp"
 #include "Object.hpp"
 #include "ObjectClass.hpp"
 #include "types/includes/Constructor.hpp"
 
 qtengine::ViewManager::ViewManager()
-	: _viewObject(nullptr)
+	: _viewIsOpened(false)
+	, _viewObject(nullptr)
 	, _viewObjectClass(nullptr)
 	, _currentObject(nullptr)
 {
@@ -45,92 +46,53 @@ QJsonObject qtengine::ViewManager::serialize() const
 
 void qtengine::ViewManager::deserialize(const QJsonObject &json)
 {
-	openView(json["Current view"].toString());
+	onOpenView(json["Current view"].toString());
 }
 
-void qtengine::ViewManager::closeView()
-{
-	auto oldViewObject = _viewObject;
-	auto oldViewObjectClass = _viewObjectClass;
-
-	_viewPath.clear();
-	_viewName.clear();
-	_viewObject = nullptr;
-	_viewObjectClass = nullptr;
-	emit viewPathChanged("");
-	emit viewNameChanged("");
-	emit viewObjectChanged(nullptr);
-	emit viewObjectClassChanged(nullptr);
-	setCurrentObject(nullptr);
-
-	delete oldViewObject;
-	delete oldViewObjectClass;
-}
-
-void qtengine::ViewManager::openView(const QString &viewPath)
+void qtengine::ViewManager::createView(const QString &viewPath, libraryObjects::LibraryObject *libraryObject)
 {
 	QFileInfo fileInfo(viewPath);
-	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
+	if ("." + fileInfo.completeSuffix() != _viewExt) { return; }
 
 	closeView();
 
-	QJsonObject json;
-	QFile file(fileInfo.absoluteFilePath());
-	if (file.open(QIODevice::ReadOnly)) {
-		json = QJsonDocument::fromJson(file.readAll()).object();
-		file.close();
-	}
-	_viewObject = libraryObjects::ViewConverter().deserialize(json["Engine"].toObject());
-	if (!_viewObject) { qCritical() << "Impossible to open" << _viewPath; return; }
-	_viewPath = fileInfo.absoluteFilePath();
-	_viewName = fileInfo.baseName();
-	_viewObjectClass = new libraryObjects::ObjectClass();
-	_viewObjectClass->deserialize(json["Class"].toObject());
+	QFile file(viewPath);
+	file.open(QIODevice::WriteOnly);
+	file.close();
 
-	emit viewPathChanged(_viewPath);
-	emit viewNameChanged(_viewName);
-	emit viewObjectChanged(_viewObject);
-	emit viewObjectClassChanged(_viewObjectClass);
-	setCurrentObject(_viewObject);
-}
-
-void qtengine::ViewManager::onCreateView(const QString &viewPath)
-{
-	QFileInfo fileInfo(viewPath);
-	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
-
-	closeView();
-
+	_viewIsOpened = true;
 	_viewPath = fileInfo.filePath();
 	_viewName = fileInfo.baseName();
-
-	emit viewPathChanged(_viewPath);
-	emit viewNameChanged(_viewName);
-	emit viewObjectChanged(nullptr);
-}
-
-bool qtengine::ViewManager::createView(libraryObjects::AObject *viewObject)
-{
-	QFileInfo fileInfo(_viewPath);
-	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return false; }
-
-	_viewObject = viewObject;
+	_viewObject = libraryObject->constructor();
 	_viewObjectClass = new libraryObjects::ObjectClass();
 
 	auto constructor = new types::Constructor();
 	constructor->setClassName(_viewName);
 	_viewObjectClass->addClassType(constructor);
 
-	onSaveView();
-	libraryObjects::CustomObject::registerAsLibraryObject(fileInfo.absoluteFilePath());
+	saveView();
 
+	emit viewOpened(_viewIsOpened);
+	emit viewPathChanged(_viewPath);
+	emit viewNameChanged(_viewName);
 	emit viewObjectChanged(_viewObject);
 	emit viewObjectClassChanged(_viewObjectClass);
 	setCurrentObject(_viewObject);
-	return true;
 }
 
-void qtengine::ViewManager::onSaveView()
+void qtengine::ViewManager::createViewFrom(const QString &viewPath, const QString &viewPathSource)
+{
+	QFileInfo fileInfoDest(viewPath);
+	if ("." + fileInfoDest.completeSuffix() != _viewExt) { return; }
+
+	QFileInfo fileInfoSrc(viewPathSource);
+	if (!fileInfoSrc.exists() || "." + fileInfoSrc.completeSuffix() != _viewExt) { return; }
+
+	QFile::copy(fileInfoSrc.absoluteFilePath(), fileInfoDest.absoluteFilePath());
+	onOpenView(fileInfoDest.absoluteFilePath());
+}
+
+void qtengine::ViewManager::saveView()
 {
 	QFileInfo fileInfo(_viewPath);
 	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
@@ -146,18 +108,56 @@ void qtengine::ViewManager::onSaveView()
 	}
 }
 
-void qtengine::ViewManager::onSaveViewAs()
+void qtengine::ViewManager::closeView()
 {
-	QFileInfo fileInfo(_viewPath);
+	saveView();
+
+	auto oldViewObject = _viewObject;
+	auto oldViewObjectClass = _viewObjectClass;
+
+	_viewIsOpened = false;
+	_viewPath.clear();
+	_viewName.clear();
+	_viewObject = nullptr;
+	_viewObjectClass = nullptr;
+	emit viewOpened(false);
+	emit viewPathChanged("");
+	emit viewNameChanged("");
+	emit viewObjectChanged(nullptr);
+	emit viewObjectClassChanged(nullptr);
+	setCurrentObject(nullptr);
+
+	delete oldViewObject;
+	delete oldViewObjectClass;
+}
+
+void qtengine::ViewManager::onOpenView(const QString &viewPath)
+{
+	QFileInfo fileInfo(viewPath);
 	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
 
-	bool ok = false;
-	auto viewPath = QInputDialog::getText(Manager::instance()->mainWindow(), "Save view as", "Choose a new name", QLineEdit::Normal, _viewPath, &ok);
-	if (ok && !viewPath.isEmpty()) {
-		_viewPath = viewPath.endsWith(_viewExt) ? viewPath : viewPath + _viewExt;
-		_viewName = QFileInfo(_viewPath).baseName();
-		onSaveView();
+	closeView();
+
+	QJsonObject json;
+	QFile file(fileInfo.absoluteFilePath());
+	if (file.open(QIODevice::ReadOnly)) {
+		json = QJsonDocument::fromJson(file.readAll()).object();
+		file.close();
 	}
+	_viewIsOpened = true;
+	_viewObject = libraryObjects::ViewConverter().deserialize(json["Engine"].toObject());
+	if (!_viewObject) { qCritical() << "Impossible to open" << _viewPath; return; }
+	_viewPath = fileInfo.absoluteFilePath();
+	_viewName = fileInfo.baseName();
+	_viewObjectClass = new libraryObjects::ObjectClass();
+	_viewObjectClass->deserialize(json["Class"].toObject());
+
+	emit viewOpened(_viewIsOpened);
+	emit viewPathChanged(_viewPath);
+	emit viewNameChanged(_viewName);
+	emit viewObjectChanged(_viewObject);
+	emit viewObjectClassChanged(_viewObjectClass);
+	setCurrentObject(_viewObject);
 }
 
 void qtengine::ViewManager::setCurrentObject(libraryObjects::AObject *currentObject)
