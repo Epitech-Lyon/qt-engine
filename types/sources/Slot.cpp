@@ -17,14 +17,12 @@
 
 types::Slot::Slot()
 	: ClassType(QMetaMethod::Access::Public, Type::SLOT)
-	, _returnType(QMetaType::Type::Void)
 	, _isConst(false)
 {
 }
 
 types::Slot::Slot(const QMetaMethod &metaMethod)
 	: ClassType(metaMethod.access(), Type::SLOT)
-	, _returnType(static_cast<QMetaType::Type>(metaMethod.returnType()))
 	, _name(metaMethod.name())
 	, _isConst(false)
 {
@@ -44,7 +42,6 @@ QJsonObject types::Slot::serialize() const
 
 	QJsonObject json;
 	json["access"] = static_cast<int>(_access);
-	json["returnType"] = static_cast<int>(_returnType);
 	json["name"] = _name;
 	json["parameters"] = jsonParameters;
 	json["isConst"] = _isConst;
@@ -54,7 +51,6 @@ QJsonObject types::Slot::serialize() const
 void types::Slot::deserialize(const QJsonObject &json)
 {
 	_access = static_cast<QMetaMethod::Access>(json["access"].toInt());
-	_returnType = static_cast<QMetaType::Type>(json["returnType"].toInt());
 	_name = json["name"].toString();
 	for (auto jsonParameterRef : json["parameters"].toArray()) {
 		auto jsonParameter = jsonParameterRef.toObject();
@@ -84,20 +80,6 @@ QWidget *types::Slot::initEditor()
 		propertyEditor->addProperty(property);
 		(*propertySlot)[property] = [this](const QVariant &value) {
 			setAccess(static_cast<QMetaMethod::Access>(value.toInt()));
-		};
-	}
-	{
-		QMap<QString, QMetaType::Type> types;
-		for (int i = QMetaType::UnknownType + 1; i < QMetaType::User + 1; i += 1)
-			if (QMetaType::isRegistered(i) && i != QMetaType::Void)
-				types[QMetaType::typeName(i)] = static_cast<QMetaType::Type>(i);
-		auto property = propertyManager->addProperty(QtVariantPropertyManager::enumTypeId(), "Return type");
-
-		property->setAttribute("enumNames", QStringList(types.keys()));
-		property->setValue(types.keys().indexOf(QMetaType::typeName(_returnType)));
-		propertyEditor->addProperty(property);
-		(*propertySlot)[property] = [this, types](const QVariant &value) {
-			setReturnType(types.values()[value.toInt()]);
 		};
 	}
 	{
@@ -213,7 +195,7 @@ QString types::Slot::signature() const
 	if (!isValid()) { return ""; }
 	QString signature;
 
-	signature += QString(QMetaType::typeName(_returnType)) + " " + _name + "(";
+	signature += QString(QMetaType::typeName(QMetaType::Void)) + " " + _name + "(";
 	for (int i = 0; i < _parameters.size(); i += 1) {
 		if (i)
 			signature += ", ";

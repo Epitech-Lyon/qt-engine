@@ -38,11 +38,11 @@ namespace QtNodes {
 
 		Node &createNode(std::unique_ptr<NodeDataModel> &&dataModel);
 		Node &restoreNode(QJsonObject const& nodeJson);
-
 		void removeNode(Node &node, bool forceRemove = false);
-		DataModelRegistry &registry() const;
 
+		DataModelRegistry &registry() const;
 		void setRegistry(std::shared_ptr<DataModelRegistry> registry);
+		std::shared_ptr<DataModelRegistry> takeRegistry();
 
 		void iterateOverNodes(std::function<void(Node*)> const &visitor);
 		void iterateOverNodeData(std::function<void(NodeDataModel*)> const &visitor);

@@ -1,7 +1,7 @@
 /*
 ** CODING JOURNEY
 ** workflow
-** Method
+** Signal
 ** LHUILE Léo
 */
 
@@ -10,16 +10,16 @@
 #include "NodeDataModel.hpp"
 
 namespace types {
-	class Method;
+	class Signal;
 }
 
 namespace qtengine {
-	class Method : public QtNodes::NodeDataModel {
+	class Signal : public QtNodes::NodeDataModel {
 	public:
-		Method();
-		~Method();
+		Signal();
+		~Signal();
 
-		void setData(const QJsonObject &methodSave, const QString &objectId);
+		void setData(const QJsonObject &signalSave, const QString &objectId);
 
 		QJsonObject save() const override;
 		void restore(const QJsonObject &json) override;
@@ -45,7 +45,7 @@ namespace qtengine {
 		void refreshState();
 		bool _flowControllerFill;
 		QVector<bool> _inputsFill;
-		types::Method *_method;
+		types::Signal *_signal;
 		QString _objectId;
 	};
 }

@@ -92,6 +92,11 @@ void qtengine::TreeWidgetWorkflow::onCustomContextMenuRequested(const QPoint &po
 	menu.exec(mapToGlobal(pos));
 }
 
+libraryObjects::AObject *qtengine::TreeWidgetWorkflow::object() const
+{
+	return _object;
+}
+
 void qtengine::TreeWidgetWorkflow::setObject(libraryObjects::AObject *object)
 {
 	_object = object;
@@ -161,6 +166,7 @@ void qtengine::TreeWidgetWorkflow::onDeleteClicked(QTreeWidgetItem *item)
 	_objectClass->removeClassType(classType);
 	_childItems.remove(item);
 	delete item;
+	delete classType;
 }
 
 QMimeData *qtengine::TreeWidgetWorkflow::mimeData(const QList<QTreeWidgetItem *> items) const

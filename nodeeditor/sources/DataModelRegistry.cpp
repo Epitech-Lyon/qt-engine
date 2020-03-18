@@ -5,6 +5,15 @@ using QtNodes::NodeDataModel;
 using QtNodes::NodeDataType;
 using QtNodes::TypeConverter;
 
+void DataModelRegistry::addPrefix(const QString &prefix)
+{
+	for (auto &tmp : _registeredModelsCategory) {
+		_categories.erase(tmp.second);
+		tmp.second = prefix + tmp.second;
+		_categories.insert(tmp.second);
+	}
+}
+
 void DataModelRegistry::concatenate(DataModelRegistry *registry)
 {
 	for (auto tmp : registry->_registeredModelsCategory)

@@ -202,6 +202,14 @@ void FlowScene::setRegistry(std::shared_ptr<DataModelRegistry> registry)
 	_registry = std::move(registry);
 }
 
+std::shared_ptr<DataModelRegistry> FlowScene::takeRegistry()
+{
+	auto registry = _registry;
+
+	_registry = std::make_shared<DataModelRegistry>();
+	return registry;
+}
+
 void FlowScene::iterateOverNodes(std::function<void(Node*)> const & visitor)
 {
 	for (const auto &_node : _nodes)

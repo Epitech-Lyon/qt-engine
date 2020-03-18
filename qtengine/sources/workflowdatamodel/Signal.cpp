@@ -1,65 +1,65 @@
 /*
 ** CODING JOURNEY
 ** workflow
-** Method
+** Signal
 ** LHUILE Léo
 */
 
-#include "Method.hpp"
-#include "types/includes/Method.hpp"
+#include "Signal.hpp"
+#include "types/includes/Signal.hpp"
 
 #include "FlowController.hpp"
 #include "Type.hpp"
 
 #include "Connection.hpp"
 
-qtengine::Method::Method()
+qtengine::Signal::Signal()
 	: _flowControllerFill(false)
-	, _method(nullptr)
+	, _signal(nullptr)
 {
 }
 
-qtengine::Method::~Method()
+qtengine::Signal::~Signal()
 {
-	delete _method;
+	delete _signal;
 }
 
-void qtengine::Method::setData(const QJsonObject &methodSave, const QString &objectId)
+void qtengine::Signal::setData(const QJsonObject &signalSave, const QString &objectId)
 {
-	_method = new types::Method();
-	_method->deserialize(methodSave);
+	_signal = new types::Signal;
+	_signal->deserialize(signalSave);
 	_objectId = objectId;
 	for (unsigned int i = 0; i < nPorts(QtNodes::PortType::In); i += 1)
 		_inputsFill << false;
 	refreshState();
 }
 
-QJsonObject qtengine::Method::save() const
+QJsonObject qtengine::Signal::save() const
 {
 	QJsonObject json;
 
-	json["name"] = QMetaEnum::fromType<types::ClassType::Type>().key(types::ClassType::METHOD);
-	json["classType"] = _method->serialize();
+	json["name"] = QMetaEnum::fromType<types::ClassType::Type>().key(types::ClassType::SIGNAL);
+	json["classType"] = _signal->serialize();
 	json["objectId"] = _objectId;
 	return json;
 }
 
-void qtengine::Method::restore(const QJsonObject &json)
+void qtengine::Signal::restore(const QJsonObject &json)
 {
 	setData(json["classType"].toObject(), json["objectId"].toString());
 }
 
-QString qtengine::Method::name() const
+QString qtengine::Signal::name() const
 {
-	return _method ? _method->name() : QMetaEnum::fromType<types::ClassType::Type>().key(types::ClassType::METHOD);
+	return _signal ? _signal->name() : QMetaEnum::fromType<types::ClassType::Type>().key(types::ClassType::SIGNAL);
 }
 
-QString qtengine::Method::caption() const
+QString qtengine::Signal::caption() const
 {
-	return _method->signature();
+	return _signal->signature();
 }
 
-unsigned int qtengine::Method::nPorts(QtNodes::PortType portType) const
+unsigned int qtengine::Signal::nPorts(QtNodes::PortType portType) const
 {
 	int ret = 0;
 
@@ -67,16 +67,16 @@ unsigned int qtengine::Method::nPorts(QtNodes::PortType portType) const
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = _method->parameters().count() + 1;
+		ret = _signal->parameters().count() + 1;
 		break;
 	case QtNodes::PortType::Out:
-		ret = _method->returnType() == QMetaType::Void ? 1 : 2;
+		ret = 1;
 		break;
 	}
 	return ret;
 }
 
-QtNodes::NodeDataType qtengine::Method::dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+QtNodes::NodeDataType qtengine::Signal::dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
 {
 	QtNodes::NodeDataType ret;
 
@@ -84,16 +84,16 @@ QtNodes::NodeDataType qtengine::Method::dataType(QtNodes::PortType portType, QtN
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = portIndex == 0 ? FlowController().type() : Type(_method->parameters()[portIndex - 1].first).type();
+		ret = portIndex == 0 ? FlowController().type() : Type(_signal->parameters()[portIndex - 1].first).type();
 		break;
 	case QtNodes::PortType::Out:
-		ret = portIndex == 0 ? FlowController().type() : Type(_method->returnType()).type();
+		ret = FlowController().type();
 		break;
 	}
 	return ret;
 }
 
-QString qtengine::Method::portCaption(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+QString qtengine::Signal::portCaption(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
 {
 	QString ret;
 
@@ -101,7 +101,7 @@ QString qtengine::Method::portCaption(QtNodes::PortType portType, QtNodes::PortI
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = portIndex == 0 ? "" : dataType(portType, portIndex).name + " " + _method->parameters()[portIndex - 1].second;
+		ret = portIndex == 0 ? "" : dataType(portType, portIndex).name + " " + _signal->parameters()[portIndex - 1].second;
 		break;
 	case QtNodes::PortType::Out:
 		ret = portIndex == 0 ? "" : dataType(portType, portIndex).name;
@@ -110,12 +110,12 @@ QString qtengine::Method::portCaption(QtNodes::PortType portType, QtNodes::PortI
 	return ret;
 }
 
-QtNodes::NodeDataModel::ConnectionPolicy qtengine::Method::portOutConnectionPolicy(QtNodes::PortIndex portIndex) const
+QtNodes::NodeDataModel::ConnectionPolicy qtengine::Signal::portOutConnectionPolicy(QtNodes::PortIndex portIndex) const
 {
 	return portIndex > 0 ? ConnectionPolicy::Many : ConnectionPolicy::One;
 }
 
-void qtengine::Method::inputConnectionCreated(QtNodes::Connection const &connection)
+void qtengine::Signal::inputConnectionCreated(QtNodes::Connection const &connection)
 {
 	int portIndex = connection.getPortIndex(QtNodes::PortType::In);
 
@@ -126,7 +126,7 @@ void qtengine::Method::inputConnectionCreated(QtNodes::Connection const &connect
 	refreshState();
 }
 
-void qtengine::Method::inputConnectionDeleted(QtNodes::Connection const &connection)
+void qtengine::Signal::inputConnectionDeleted(QtNodes::Connection const &connection)
 {
 	int portIndex = connection.getPortIndex(QtNodes::PortType::In);
 
@@ -137,7 +137,7 @@ void qtengine::Method::inputConnectionDeleted(QtNodes::Connection const &connect
 	refreshState();
 }
 
-void qtengine::Method::refreshState()
+void qtengine::Signal::refreshState()
 {
 	auto allFilled = true;
 

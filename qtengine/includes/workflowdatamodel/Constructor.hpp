@@ -1,7 +1,7 @@
 /*
 ** CODING JOURNEY
 ** workflow
-** Method
+** Constructor
 ** LHUILE Léo
 */
 
@@ -10,16 +10,16 @@
 #include "NodeDataModel.hpp"
 
 namespace types {
-	class Method;
+	class Constructor;
 }
 
 namespace qtengine {
-	class Method : public QtNodes::NodeDataModel {
+	class Constructor : public QtNodes::NodeDataModel {
 	public:
-		Method();
-		~Method();
+		Constructor();
+		~Constructor();
 
-		void setData(const QJsonObject &methodSave, const QString &objectId);
+		void setData(const QJsonObject &constructorSave);
 
 		QJsonObject save() const override;
 		void restore(const QJsonObject &json) override;
@@ -45,7 +45,6 @@ namespace qtengine {
 		void refreshState();
 		bool _flowControllerFill;
 		QVector<bool> _inputsFill;
-		types::Method *_method;
-		QString _objectId;
+		types::Constructor *_constructor;
 	};
 }

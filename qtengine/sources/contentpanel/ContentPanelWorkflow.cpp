@@ -15,11 +15,20 @@
 #include "Manager.hpp"
 #include "ViewManager.hpp"
 #include "AObject.hpp"
+
 #include "ObjectClass.hpp"
+#include "types/includes/Constructor.hpp"
+#include "types/includes/Method.hpp"
+#include "types/includes/Signal.hpp"
+#include "types/includes/Slot.hpp"
+#include "types/includes/Property.hpp"
 
 #include "Utils.hpp"
 
+#include "Constructor.hpp"
 #include "Method.hpp"
+#include "Signal.hpp"
+#include "Slot.hpp"
 #include "Property.hpp"
 #include "BuiltIn.hpp"
 
@@ -39,8 +48,6 @@ void qtengine::ContentPanelWorkflow::init()
 	_tree = new TreeWidgetWorkflow(splitter);
 	_scene = new FlowSceneWorkflow(splitter);
 	_view = new QtNodes::FlowView(_scene, splitter);
-
-	_registryBuiltIn = generateRegistryBuiltIn();
 
 	splitter->addWidget(_tree);
 	splitter->addWidget(_view);
@@ -82,53 +89,79 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 	return registry;
 }
 
-std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistryView(const QMetaObject *metaObject, QMetaMethod::Access minimumAccess) const
+std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistryObjectClass(libraryObjects::ObjectClass *objectClass, QMetaMethod::Access minimumAccess, const QString &objectId) const
 {
 	auto registry = std::make_shared<QtNodes::DataModelRegistry>();
-	QString prefix("base class/");
 
-	libraryObjects::ObjectClass objectClass(metaObject);
-//	auto metaEnum = QMetaEnum::fromType<types::ClassType::Type>();
+	auto metaEnum = QMetaEnum::fromType<types::ClassType::Type>();
+	auto metaEnumKeyOf = [metaEnum](types::ClassType::Type type) {
+		QString name = metaEnum.key(type);
+		name = name.toLower();
 
-	for (auto classType : objectClass.getClassType(types::ClassType::CONSTRUCTOR)) {
-		if (classType->access() < minimumAccess) { continue; }
+		QCharRef firstLetter = name.front();
+		firstLetter = firstLetter.toUpper();
+		return name;
+	};
 
-		objectClass.removeClassType(classType);
-//		registry->registerModel<Method>(prefix + metaEnum.key(classType->type()), [=]() {
-//			return std::unique_ptr<Method>(new Method(classType));
-//		});
+	for (auto classType : objectClass->getClassType(types::ClassType::CONSTRUCTOR)) {
+		auto constructor = dynamic_cast<types::Constructor *>(classType);
+		if (!constructor || constructor->access() < minimumAccess || !objectId.isEmpty()) { continue; }
+
+		auto constructorSave = constructor->serialize();
+		registry->registerModel<Constructor>(metaEnumKeyOf(classType->type()), [constructorSave]() {
+			auto modelConstructor = std::unique_ptr<Constructor>(new Constructor());
+
+			modelConstructor->setData(constructorSave);
+			return modelConstructor;
+		});
 	}
-	for (auto classType : objectClass.getClassType(types::ClassType::METHOD)) {
-		if (classType->access() < minimumAccess) { continue; }
+	for (auto classType : objectClass->getClassType(types::ClassType::METHOD)) {
+		auto method = dynamic_cast<types::Method *>(classType);
+		if (!method || method->access() < minimumAccess || (objectId.isEmpty() && !method->isStatic())) { continue; }
 
-		objectClass.removeClassType(classType);
-//		registry->registerModel<Method>(prefix + metaEnum.key(classType->type()), [=]() {
-//			return std::unique_ptr<Method>(new Method(classType));
-//		});
+		auto methodSave = method->serialize();
+		registry->registerModel<Method>(metaEnumKeyOf(classType->type()), [methodSave, objectId]() {
+			auto modelMethod = std::unique_ptr<Method>(new Method());
+
+			modelMethod->setData(methodSave, objectId);
+			return modelMethod;
+		});
 	}
-	for (auto classType : objectClass.getClassType(types::ClassType::SIGNAL)) {
-		if (classType->access() < minimumAccess) { continue; }
+	for (auto classType : objectClass->getClassType(types::ClassType::SIGNAL)) {
+		auto signal = dynamic_cast<types::Signal *>(classType);
+		if (!signal || signal->access() < minimumAccess || objectId.isEmpty()) { continue; }
 
-		objectClass.removeClassType(classType);
-//		registry->registerModel<Method>(prefix + metaEnum.key(classType->type()), [=]() {
-//			return std::unique_ptr<Method>(new Method(classType));
-//		});
+		auto signalSave = signal->serialize();
+		registry->registerModel<Signal>(metaEnumKeyOf(classType->type()), [signalSave, objectId]() {
+			auto modelSignal = std::unique_ptr<Signal>(new Signal());
+
+			modelSignal->setData(signalSave, objectId);
+			return modelSignal;
+		});
 	}
-	for (auto classType : objectClass.getClassType(types::ClassType::SLOT)) {
-		if (classType->access() < minimumAccess) { continue; }
+	for (auto classType : objectClass->getClassType(types::ClassType::SLOT)) {
+		auto slot = dynamic_cast<types::Slot *>(classType);
+		if (!slot || slot->access() < minimumAccess || objectId.isEmpty()) { continue; }
 
-		objectClass.removeClassType(classType);
-//		registry->registerModel<Method>(prefix + metaEnum.key(classType->type()), [=]() {
-//			return std::unique_ptr<Method>(new Method(classType));
-//		});
+		auto slotSave = slot->serialize();
+		registry->registerModel<Slot>(metaEnumKeyOf(classType->type()), [slotSave, objectId]() {
+			auto modelSlot = std::unique_ptr<Slot>(new Slot());
+
+			modelSlot->setData(slotSave, objectId);
+			return modelSlot;
+		});
 	}
-	for (auto classType : objectClass.getClassType(types::ClassType::PROPERTY)) {
-		if (classType->access() < minimumAccess) { continue; }
+	for (auto classType : objectClass->getClassType(types::ClassType::PROPERTY)) {
+		auto property = dynamic_cast<types::Property *>(classType);
+		if (!property || property->access() < minimumAccess || objectId.isEmpty()) { continue; }
 
-		objectClass.removeClassType(classType);
-//		registry->registerModel<Property>(prefix + metaEnum.key(classType->type()), [=]() {
-//			return std::unique_ptr<Method>(new Method(classType));
-//		});
+		auto propertySave = property->serialize();
+		registry->registerModel<Method>(metaEnumKeyOf(classType->type()), [propertySave, objectId]() {
+			auto modelProperty = std::unique_ptr<Property>(new Property());
+
+			modelProperty->setData(propertySave, objectId);
+			return modelProperty;
+		});
 	}
 	return registry;
 }
@@ -140,11 +173,12 @@ void qtengine::ContentPanelWorkflow::onObjectChanged(libraryObjects::AObject *ob
 	_scene->clearScene();
 	if (!object) { return; }
 
-	auto registryView = generateRegistryView(object->object()->metaObject(), QMetaMethod::Protected);
-	auto registry = std::make_shared<QtNodes::DataModelRegistry>();
+	libraryObjects::ObjectClass objectClass(object->object()->metaObject());
 
-	registry->concatenate(registryView.get());
-	registry->concatenate(_registryBuiltIn.get());
+	auto registry = generateRegistryObjectClass(&objectClass, QMetaMethod::Protected, object->id());
+	registry->addPrefix("base class/");
+	registry->concatenate(generateRegistryBuiltIn().get());
+
 	_scene->setRegistry(registry);
 }
 
@@ -155,8 +189,11 @@ void qtengine::ContentPanelWorkflow::onObjectClassChanged(libraryObjects::Object
 
 void qtengine::ContentPanelWorkflow::onObjectClassDropped(const QPointF &pos, libraryObjects::ObjectClass *objectClass, libraryObjects::AObject *reference)
 {
-	Q_UNUSED(objectClass)
-	Q_UNUSED(reference)
+	auto saveRegistry = _scene->takeRegistry();
 
-	_view->openMenu(_view->mapFromScene(pos));
+	auto minimumAccess = reference == _tree->object() ? QMetaMethod::Private : QMetaMethod::Public;
+	_scene->setRegistry(generateRegistryObjectClass(objectClass, minimumAccess, reference ? reference->id() : ""));
+
+	_view->openMenu(_view->mapFromScene(pos), true);
+	_scene->setRegistry(saveRegistry);
 }

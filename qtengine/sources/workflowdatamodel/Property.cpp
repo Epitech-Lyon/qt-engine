@@ -13,20 +13,41 @@
 
 #include "Connection.hpp"
 
-qtengine::Property::Property(types::Property *property)
-	: _property(property)
+qtengine::Property::Property()
+	: _property(nullptr)
 {
 }
 
-qtengine::Property::Property(const QMetaProperty &metaProperty)
-	: Property(new types::Property(metaProperty))
+qtengine::Property::~Property()
 {
-	connect(this, &QObject::destroyed, _property, &QObject::deleteLater);
+	delete _property;
+}
+
+void qtengine::Property::setData(const QJsonObject &propertySave, const QString &objectId)
+{
+	_property = new types::Property;
+	_property->deserialize(propertySave);
+	_objectId = objectId;
+}
+
+QJsonObject qtengine::Property::save() const
+{
+	QJsonObject json;
+
+	json["name"] = QMetaEnum::fromType<types::ClassType::Type>().key(types::ClassType::PROPERTY);
+	json["classType"] = _property->serialize();
+	json["objectId"] = _objectId;
+	return json;
+}
+
+void qtengine::Property::restore(const QJsonObject &json)
+{
+	setData(json["classType"].toObject(), json["objectId"].toString());
 }
 
 QString qtengine::Property::name() const
 {
-	return _property->name();
+	return _property ? _property->name() : QMetaEnum::fromType<types::ClassType::Type>().key(types::ClassType::PROPERTY);
 }
 
 QString qtengine::Property::caption() const

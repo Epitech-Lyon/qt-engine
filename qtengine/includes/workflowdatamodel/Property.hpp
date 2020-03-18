@@ -17,9 +17,13 @@ namespace types {
 namespace qtengine {
 	class Property : public QtNodes::NodeDataModel {
 	public:
-		Property(types::Property *property);
-		Property(const QMetaProperty &metaProperty);
-		~Property() = default;
+		Property();
+		~Property();
+
+		void setData(const QJsonObject &propertySave, const QString &objectId);
+
+		QJsonObject save() const override;
+		void restore(const QJsonObject &json) override;
 
 		QString name() const override;
 
@@ -36,5 +40,6 @@ namespace qtengine {
 
 	private:
 		types::Property *_property;
+		QString _objectId;
 	};
 }

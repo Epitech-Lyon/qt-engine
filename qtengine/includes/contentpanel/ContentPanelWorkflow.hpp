@@ -42,12 +42,10 @@ namespace qtengine {
 
 	private:
 		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryBuiltIn() const;
-		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryView(const QMetaObject *metaObject, QMetaMethod::Access minimumAccess) const;
-
-		QtNodes::FlowView *_view;
-		FlowSceneWorkflow *_scene;
-		std::shared_ptr<QtNodes::DataModelRegistry> _registryBuiltIn;
+		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryObjectClass(libraryObjects::ObjectClass *objectClass, QMetaMethod::Access minimumAccess, const QString &objectId) const;
 
 		TreeWidgetWorkflow *_tree;
+		QtNodes::FlowView *_view;
+		FlowSceneWorkflow *_scene;
 	};
 }

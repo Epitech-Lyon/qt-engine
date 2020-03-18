@@ -29,6 +29,7 @@ namespace qtengine {
 
 		void clear();
 
+		libraryObjects::AObject *object() const;
 		void setObject(libraryObjects::AObject *object);
 		void setObjectClass(libraryObjects::ObjectClass *objectClass);
 
