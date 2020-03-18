@@ -9,8 +9,8 @@
 #include "ContentPanelWorkflow.hpp"
 
 #include "TreeWidgetWorkflow.hpp"
+#include "FlowSceneWorkflow.hpp"
 #include "FlowView.hpp"
-#include "FlowScene.hpp"
 
 #include "Manager.hpp"
 #include "ViewManager.hpp"
@@ -24,31 +24,7 @@
 #include "BuiltIn.hpp"
 
 #include <QtWidgets/QSplitter>
-#include <QtWidgets/QGraphicsSceneDragDropEvent>
-#include <QtCore/QDebug>
-
-qtengine::FlowScene::FlowScene(QObject *parent)
-	: QtNodes::FlowScene(parent)
-{
-}
-
-void qtengine::FlowScene::dragEnterEvent(QGraphicsSceneDragDropEvent *event)
-{
-	QtNodes::FlowScene::dragEnterEvent(event);
-}
-
-#include "MimeDataObject.hpp"
-void qtengine::FlowScene::dragMoveEvent(QGraphicsSceneDragDropEvent *event)
-{
-//	QtNodes::FlowScene::dragMoveEvent(event);
-	qDebug() << event->mimeData() << dynamic_cast<const MimeDataObject*>(event->mimeData());
-	event->accept();
-}
-
-void qtengine::FlowScene::dropEvent(QGraphicsSceneDragDropEvent *event)
-{
-	QtNodes::FlowScene::dropEvent(event);
-}
+#include <QtCore/QMetaEnum>
 
 qtengine::ContentPanelWorkflow::ContentPanelWorkflow(QWidget *parent)
 	: ContentPanelBase("Workflow", parent)
@@ -61,7 +37,7 @@ void qtengine::ContentPanelWorkflow::init()
 	_mainLayout->addWidget(splitter);
 
 	_tree = new TreeWidgetWorkflow(splitter);
-	_scene = new FlowScene(splitter);
+	_scene = new FlowSceneWorkflow(splitter);
 	_view = new QtNodes::FlowView(_scene, splitter);
 
 	_registryBuiltIn = generateRegistryBuiltIn();
@@ -70,11 +46,13 @@ void qtengine::ContentPanelWorkflow::init()
 	splitter->addWidget(_view);
 	splitter->setSizes({_tree->sizeHint().width(), _tree->sizeHint().width() * 4});
 
-	onViewObjectChanged(Manager::instance()->viewManager()->viewObject());
-	connect(Manager::instance()->viewManager(), &ViewManager::viewObjectChanged, this, &ContentPanelWorkflow::onViewObjectChanged);
+	onObjectChanged(Manager::instance()->viewManager()->viewObject());
+	connect(Manager::instance()->viewManager(), &ViewManager::viewObjectChanged, this, &ContentPanelWorkflow::onObjectChanged);
 
-	_tree->onViewObjectClassChanged(Manager::instance()->viewManager()->viewObjectClass());
-	connect(Manager::instance()->viewManager(), &ViewManager::viewObjectClassChanged, _tree, &TreeWidgetWorkflow::onViewObjectClassChanged);
+	onObjectClassChanged(Manager::instance()->viewManager()->viewObjectClass());
+	connect(Manager::instance()->viewManager(), &ViewManager::viewObjectClassChanged, this, &ContentPanelWorkflow::onObjectClassChanged);
+
+	connect(_scene, &FlowSceneWorkflow::objectClassDropped, this, &ContentPanelWorkflow::onObjectClassDropped);
 }
 
 std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistryBuiltIn() const
@@ -101,9 +79,6 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::SizePolicy)); });
 	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Font)); });
 	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Cursor)); });
-
-	// TODO Add some constructors like QWidget
-
 	return registry;
 }
 
@@ -112,40 +87,76 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 	auto registry = std::make_shared<QtNodes::DataModelRegistry>();
 	QString prefix("base class/");
 
-	for (int idx = 0; idx < metaObject->constructorCount(); idx += 1) {
-		auto metaMethod = metaObject->constructor(idx);
-		if (metaMethod.access() < minimumAccess) { continue; }
+	libraryObjects::ObjectClass objectClass(metaObject);
+//	auto metaEnum = QMetaEnum::fromType<types::ClassType::Type>();
 
-		if (metaMethod.methodType() == QMetaMethod::Method)
-			registry->registerModel<Method>(prefix + types::typeToString(metaMethod.methodType()), [=]() { return std::unique_ptr<Method>(new Method(metaMethod)); });
-		else if (metaMethod.methodType() == QMetaMethod::Signal)
-			registry->registerModel<Method>(prefix + types::typeToString(metaMethod.methodType()), [=]() { return std::unique_ptr<Method>(new Method(metaMethod)); });
-		else if (metaMethod.methodType() == QMetaMethod::Slot)
-			registry->registerModel<Method>(prefix + types::typeToString(metaMethod.methodType()), [=]() { return std::unique_ptr<Method>(new Method(metaMethod)); });
+	for (auto classType : objectClass.getClassType(types::ClassType::CONSTRUCTOR)) {
+		if (classType->access() < minimumAccess) { continue; }
+
+		objectClass.removeClassType(classType);
+//		registry->registerModel<Method>(prefix + metaEnum.key(classType->type()), [=]() {
+//			return std::unique_ptr<Method>(new Method(classType));
+//		});
 	}
-	for (int idx = 0; idx < metaObject->methodCount(); idx += 1) {
-		auto metaMethod = metaObject->method(idx);
+	for (auto classType : objectClass.getClassType(types::ClassType::METHOD)) {
+		if (classType->access() < minimumAccess) { continue; }
 
-		if (metaMethod.access() >= minimumAccess)
-			registry->registerModel<Method>(prefix + types::typeToString(metaMethod.methodType()), [=]() { return std::unique_ptr<Method>(new Method(metaMethod)); });
+		objectClass.removeClassType(classType);
+//		registry->registerModel<Method>(prefix + metaEnum.key(classType->type()), [=]() {
+//			return std::unique_ptr<Method>(new Method(classType));
+//		});
 	}
-	for (int idx = 0; idx < metaObject->propertyCount(); idx += 1) {
-		auto metaProperty = metaObject->property(idx);
+	for (auto classType : objectClass.getClassType(types::ClassType::SIGNAL)) {
+		if (classType->access() < minimumAccess) { continue; }
 
-		registry->registerModel<Property>(prefix + "Property", [=]() { return std::unique_ptr<Property>(new Property(metaProperty)); });
+		objectClass.removeClassType(classType);
+//		registry->registerModel<Method>(prefix + metaEnum.key(classType->type()), [=]() {
+//			return std::unique_ptr<Method>(new Method(classType));
+//		});
+	}
+	for (auto classType : objectClass.getClassType(types::ClassType::SLOT)) {
+		if (classType->access() < minimumAccess) { continue; }
+
+		objectClass.removeClassType(classType);
+//		registry->registerModel<Method>(prefix + metaEnum.key(classType->type()), [=]() {
+//			return std::unique_ptr<Method>(new Method(classType));
+//		});
+	}
+	for (auto classType : objectClass.getClassType(types::ClassType::PROPERTY)) {
+		if (classType->access() < minimumAccess) { continue; }
+
+		objectClass.removeClassType(classType);
+//		registry->registerModel<Property>(prefix + metaEnum.key(classType->type()), [=]() {
+//			return std::unique_ptr<Method>(new Method(classType));
+//		});
 	}
 	return registry;
 }
 
-void qtengine::ContentPanelWorkflow::onViewObjectChanged(libraryObjects::AObject *viewObject)
+void qtengine::ContentPanelWorkflow::onObjectChanged(libraryObjects::AObject *object)
 {
+	_tree->setObject(object);
 	_tree->clear();
 	_scene->clearScene();
-	if (!viewObject) { return; }
-	auto registryView = generateRegistryView(viewObject->object()->metaObject(), QMetaMethod::Protected);
+	if (!object) { return; }
+
+	auto registryView = generateRegistryView(object->object()->metaObject(), QMetaMethod::Protected);
 	auto registry = std::make_shared<QtNodes::DataModelRegistry>();
 
 	registry->concatenate(registryView.get());
 	registry->concatenate(_registryBuiltIn.get());
 	_scene->setRegistry(registry);
+}
+
+void qtengine::ContentPanelWorkflow::onObjectClassChanged(libraryObjects::ObjectClass *objectClass)
+{
+	_tree->setObjectClass(objectClass);
+}
+
+void qtengine::ContentPanelWorkflow::onObjectClassDropped(const QPointF &pos, libraryObjects::ObjectClass *objectClass, libraryObjects::AObject *reference)
+{
+	Q_UNUSED(objectClass)
+	Q_UNUSED(reference)
+
+	_view->openMenu(_view->mapFromScene(pos));
 }

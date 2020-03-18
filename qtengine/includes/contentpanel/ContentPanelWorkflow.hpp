@@ -8,12 +8,9 @@
 #pragma once
 
 #include "ContentPanelBase.hpp"
-#include "FlowScene.hpp"
 
-#include <QtWidgets/QTreeWidget>
 #include <QtCore/QMetaObject>
 #include <QtCore/QMetaMethod>
-#include <QtCore/QMap>
 
 namespace QtNodes {
 	class FlowView;
@@ -22,23 +19,12 @@ namespace QtNodes {
 
 namespace libraryObjects {
 	class AObject;
+	class ObjectClass;
 }
 
 namespace qtengine {
 	class TreeWidgetWorkflow;
-
-	class FlowScene : public QtNodes::FlowScene {
-		Q_OBJECT
-
-	public:
-		FlowScene(QObject *parent = nullptr);
-		~FlowScene() = default;
-
-	private:
-		void dragEnterEvent(QGraphicsSceneDragDropEvent *event);
-		void dragMoveEvent(QGraphicsSceneDragDropEvent *event);
-		void dropEvent(QGraphicsSceneDragDropEvent *event);
-	};
+	class FlowSceneWorkflow;
 
 	class ContentPanelWorkflow : public ContentPanelBase {
 		Q_OBJECT
@@ -50,14 +36,16 @@ namespace qtengine {
 		void init() override;
 
 	private slots:
-		void onViewObjectChanged(libraryObjects::AObject *viewObject);
+		void onObjectChanged(libraryObjects::AObject *viewObject);
+		void onObjectClassChanged(libraryObjects::ObjectClass *objectClass);
+		void onObjectClassDropped(const QPointF &pos, libraryObjects::ObjectClass *objectClass, libraryObjects::AObject *reference);
 
 	private:
 		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryBuiltIn() const;
 		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryView(const QMetaObject *metaObject, QMetaMethod::Access minimumAccess) const;
 
 		QtNodes::FlowView *_view;
-		FlowScene *_scene;
+		FlowSceneWorkflow *_scene;
 		std::shared_ptr<QtNodes::DataModelRegistry> _registryBuiltIn;
 
 		TreeWidgetWorkflow *_tree;

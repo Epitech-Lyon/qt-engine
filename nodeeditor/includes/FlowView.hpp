@@ -20,7 +20,7 @@ namespace QtNodes {
 		QAction *deleteSelectionAction() const;
 
 		void setScene(FlowScene *scene);
-		void openMenu(const QPoint &pos);
+		void openMenu(const QPoint &pos, bool createIfOnlyOne = false);
 
 	public Q_SLOTS:
 		void scaleUp();

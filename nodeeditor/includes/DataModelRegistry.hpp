@@ -75,7 +75,7 @@ namespace QtNodes {
 	private:
 		// If the registered ModelType class has the static member method
 		//
-		//      static Qstring Name();
+		//      static QString Name();
 		//
 		// use it. Otherwise use the non-static method:
 		//

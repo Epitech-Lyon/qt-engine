@@ -109,6 +109,15 @@ void qtengine::TreeWidgetViewExplorer::setCurrentItemFor(libraryObjects::AObject
 	setCurrentItem(_objects.key(object));
 }
 
+void qtengine::TreeWidgetViewExplorer::dragEnterEvent(QDragEnterEvent *event)
+{
+	QTreeWidget::dragEnterEvent(event);
+
+	auto mimeDataObject = dynamic_cast<const MimeDataObject *>(event->mimeData());
+	if (!mimeDataObject || !mimeDataObject->libraryObject())
+		event->ignore();
+}
+
 void qtengine::TreeWidgetViewExplorer::dragMoveEvent(QDragMoveEvent *event)
 {
 	QTreeWidget::dragMoveEvent(event);
@@ -131,8 +140,6 @@ void qtengine::TreeWidgetViewExplorer::dragMoveEvent(QDragMoveEvent *event)
 	if (!_objects[item]) { return; }
 
 	auto mimeDataObject = dynamic_cast<const MimeDataObject *>(event->mimeData());
-	if (!mimeDataObject) { return; }
-
 	auto libraryObjectParent = libraryObjects::LibraryObjectManager::instance()->libraryObjectOf(_objects[item]->classHierarchy());
 	if (!libraryObjectParent->libraryFunction()->functionDragFor(mimeDataObject->libraryObject()->classHierarchy()).isValid)
 		event->ignore();
@@ -141,7 +148,7 @@ void qtengine::TreeWidgetViewExplorer::dragMoveEvent(QDragMoveEvent *event)
 bool qtengine::TreeWidgetViewExplorer::dropMimeData(QTreeWidgetItem *parent, int index, const QMimeData *data, Qt::DropAction)
 {
 	auto mimeDataObject = dynamic_cast<const MimeDataObject *>(data);
-	if (!mimeDataObject) { return false; }
+	if (!mimeDataObject || !mimeDataObject->libraryObject()) { return false; }
 
 	emit libraryObjectDropped(_objects[parent], index, mimeDataObject->libraryObject(), mimeDataObject->reference());
 	return false;

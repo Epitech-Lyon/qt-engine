@@ -85,7 +85,7 @@ void FlowView::setScene(FlowScene *scene)
 	addAction(_deleteSelectionAction);
 }
 
-void FlowView::openMenu(const QPoint &pos)
+void FlowView::openMenu(const QPoint &pos, bool createIfOnlyOne)
 {
 	auto skipText = QStringLiteral("skip me");
 
@@ -150,7 +150,6 @@ void FlowView::openMenu(const QPoint &pos)
 			_scene->nodePlaced(node);
 		} else
 			qWarning() << "Model not found:" << modelName;
-
 		modelMenu.close();
 	});
 
@@ -166,9 +165,12 @@ void FlowView::openMenu(const QPoint &pos)
 	});
 
 	if (!itemsParent.isEmpty() && !items.isEmpty()) {
-		// make sure the text box gets focus so the user doesn't have to click on it
-		txtBox->setFocus();
-		modelMenu.exec(mapToGlobal(pos));
+		if (items.count() > 1 || !createIfOnlyOne) {
+			// make sure the text box gets focus so the user doesn't have to click on it
+			txtBox->setFocus();
+			modelMenu.exec(mapToGlobal(pos));
+		} else
+			emit treeView->itemClicked(items.first(), 0);
 	}
 }
 

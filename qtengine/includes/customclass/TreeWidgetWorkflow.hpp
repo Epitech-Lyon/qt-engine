@@ -17,6 +17,7 @@
 #include "ClassType.hpp"
 
 namespace libraryObjects {
+	class AObject;
 	class ObjectClass;
 }
 
@@ -28,8 +29,8 @@ namespace qtengine {
 
 		void clear();
 
-	public slots:
-		void onViewObjectClassChanged(libraryObjects::ObjectClass *objectClass);
+		void setObject(libraryObjects::AObject *object);
+		void setObjectClass(libraryObjects::ObjectClass *objectClass);
 
 	private slots:
 		void onCustomContextMenuRequested(const QPoint &pos);
@@ -39,8 +40,10 @@ namespace qtengine {
 		void onAddClicked(types::ClassType *classType);
 		void onSettingsClicked(QTreeWidgetItem *item);
 		void onDeleteClicked(QTreeWidgetItem *item);
+		QMimeData *mimeData(const QList<QTreeWidgetItem *> items) const override;
 
-		libraryObjects::ObjectClass *_viewObjectClass;
+		libraryObjects::AObject *_object;
+		libraryObjects::ObjectClass *_objectClass;
 		QMap<types::ClassType::Type, QMap<QMetaMethod::Access, QTreeWidgetItem *>> _items;
 		QMap<QTreeWidgetItem *, types::ClassType *> _childItems;
 	};

@@ -15,6 +15,9 @@
 #include "ViewManager.hpp"
 #include "MainWindow.hpp"
 
+#include "AObject.hpp"
+#include "LibraryObjectManager.hpp"
+#include "MimeDataObject.hpp"
 #include "types/includes/Constructor.hpp"
 
 #include <QtWidgets/QHeaderView>
@@ -23,11 +26,13 @@
 
 qtengine::TreeWidgetWorkflow::TreeWidgetWorkflow(QWidget *parent)
 	: QTreeWidget(parent)
-	, _viewObjectClass(nullptr)
+	, _objectClass(nullptr)
 {
 	viewport()->setAutoFillBackground(false);
 	setFrameShape(QFrame::NoFrame);
 
+	setAnimated(true);
+	setDragDropMode(QAbstractItemView::DragOnly);
 	setContextMenuPolicy(Qt::CustomContextMenu);
 	setHeaderHidden(true);
 	setColumnCount(2);
@@ -87,16 +92,21 @@ void qtengine::TreeWidgetWorkflow::onCustomContextMenuRequested(const QPoint &po
 	menu.exec(mapToGlobal(pos));
 }
 
-void qtengine::TreeWidgetWorkflow::onViewObjectClassChanged(libraryObjects::ObjectClass *viewObjectClass)
+void qtengine::TreeWidgetWorkflow::setObject(libraryObjects::AObject *object)
 {
-	_viewObjectClass = viewObjectClass;
+	_object = object;
+}
+
+void qtengine::TreeWidgetWorkflow::setObjectClass(libraryObjects::ObjectClass *objectClass)
+{
+	_objectClass = objectClass;
 	clear();
 
-	setEnabled(_viewObjectClass);
-	if (!_viewObjectClass) { return; }
+	setEnabled(_objectClass);
+	if (!_objectClass) { return; }
 
 	for (int i = 0; i < QMetaEnum::fromType<types::ClassType::Type>().keyCount(); i += 1)
-		for (auto classType : _viewObjectClass->getClassType(static_cast<types::ClassType::Type>(i)))
+		for (auto classType : _objectClass->getClassType(static_cast<types::ClassType::Type>(i)))
 			addTypeItem(classType);
 
 	setCurrentItem(nullptr);
@@ -117,7 +127,7 @@ void qtengine::TreeWidgetWorkflow::onAddClicked(types::ClassType *classType)
 	DialogSettingsClassType dialog(classType, Manager::instance()->mainWindow());
 
 	if (dialog.exec() == QDialog::Accepted && classType->isValid()) {
-		auto classTypeRet = _viewObjectClass->addClassType(classType);
+		auto classTypeRet = _objectClass->addClassType(classType);
 
 		if (classType == classTypeRet)
 			addTypeItem(classType);
@@ -148,7 +158,16 @@ void qtengine::TreeWidgetWorkflow::onDeleteClicked(QTreeWidgetItem *item)
 {
 	auto classType = _childItems[item];
 
-	_viewObjectClass->removeClassType(classType);
+	_objectClass->removeClassType(classType);
 	_childItems.remove(item);
 	delete item;
+}
+
+QMimeData *qtengine::TreeWidgetWorkflow::mimeData(const QList<QTreeWidgetItem *> items) const
+{
+	QMimeData *mimeData = QTreeWidget::mimeData(items);
+	auto mimeDataObject = new MimeDataObject(new libraryObjects::ObjectClass(_object->metaObject()), nullptr, _object);
+	for (auto format : mimeData->formats())
+		mimeDataObject->setData(format, mimeData->data(format));
+	return mimeDataObject;
 }

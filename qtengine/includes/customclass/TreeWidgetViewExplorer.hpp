@@ -42,7 +42,8 @@ namespace qtengine {
 		void onPropertyUpdated(const QString &propertyName, const QVariant &propertyValue);
 
 	private:
-		void dragMoveEvent(QDragMoveEvent *event);
+		void dragEnterEvent(QDragEnterEvent *event) override;
+		void dragMoveEvent(QDragMoveEvent *event) override;
 		bool dropMimeData(QTreeWidgetItem *parent, int index, const QMimeData *data, Qt::DropAction action) override;
 		QMimeData *mimeData(const QList<QTreeWidgetItem *> items) const override;
 		QMap<QTreeWidgetItem *, libraryObjects::AObject *> _objects;
