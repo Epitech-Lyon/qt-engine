@@ -13,6 +13,11 @@ template<> void libraryObjects::EHBoxLayout::init(AObject *object)
 	EBoxLayout::init(object);
 }
 
+template<> QString libraryObjects::EHBoxLayout::classIncludePath()
+{
+	return "#include <QtWidgets/QHBoxLayout>";
+}
+
 template<> QIcon libraryObjects::EHBoxLayout::icon()
 {
 	return QIcon();

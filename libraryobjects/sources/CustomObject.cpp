@@ -37,12 +37,13 @@ void libraryObjects::CustomObject::registerAsLibraryObject(const QString &path)
 		}
 		return ret;
 	};
+	auto object = constructor();
 	auto serializeData = [](AObject *) { return QJsonObject(); };
 	auto deserializeData = [](const QJsonObject &, AObject *) {};
-	auto object = constructor();
+	QString classIncludePath = "#include \"" + object->className() + ".hpp\"";
 
 	if (object) {
-		auto librayObject = new LibraryObject(constructor, serializeData, deserializeData, object->classHierarchy(), QIcon(), new LibraryFunction());
+		auto librayObject = new LibraryObject(constructor, serializeData, deserializeData, object->classHierarchy(), classIncludePath, QIcon(), new LibraryFunction());
 
 		LibraryObjectManager::instance()->registerCustomObject(QFileInfo(path).fileName(), librayObject);
 		delete object;

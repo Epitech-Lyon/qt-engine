@@ -20,6 +20,11 @@ template<> void libraryObjects::ETextEdit::init(AObject *object)
 	});
 }
 
+template<> QString libraryObjects::ETextEdit::classIncludePath()
+{
+	return "#include <QtWidgets/QTextEdit>";
+}
+
 template<> QIcon libraryObjects::ETextEdit::icon()
 {
 	return QIcon();

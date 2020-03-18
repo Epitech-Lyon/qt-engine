@@ -16,6 +16,11 @@ template<> void libraryObjects::EPlainTextEdit::init(AObject *object)
 	connect(plainText, &QPlainTextEdit::textChanged, [object, plainText]() { emit object->propertyUpdated("plainText", plainText->toPlainText()); });
 }
 
+template<> QString libraryObjects::EPlainTextEdit::classIncludePath()
+{
+	return "#include <QtWidgets/QPlainTextEdit>";
+}
+
 template<> QIcon libraryObjects::EPlainTextEdit::icon()
 {
 	return QIcon();

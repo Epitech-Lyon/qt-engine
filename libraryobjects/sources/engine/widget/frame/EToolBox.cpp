@@ -61,6 +61,11 @@ template<> void libraryObjects::EToolBox::deserializeData(const QJsonObject &jso
 	}
 }
 
+template<> QString libraryObjects::EToolBox::classIncludePath()
+{
+	return "#include <QtWidgets/QToolBox>";
+}
+
 template<> QIcon libraryObjects::EToolBox::icon()
 {
 	return QIcon();

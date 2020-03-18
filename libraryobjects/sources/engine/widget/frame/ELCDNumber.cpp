@@ -14,6 +14,11 @@ template<> void libraryObjects::ELCDNumber::init(AObject *object)
 	EWidget::init(object);
 }
 
+template<> QString libraryObjects::ELCDNumber::classIncludePath()
+{
+	return "#include <QtWidgets/QLCDNumber>";
+}
+
 template<> QIcon libraryObjects::ELCDNumber::icon()
 {
 	return QIcon();

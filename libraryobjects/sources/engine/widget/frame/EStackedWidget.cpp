@@ -18,6 +18,11 @@ template<> void libraryObjects::EStackedWidget::init(AObject *object)
 	EWidget::init(object);
 }
 
+template<> QString libraryObjects::EStackedWidget::classIncludePath()
+{
+	return "#include <QtWidgets/QStackedWidget>";
+}
+
 template<> QIcon libraryObjects::EStackedWidget::icon()
 {
 	return QIcon();

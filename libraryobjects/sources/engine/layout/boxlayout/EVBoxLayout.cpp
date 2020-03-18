@@ -13,6 +13,11 @@ template<> void libraryObjects::EVBoxLayout::init(AObject *object)
 	EBoxLayout::init(object);
 }
 
+template<> QString libraryObjects::EVBoxLayout::classIncludePath()
+{
+	return "#include <QtWidgets/QVBoxLayout>";
+}
+
 template<> QIcon libraryObjects::EVBoxLayout::icon()
 {
 	return QIcon();

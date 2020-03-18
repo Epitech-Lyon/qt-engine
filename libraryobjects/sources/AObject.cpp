@@ -12,9 +12,11 @@
 
 #include "QVariantConverter.hpp"
 #include <QtCore/QDebug>
+#include <QtCore/QUuid>
 
 libraryObjects::AObject::AObject(QObject *object, const QString &classHierarchy)
-	: _object(object)
+	: _id(QUuid::createUuid().toString())
+	, _object(object)
 	, _classHierarchy(classHierarchy)
 	, _className(classHierarchy.split("::").last())
 	, _parent(nullptr)
@@ -46,17 +48,21 @@ QJsonObject libraryObjects::AObject::serializeProperties() const
 			else
 				json[property.name] = value;
 		}
+	json["id"] = _id;
 	return json;
 }
 
 void libraryObjects::AObject::deserializeProperties(const QJsonObject &json)
 {
 	for (auto key : json.keys()) {
+		if (key == "id") { continue; }
+
 		auto value = QVariantConverter::deserialize(json[key]);
 
 		if (!value.isNull())
 			setPropertyValue(key, value);
 	}
+	_id = json["id"].toString();
 }
 
 void libraryObjects::AObject::initProperties(const QMetaObject *metaObject)

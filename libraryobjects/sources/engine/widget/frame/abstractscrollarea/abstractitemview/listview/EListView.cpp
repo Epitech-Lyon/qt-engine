@@ -15,6 +15,11 @@ template<> void libraryObjects::EListView::init(AObject *object)
 	EAbstractItemView::init(object);
 }
 
+template<> QString libraryObjects::EListView::classIncludePath()
+{
+	return "#include <QtWidgets/QListView>";
+}
+
 template<> QIcon libraryObjects::EListView::icon()
 {
 	return QIcon();

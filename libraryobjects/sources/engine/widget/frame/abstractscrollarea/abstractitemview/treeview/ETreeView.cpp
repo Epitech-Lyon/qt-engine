@@ -15,6 +15,11 @@ template<> void libraryObjects::ETreeView::init(AObject *object)
 	EAbstractItemView::init(object);
 }
 
+template<> QString libraryObjects::ETreeView::classIncludePath()
+{
+	return "#include <QtWidgets/QTreeView>";
+}
+
 template<> QIcon libraryObjects::ETreeView::icon()
 {
 	return QIcon();

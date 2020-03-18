@@ -42,6 +42,11 @@ template<> void libraryObjects::EFileSystemModel::deserializeData(const QJsonObj
 	abstractItemView->setRootIndex(fileSystemModel->setRootPath(json["rootPath"].toString()));
 }
 
+template<> QString libraryObjects::EFileSystemModel::classIncludePath()
+{
+	return "#include <QtWidgets/QFileSystemModel>";
+}
+
 template<> QIcon libraryObjects::EFileSystemModel::icon()
 {
 	return QIcon();

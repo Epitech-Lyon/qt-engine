@@ -45,6 +45,11 @@ template<> void libraryObjects::ESplitter::deserializeData(const QJsonObject &js
 	splitter->setSizes(sizes);
 }
 
+template<> QString libraryObjects::ESplitter::classIncludePath()
+{
+	return "#include <QtWidgets/QSplitter>";
+}
+
 template<> QIcon libraryObjects::ESplitter::icon()
 {
 	return QIcon();

@@ -13,6 +13,11 @@ template<> void libraryObjects::ELabel::init(AObject *object)
 	EObject::init(object);
 }
 
+template<> QString libraryObjects::ELabel::classIncludePath()
+{
+	return "#include <QtWidgets/QLabel>";
+}
+
 template<> QIcon libraryObjects::ELabel::icon()
 {
 	return QIcon();

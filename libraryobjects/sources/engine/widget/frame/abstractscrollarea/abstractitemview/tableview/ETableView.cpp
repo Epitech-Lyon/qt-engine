@@ -15,6 +15,11 @@ template<> void libraryObjects::ETableView::init(AObject *object)
 	EAbstractItemView::init(object);
 }
 
+template<> QString libraryObjects::ETableView::classIncludePath()
+{
+	return "#include <QtWidgets/QTableView>";
+}
+
 template<> QIcon libraryObjects::ETableView::icon()
 {
 	return QIcon();

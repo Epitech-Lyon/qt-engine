@@ -17,6 +17,11 @@ template<> void libraryObjects::EScrollArea::init(AObject *object)
 	EAbstractScrollArea::init(object);
 }
 
+template<> QString libraryObjects::EScrollArea::classIncludePath()
+{
+	return "#include <QtWidgets/QScrollArea>";
+}
+
 template<> QIcon libraryObjects::EScrollArea::icon()
 {
 	return QIcon();

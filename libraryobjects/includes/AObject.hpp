@@ -22,6 +22,7 @@ namespace libraryObjects {
 	public:
 		virtual ~AObject();
 
+		QString id() const { return _id; }
 		QObject *object() const { return _object; }
 		void removeObject() { _object = nullptr; for (auto child : _children) child->removeObject(); }
 		QString objectName() const { return _object->objectName(); }
@@ -37,6 +38,7 @@ namespace libraryObjects {
 		AObject(QObject *object, const QString &classHierarchy);
 
 	private:
+		QString _id;
 		QObject *_object;
 		QString _classHierarchy;
 		QString _className;

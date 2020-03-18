@@ -26,6 +26,11 @@ template<> QIcon libraryObjects::EWidget::icon()
 	return QIcon();
 }
 
+template<> QString libraryObjects::EWidget::classIncludePath()
+{
+	return "#include <QtWidgets/QWidget>";
+}
+
 template<> libraryObjects::LibraryFunction *libraryObjects::EWidget::libraryFunction()
 {
 	auto libraryFunction = EObject::libraryFunction();

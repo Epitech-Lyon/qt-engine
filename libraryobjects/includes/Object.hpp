@@ -36,6 +36,11 @@ namespace libraryObjects {
 		{
 		}
 
+		static QString classIncludePath()
+		{
+			return "";
+		}
+
 		static QString classHierarchy()
 		{
 			auto metaObjectBegin = Obj::staticMetaObject;
