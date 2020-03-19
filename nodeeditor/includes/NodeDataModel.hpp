@@ -74,9 +74,9 @@ namespace QtNodes {
 		virtual QWidget *embeddedWidget() { return nullptr; }
 		virtual bool resizable() const { return false; }
 
-		void setValidationState(NodeValidationState validationState) { _validationState = validationState; }
+		void setValidationState(NodeValidationState validationState) { _validationState = validationState; emit validationStateUpdated(); }
 		NodeValidationState validationState() const { return _validationState; }
-		void setValidationMessage(const QString &validationMessage) { _validationMessage = validationMessage; }
+		void setValidationMessage(const QString &validationMessage) { _validationMessage = validationMessage; emit validationMessageUpdated(); }
 		QString validationMessage() const { return _validationMessage; }
 
 		virtual NodePainterDelegate *painterDelegate() const { return nullptr; }
@@ -93,6 +93,8 @@ namespace QtNodes {
 		void computingStarted();
 		void computingFinished();
 		void embeddedWidgetSizeUpdated();
+		void validationStateUpdated();
+		void validationMessageUpdated();
 
 	private:
 		NodeStyle _nodeStyle;

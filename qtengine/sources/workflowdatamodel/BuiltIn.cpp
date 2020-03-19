@@ -71,7 +71,7 @@ QtNodes::NodeDataType qtengine::BuiltIn::dataType(QtNodes::PortType portType, Qt
 	case QtNodes::PortType::In:
 		break;
 	case QtNodes::PortType::Out:
-		ret = portIndex == 0 ? FlowController().type() : Type(_type).type();
+		ret = portIndex == 0 ? FlowController().type() : Type(types::ClassTypeManager::instance()->type(_type)).type();
 		break;
 	}
 	return ret;

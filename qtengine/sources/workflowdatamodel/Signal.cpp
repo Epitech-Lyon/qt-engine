@@ -8,15 +8,24 @@
 #include "Signal.hpp"
 #include "types/includes/Signal.hpp"
 
+#include "SwitchButton.hpp"
+
 #include "FlowController.hpp"
 #include "Type.hpp"
 
 #include "Connection.hpp"
 
 qtengine::Signal::Signal()
-	: _flowControllerFill(false)
+	: _connect(true)
+	, _switchButton(new SwitchButton("Emit", "Connect"))
+	, _flowControllerFill(false)
 	, _signal(nullptr)
 {
+	connect(_switchButton, &SwitchButton::valueChanged, this, [this](bool value) {
+		_connect = value;
+		refreshState();
+	});
+	_switchButton->setValue(_connect);
 }
 
 qtengine::Signal::~Signal()
@@ -39,6 +48,7 @@ QJsonObject qtengine::Signal::save() const
 	QJsonObject json;
 
 	json["name"] = QMetaEnum::fromType<types::ClassType::Type>().key(types::ClassType::SIGNAL);
+	json["connect"] = _connect;
 	json["classType"] = _signal->serialize();
 	json["objectId"] = _objectId;
 	return json;
@@ -46,6 +56,7 @@ QJsonObject qtengine::Signal::save() const
 
 void qtengine::Signal::restore(const QJsonObject &json)
 {
+	_switchButton->setValue(json["connect"].toBool());
 	setData(json["classType"].toObject(), json["objectId"].toString());
 }
 
@@ -141,8 +152,9 @@ void qtengine::Signal::refreshState()
 {
 	auto allFilled = true;
 
-	for (auto inputFill : _inputsFill)
-		allFilled = allFilled && inputFill;
+	if (!_connect)
+		for (auto inputFill : _inputsFill)
+			allFilled = allFilled && inputFill;
 	if (_flowControllerFill && allFilled) {
 		setValidationState(QtNodes::NodeValidationState::Valid);
 		setValidationMessage("");
@@ -150,4 +162,9 @@ void qtengine::Signal::refreshState()
 		setValidationState(QtNodes::NodeValidationState::Warning);
 		setValidationMessage("Missing inputs");
 	}
+}
+
+QWidget *qtengine::Signal::embeddedWidget()
+{
+	return _switchButton;
 }

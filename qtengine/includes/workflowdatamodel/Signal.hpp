@@ -14,6 +14,8 @@ namespace types {
 }
 
 namespace qtengine {
+	class SwitchButton;
+
 	class Signal : public QtNodes::NodeDataModel {
 	public:
 		Signal();
@@ -37,12 +39,17 @@ namespace qtengine {
 
 		QtNodes::NodeDataModel::ConnectionPolicy portOutConnectionPolicy(QtNodes::PortIndex portIndex) const override;
 
+		QWidget *embeddedWidget() override;
+
 	public slots:
 		void inputConnectionCreated(QtNodes::Connection const &) override;
 		void inputConnectionDeleted(QtNodes::Connection const &) override;
 
 	private:
 		void refreshState();
+		bool _connect;
+		SwitchButton *_switchButton;
+
 		bool _flowControllerFill;
 		QVector<bool> _inputsFill;
 		types::Signal *_signal;

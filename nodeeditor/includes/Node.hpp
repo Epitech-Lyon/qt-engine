@@ -34,7 +34,7 @@ namespace QtNodes {
 	public:
 		/// NodeDataModel should be an rvalue and is moved into the Node
 		Node(std::unique_ptr<NodeDataModel> && dataModel);
-		virtual ~Node();
+		virtual ~Node() = default;
 
 		QJsonObject save() const override;
 		void restore(QJsonObject const &json) override;
@@ -69,6 +69,7 @@ namespace QtNodes {
 		// data
 		std::unique_ptr<NodeDataModel> _nodeDataModel;
 		NodeState _nodeState;
+
 		// painting
 		NodeGeometry _nodeGeometry;
 		std::unique_ptr<NodeGraphicsObject> _nodeGraphicsObject;

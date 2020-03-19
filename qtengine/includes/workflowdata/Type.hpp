@@ -19,11 +19,6 @@ namespace qtengine {
 		{
 		}
 
-		Type(int typeId)
-			: _type(QMetaType::typeName(typeId))
-		{
-		}
-
 		QtNodes::NodeDataType type() const override { return {_type, _type}; }
 
 	private:

@@ -35,9 +35,9 @@ Node::Node(std::unique_ptr<NodeDataModel> &&dataModel)
 
 	connect(_nodeDataModel.get(), &NodeDataModel::dataUpdated, this, &Node::onDataUpdated);
 	connect(_nodeDataModel.get(), &NodeDataModel::embeddedWidgetSizeUpdated, this, &Node::onNodeSizeUpdated);
+	connect(_nodeDataModel.get(), &NodeDataModel::validationStateUpdated, this, &Node::onNodeSizeUpdated);
+	connect(_nodeDataModel.get(), &NodeDataModel::validationMessageUpdated, this, &Node::onNodeSizeUpdated);
 }
-
-Node::~Node() = default;
 
 QJsonObject Node::save() const
 {
