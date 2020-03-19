@@ -70,7 +70,7 @@ void qtengine::ViewManager::createView(const QString &viewPath, libraryObjects::
 	constructor->setClassName(_viewName);
 	_viewObjectClass->addClassType(constructor);
 
-	saveView();
+	onSaveView();
 
 	emit viewOpened(_viewIsOpened);
 	emit viewPathChanged(_viewPath);
@@ -92,25 +92,9 @@ void qtengine::ViewManager::createViewFrom(const QString &viewPath, const QStrin
 	onOpenView(fileInfoDest.absoluteFilePath());
 }
 
-void qtengine::ViewManager::saveView()
-{
-	QFileInfo fileInfo(_viewPath);
-	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
-
-	QJsonObject json;
-	json["Engine"] = libraryObjects::ViewConverter().serialize(_viewObject);
-	json["Class"] = _viewObjectClass->serialize();
-
-	QFile file(_viewPath);
-	if (file.open(QIODevice::WriteOnly)) {
-		file.write(QJsonDocument(json).toJson());
-		file.close();
-	}
-}
-
 void qtengine::ViewManager::closeView()
 {
-	saveView();
+	onSaveView();
 
 	auto oldViewObject = _viewObject;
 	auto oldViewObjectClass = _viewObjectClass;
@@ -158,6 +142,24 @@ void qtengine::ViewManager::onOpenView(const QString &viewPath)
 	emit viewObjectChanged(_viewObject);
 	emit viewObjectClassChanged(_viewObjectClass);
 	setCurrentObject(_viewObject);
+}
+
+void qtengine::ViewManager::onSaveView()
+{
+	QFileInfo fileInfo(_viewPath);
+	if (!fileInfo.exists() || "." + fileInfo.completeSuffix() != _viewExt) { return; }
+
+	emit saveRequested();
+
+	QJsonObject json;
+	json["Engine"] = libraryObjects::ViewConverter().serialize(_viewObject);
+	json["Class"] = _viewObjectClass->serialize();
+
+	QFile file(_viewPath);
+	if (file.open(QIODevice::WriteOnly)) {
+		file.write(QJsonDocument(json).toJson());
+		file.close();
+	}
 }
 
 void qtengine::ViewManager::setCurrentObject(libraryObjects::AObject *currentObject)

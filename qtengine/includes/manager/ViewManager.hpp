@@ -31,7 +31,6 @@ namespace qtengine {
 
 		void createView(const QString &viewPath, libraryObjects::LibraryObject *libraryObject);
 		void createViewFrom(const QString &viewPath, const QString &viewPathSource);
-		void saveView();
 		void closeView();
 
 		QString viewExtension() const { return _viewExt; }
@@ -44,6 +43,7 @@ namespace qtengine {
 
 	public slots:
 		void onOpenView(const QString &viewPath);
+		void onSaveView();
 
 	signals:
 		void viewOpened(bool isOpened);
@@ -51,6 +51,7 @@ namespace qtengine {
 		void viewNameChanged(const QString &viewName);
 		void viewObjectChanged(libraryObjects::AObject *viewObject);
 		void viewObjectClassChanged(libraryObjects::ObjectClass *viewObjectClass);
+		void saveRequested();
 
 	private:
 		const QString _viewExt = ".view";

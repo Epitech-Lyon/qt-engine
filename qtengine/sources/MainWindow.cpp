@@ -9,6 +9,7 @@
 
 #include "Manager.hpp"
 #include "ProjectManager.hpp"
+#include "ViewManager.hpp"
 #include "LayoutManager.hpp"
 
 #include "LayoutPanelTabber.hpp"
@@ -41,6 +42,7 @@ void qtengine::MainWindow::initMenuBar()
 {
 	QList<QAction *> projectActions;
 	auto projectManager = _manager->projectManager();
+	auto viewManager = _manager->viewManager();
 	auto layoutManager = _manager->layoutManager();
 
 	auto menuFile = menuBar()->addMenu("File");
@@ -50,6 +52,8 @@ void qtengine::MainWindow::initMenuBar()
 	projectActions << menuFile->addAction("Save project", projectManager, &ProjectManager::onSaveProject, QKeySequence::Save);
 	projectActions << menuFile->addAction("Export project", projectManager, &ProjectManager::onExportProject, QKeySequence("Ctrl+E"));
 	projectActions << menuFile->addAction("Close project", projectManager, &ProjectManager::onSaveProject, QKeySequence::Close);
+	menuFile->addSeparator();
+	projectActions << menuFile->addAction("Save view", viewManager, &ViewManager::onSaveView, QKeySequence("Ctrl+Shift+V"));
 	menuFile->addSeparator();
 	menuFile->addAction("Exit", this, &QMainWindow::close, QKeySequence::Quit);
 

@@ -44,6 +44,7 @@ namespace qtengine {
 		void onObjectClassChanged(libraryObjects::ObjectClass *objectClass);
 		void onObjectClassDropped(const QPointF &pos, libraryObjects::ObjectClass *objectClass, libraryObjects::AObject *reference, QObject *source);
 		void onClassTypeDoubleClicked(types::ClassType *classType);
+		void onSaveRequested();
 
 	private:
 		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryBuiltIn() const;

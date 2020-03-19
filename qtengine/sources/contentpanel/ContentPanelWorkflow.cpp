@@ -64,6 +64,8 @@ void qtengine::ContentPanelWorkflow::init()
 
 	onObjectClassChanged(Manager::instance()->viewManager()->viewObjectClass());
 	connect(Manager::instance()->viewManager(), &ViewManager::viewObjectClassChanged, this, &ContentPanelWorkflow::onObjectClassChanged);
+
+	connect(Manager::instance()->viewManager(), &ViewManager::saveRequested, this, &ContentPanelWorkflow::onSaveRequested);
 }
 
 std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistryBuiltIn() const
@@ -195,8 +197,7 @@ void qtengine::ContentPanelWorkflow::onClassTypeDoubleClicked(types::ClassType *
 {
 	if (classType->type() == types::ClassType::SIGNAL || classType->type() == types::ClassType::PROPERTY) { return; }
 
-	if (_currentClassType)
-		_currentClassType->setContent(_scene->saveToJson());
+	onSaveRequested();
 	_currentClassType = classType;
 
 	auto tmpRegistry = std::make_shared<QtNodes::DataModelRegistry>();
@@ -212,4 +213,10 @@ void qtengine::ContentPanelWorkflow::onClassTypeDoubleClicked(types::ClassType *
 	_scene->setRegistry(tmpRegistry);
 	_scene->loadFromJson(_currentClassType->content());
 	_scene->setRegistry(saveRegistry);
+}
+
+void qtengine::ContentPanelWorkflow::onSaveRequested()
+{
+	if (_currentClassType)
+		_currentClassType->setContent(_scene->saveToJson());
 }

@@ -31,9 +31,6 @@ namespace types {
 
 		bool isUserType() const { return _userType; }
 
-		QMetaMethod::Access access() const { return _access; }
-		void setAccess(QMetaMethod::Access access) { setValue(_access, access, std::bind(&Property::accessChanged, this, _access)); }
-
 		QString type() const { return _type; }
 		void setType(const QString &type) { setValue(_type, type, std::bind(&Property::typeChanged, this, _type)); }
 
@@ -49,7 +46,6 @@ namespace types {
 		void setGetterName(const QString &getterName) { setValue(_getterName, getterName, std::bind(&Property::getterNameChanged, this, _getterName)); }
 
 	signals:
-		void accessChanged(QMetaMethod::Access access);
 		void typeChanged(const QString &type);
 		void nameChanged(const QString &name);
 		void setterNameChanged(const QString &setterName);
@@ -57,7 +53,6 @@ namespace types {
 
 	private:
 		bool _userType;
-		QMetaMethod::Access _access;
 		QString _type;
 		QString _name;
 		QString _setterName;

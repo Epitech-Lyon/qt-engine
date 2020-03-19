@@ -161,11 +161,11 @@ Node &FlowScene::restoreNode(QJsonObject const& nodeJson)
 	if (!dataModel)
 		throw std::logic_error(std::string("No registered model with name ") + modelName.toLocal8Bit().data());
 
+	dataModel->restore(nodeJson["model"].toObject());
+
 	auto node = detail::make_unique<Node>(std::move(dataModel));
 	auto ngo  = detail::make_unique<NodeGraphicsObject>(*this, *node);
 	node->setGraphicsObject(std::move(ngo));
-
-	node->restore(nodeJson);
 
 	auto nodePtr = node.get();
 	_nodes[node->id()] = std::move(node);
