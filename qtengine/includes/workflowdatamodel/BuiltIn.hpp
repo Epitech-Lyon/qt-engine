@@ -9,18 +9,25 @@
 
 #include "NodeDataModel.hpp"
 #include <QtCore/QMetaType>
+#include <QtCore/QVariant>
 
 class QtGroupBoxPropertyBrowser;
 class QtVariantEditorFactory;
 class QtVariantPropertyManager;
+class QtVariantProperty;
 
 namespace qtengine {
 	class BuiltIn : public QtNodes::NodeDataModel {
 	public:
-		BuiltIn(QMetaType::Type type);
+		BuiltIn();
 		~BuiltIn() = default;
 
+		void setData(QMetaType::Type type, const QVariant &value = QVariant());
+
 		QString name() const override;
+
+		QJsonObject save() const override;
+		void restore(const QJsonObject &json) override;
 
 		QString caption() const override;
 		bool captionVisible() const override { return false; }
@@ -40,5 +47,6 @@ namespace qtengine {
 		QtGroupBoxPropertyBrowser *_propertyEditor;
 		QtVariantEditorFactory *_propertyFactory;
 		QtVariantPropertyManager *_propertyManager;
+		QtVariantProperty *_property;
 	};
 }

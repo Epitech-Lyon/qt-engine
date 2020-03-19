@@ -17,6 +17,10 @@ namespace QtNodes {
 	class DataModelRegistry;
 }
 
+namespace types {
+	class ClassType;
+};
+
 namespace libraryObjects {
 	class AObject;
 	class ObjectClass;
@@ -39,6 +43,7 @@ namespace qtengine {
 		void onObjectChanged(libraryObjects::AObject *viewObject);
 		void onObjectClassChanged(libraryObjects::ObjectClass *objectClass);
 		void onObjectClassDropped(const QPointF &pos, libraryObjects::ObjectClass *objectClass, libraryObjects::AObject *reference, QObject *source);
+		void onClassTypeDoubleClicked(types::ClassType *classType);
 
 	private:
 		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryBuiltIn() const;
@@ -47,5 +52,6 @@ namespace qtengine {
 		TreeWidgetWorkflow *_tree;
 		QtNodes::FlowView *_view;
 		FlowSceneWorkflow *_scene;
+		types::ClassType *_currentClassType;
 	};
 }

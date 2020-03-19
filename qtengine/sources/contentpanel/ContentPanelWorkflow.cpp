@@ -50,17 +50,20 @@ void qtengine::ContentPanelWorkflow::init()
 	_scene = new FlowSceneWorkflow(splitter);
 	_view = new QtNodes::FlowView(_scene, splitter);
 
+	_currentClassType = nullptr;
+
 	splitter->addWidget(_tree);
 	splitter->addWidget(_view);
 	splitter->setSizes({_tree->sizeHint().width(), _tree->sizeHint().width() * 4});
+
+	connect(_scene, &FlowSceneWorkflow::objectClassDropped, this, &ContentPanelWorkflow::onObjectClassDropped);
+	connect(_tree, &TreeWidgetWorkflow::classTypeDoubleClicked, this, &ContentPanelWorkflow::onClassTypeDoubleClicked);
 
 	onObjectChanged(Manager::instance()->viewManager()->viewObject());
 	connect(Manager::instance()->viewManager(), &ViewManager::viewObjectChanged, this, &ContentPanelWorkflow::onObjectChanged);
 
 	onObjectClassChanged(Manager::instance()->viewManager()->viewObjectClass());
 	connect(Manager::instance()->viewManager(), &ViewManager::viewObjectClassChanged, this, &ContentPanelWorkflow::onObjectClassChanged);
-
-	connect(_scene, &FlowSceneWorkflow::objectClassDropped, this, &ContentPanelWorkflow::onObjectClassDropped);
 }
 
 std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistryBuiltIn() const
@@ -70,7 +73,10 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 	for (auto type : types::ClassTypeManager::instance()->types())
 		if (!types::ClassTypeManager::instance()->isCustomType(type))
 			registry->registerModel<BuiltIn>("Built-in", [type]() {
-				return std::unique_ptr<BuiltIn>(new BuiltIn(types::ClassTypeManager::instance()->typeValue(type)));
+				auto modelBuiltIn = std::unique_ptr<BuiltIn>(new BuiltIn());
+
+				modelBuiltIn->setData(types::ClassTypeManager::instance()->typeValue(type));
+				return modelBuiltIn;
 			});
 	return registry;
 }
@@ -154,6 +160,7 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 
 void qtengine::ContentPanelWorkflow::onObjectChanged(libraryObjects::AObject *object)
 {
+	_currentClassType = nullptr;
 	_tree->setObject(object);
 	_tree->clear();
 	_scene->clearScene();
@@ -175,11 +182,34 @@ void qtengine::ContentPanelWorkflow::onObjectClassChanged(libraryObjects::Object
 
 void qtengine::ContentPanelWorkflow::onObjectClassDropped(const QPointF &pos, libraryObjects::ObjectClass *objectClass, libraryObjects::AObject *reference, QObject *source)
 {
+	auto minimumAccess = source == _tree ? QMetaMethod::Private : reference == _tree->object() ? QMetaMethod::Protected : QMetaMethod::Public;
+	auto tmpRegistry = generateRegistryObjectClass(objectClass, minimumAccess, reference ? reference->id() : "");
 	auto saveRegistry = _scene->takeRegistry();
 
-	auto minimumAccess = source == _tree ? QMetaMethod::Private : reference == _tree->object() ? QMetaMethod::Protected : QMetaMethod::Public;
-	_scene->setRegistry(generateRegistryObjectClass(objectClass, minimumAccess, reference ? reference->id() : ""));
-
+	_scene->setRegistry(tmpRegistry);
 	_view->openMenu(_view->mapFromScene(pos), true);
+	_scene->setRegistry(saveRegistry);
+}
+
+void qtengine::ContentPanelWorkflow::onClassTypeDoubleClicked(types::ClassType *classType)
+{
+	if (classType->type() == types::ClassType::SIGNAL || classType->type() == types::ClassType::PROPERTY) { return; }
+
+	if (_currentClassType)
+		_currentClassType->setContent(_scene->saveToJson());
+	_currentClassType = classType;
+
+	auto tmpRegistry = std::make_shared<QtNodes::DataModelRegistry>();
+	tmpRegistry->registerModel<BuiltIn>();
+	tmpRegistry->registerModel<Constructor>();
+	tmpRegistry->registerModel<Method>();
+	tmpRegistry->registerModel<Signal>();
+	tmpRegistry->registerModel<Slot>();
+	tmpRegistry->registerModel<Property>();
+	auto saveRegistry = _scene->takeRegistry();
+
+	_scene->clearScene();
+	_scene->setRegistry(tmpRegistry);
+	_scene->loadFromJson(_currentClassType->content());
 	_scene->setRegistry(saveRegistry);
 }

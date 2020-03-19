@@ -34,3 +34,18 @@ types::ClassType::ClassType(QMetaMethod::Access access, Type type)
 	, _type(type)
 {
 }
+
+QJsonObject types::ClassType::serialize() const
+{
+	QJsonObject json;
+
+	json["content"] = _content;
+	json["access"] = static_cast<int>(_access);
+	return json;
+}
+
+void types::ClassType::deserialize(const QJsonObject &json)
+{
+	_content = json["content"].toObject();
+	_access = static_cast<QMetaMethod::Access>(json["access"].toInt());
+}

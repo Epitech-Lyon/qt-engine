@@ -5,6 +5,7 @@
 ** TreeWidgetWorkflow
 */
 
+#include "moc_TreeWidgetWorkflow.cpp"
 #include "TreeWidgetWorkflow.hpp"
 
 #include "ObjectClass.hpp"
@@ -42,6 +43,7 @@ qtengine::TreeWidgetWorkflow::TreeWidgetWorkflow(QWidget *parent)
 	clear();
 
 	connect(this, &QTreeWidget::customContextMenuRequested, this, &TreeWidgetWorkflow::onCustomContextMenuRequested);
+	connect(this, &QTreeWidget::itemDoubleClicked, this, [this](QTreeWidgetItem *item, int) { if (_childItems.contains(item)) emit classTypeDoubleClicked(_childItems[item]); });
 }
 
 void qtengine::TreeWidgetWorkflow::clear()
@@ -118,8 +120,11 @@ void qtengine::TreeWidgetWorkflow::setObjectClass(libraryObjects::ObjectClass *o
 	for (int i = 0; i < QMetaEnum::fromType<types::ClassType::Type>().keyCount(); i += 1)
 		for (auto classType : _objectClass->getClassType(static_cast<types::ClassType::Type>(i)))
 			addTypeItem(classType);
-
-	setCurrentItem(nullptr);
+	for (auto classType : _objectClass->getClassType(types::ClassType::CONSTRUCTOR))
+		if (dynamic_cast<types::Constructor*>(classType)->parameters().size() == 0) {
+			setCurrentItem(_childItems.key(classType));
+			emit classTypeDoubleClicked(classType);
+		}
 	expandAll();
 }
 

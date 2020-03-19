@@ -40,8 +40,7 @@ QJsonObject types::Constructor::serialize() const
 		jsonParameters.append(jsonParameter);
 	}
 
-	QJsonObject json;
-	json["access"] = static_cast<int>(_access);
+	QJsonObject json = ClassType::serialize();
 	json["className"] = _className;
 	json["parameters"] = jsonParameters;
 	return json;
@@ -49,7 +48,7 @@ QJsonObject types::Constructor::serialize() const
 
 void types::Constructor::deserialize(const QJsonObject &json)
 {
-	_access = static_cast<QMetaMethod::Access>(json["access"].toInt());
+	ClassType::deserialize(json);
 	_className = json["className"].toString();
 	for (auto jsonParameterRef : json["parameters"].toArray()) {
 		auto jsonParameter = jsonParameterRef.toObject();

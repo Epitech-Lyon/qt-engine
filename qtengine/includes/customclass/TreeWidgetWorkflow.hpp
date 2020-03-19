@@ -16,6 +16,10 @@
 
 #include "ClassType.hpp"
 
+namespace types {
+	class ClassType;
+};
+
 namespace libraryObjects {
 	class AObject;
 	class ObjectClass;
@@ -23,6 +27,8 @@ namespace libraryObjects {
 
 namespace qtengine {
 	class TreeWidgetWorkflow : public QTreeWidget {
+		Q_OBJECT
+
 	public:
 		TreeWidgetWorkflow(QWidget *parent = nullptr);
 		~TreeWidgetWorkflow() = default;
@@ -34,6 +40,9 @@ namespace qtengine {
 
 		libraryObjects::ObjectClass *objectClass() const;
 		void setObjectClass(libraryObjects::ObjectClass *objectClass);
+
+	signals:
+		void classTypeDoubleClicked(types::ClassType *classType);
 
 	private slots:
 		void onCustomContextMenuRequested(const QPoint &pos);

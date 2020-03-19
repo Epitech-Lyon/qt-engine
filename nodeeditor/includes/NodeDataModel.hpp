@@ -92,6 +92,7 @@ namespace QtNodes {
 		void dataInvalidated(PortIndex index);
 		void computingStarted();
 		void computingFinished();
+		void embeddedWidgetChanged();
 		void embeddedWidgetSizeUpdated();
 		void validationStateUpdated();
 		void validationMessageUpdated();

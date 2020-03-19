@@ -13,31 +13,60 @@
 
 #include "ClassTypeManager.hpp"
 
+#include "QVariantConverter.hpp"
 #include "qtpropertymanager.h"
 #include "qtvariantproperty.h"
 #include "qtgroupboxpropertybrowser.h"
 #include <QtWidgets/QGridLayout>
 
-qtengine::BuiltIn::BuiltIn(QMetaType::Type type)
-	: _type(type)
-	, _propertyEditor(new QtGroupBoxPropertyBrowser())
-	, _propertyFactory(new QtVariantEditorFactory(_propertyEditor))
-	, _propertyManager(new QtVariantPropertyManager(_propertyFactory))
+qtengine::BuiltIn::BuiltIn()
+	: _type(QMetaType::UnknownType)
+	, _propertyEditor(nullptr)
+	, _propertyFactory(nullptr)
+	, _propertyManager(nullptr)
 {
+}
+
+void qtengine::BuiltIn::setData(QMetaType::Type type, const QVariant &value)
+{
+	_propertyEditor = new QtGroupBoxPropertyBrowser();
+	_propertyFactory = new QtVariantEditorFactory(_propertyEditor);
+	_propertyManager = new QtVariantPropertyManager(_propertyFactory);
+	_propertyEditor->setFactoryForManager(_propertyManager, _propertyFactory);
+
 	auto gridLayout = dynamic_cast<QGridLayout*>(_propertyEditor->layout());
 
 	while (!gridLayout->isEmpty())
 		delete gridLayout->takeAt(0);
 
-	_propertyEditor->setFactoryForManager(_propertyManager, _propertyFactory);
-	_propertyEditor->addProperty(_propertyManager->addProperty(type, types::ClassTypeManager::instance()->type(_type)));
+	_type = type;
+	_property = _propertyManager->addProperty(type, types::ClassTypeManager::instance()->type(_type));
+	_propertyEditor->addProperty(_property);
+	if (value.isValid())
+		_property->setValue(value);
 	gridLayout->setMargin(0);
 	_propertyEditor->resize(_propertyEditor->sizeHint());
+	emit embeddedWidgetChanged();
+}
+
+QJsonObject qtengine::BuiltIn::save() const
+{
+	QJsonObject json;
+
+	json["name"] = "BuiltIn";
+	json["type"] = static_cast<int>(_type);
+	json["value"] = libraryObjects::QVariantConverter::serialize(_property->value());
+	return json;
+}
+
+void qtengine::BuiltIn::restore(const QJsonObject &json)
+{
+	setData(static_cast<QMetaType::Type>(json["type"].toInt()), libraryObjects::QVariantConverter::deserialize(json["value"]));
 }
 
 QString qtengine::BuiltIn::name() const
 {
-	return types::ClassTypeManager::instance()->type(_type);
+	return _type != QMetaType::UnknownType ? types::ClassTypeManager::instance()->type(_type) : "BuiltIn";
 }
 
 QString qtengine::BuiltIn::caption() const

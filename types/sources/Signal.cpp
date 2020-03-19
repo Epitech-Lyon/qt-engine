@@ -40,7 +40,7 @@ QJsonObject types::Signal::serialize() const
 		jsonParameters.append(jsonParameter);
 	}
 
-	QJsonObject json;
+	QJsonObject json = ClassType::serialize();
 	json["name"] = _name;
 	json["parameters"] = jsonParameters;
 	return json;
@@ -48,6 +48,7 @@ QJsonObject types::Signal::serialize() const
 
 void types::Signal::deserialize(const QJsonObject &json)
 {
+	ClassType::deserialize(json);
 	_name = json["name"].toString();
 	for (auto jsonParameterRef : json["parameters"].toArray()) {
 		auto jsonParameter = jsonParameterRef.toObject();

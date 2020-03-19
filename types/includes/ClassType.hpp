@@ -32,6 +32,12 @@ namespace types {
 
 		virtual ~ClassType() = default;
 
+		virtual QJsonObject serialize() const override;
+		virtual void deserialize(const QJsonObject &json) override;
+
+		void setContent(const QJsonObject &json) { _content = json; }
+		QJsonObject content() const { return _content; }
+
 		virtual QWidget *initEditor() = 0;
 
 		virtual bool isValid() const = 0;
@@ -57,6 +63,7 @@ namespace types {
 			}
 		}
 
+		QJsonObject _content;
 		QMetaMethod::Access _access;
 		Type _type;
 	};

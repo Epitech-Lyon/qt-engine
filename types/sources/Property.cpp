@@ -36,9 +36,8 @@ types::Property::Property(const QMetaProperty &metaProperty)
 
 QJsonObject types::Property::serialize() const
 {
-	QJsonObject json;
+	QJsonObject json = ClassType::serialize();
 	json["isUserType"] = _userType;
-	json["access"] = static_cast<int>(_access);
 	json["type"] = _type;
 	json["name"] = _name;
 	json["setterName"] = _setterName;
@@ -48,8 +47,8 @@ QJsonObject types::Property::serialize() const
 
 void types::Property::deserialize(const QJsonObject &json)
 {
+	ClassType::deserialize(json);
 	_userType = json["isUserType"].toBool();
-	_access = static_cast<QMetaMethod::Access>(json["access"].toInt());
 	_type = json["type"].toString();
 	_name = json["name"].toString();
 	_setterName = json["setterName"].toString();

@@ -40,6 +40,9 @@ namespace QtNodes
 
 		void lock(bool locked);
 
+	public slots:
+		void onEmbeddedWidgetChanged();
+
 	protected:
 		void paint(QPainter *painter, QStyleOptionGraphicsItem const *option, QWidget *widget = 0) override;
 		QVariant itemChange(GraphicsItemChange change, const QVariant &value) override;
@@ -51,9 +54,6 @@ namespace QtNodes
 		void hoverMoveEvent(QGraphicsSceneHoverEvent *) override;
 		void mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event) override;
 		void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
-
-	private:
-		void embedQWidget();
 
 	private:
 		FlowScene &_scene;

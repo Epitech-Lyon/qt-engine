@@ -100,6 +100,7 @@ void Node::setGraphicsObject(std::unique_ptr<NodeGraphicsObject>&& graphics)
 {
 	_nodeGraphicsObject = std::move(graphics);
 	_nodeGeometry.recalculateSize();
+	connect(_nodeDataModel.get(), &NodeDataModel::embeddedWidgetChanged, _nodeGraphicsObject.get(), &NodeGraphicsObject::onEmbeddedWidgetChanged);
 }
 
 NodeGeometry &Node::nodeGeometry()
