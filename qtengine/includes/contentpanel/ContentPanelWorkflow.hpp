@@ -38,7 +38,7 @@ namespace qtengine {
 	private slots:
 		void onObjectChanged(libraryObjects::AObject *viewObject);
 		void onObjectClassChanged(libraryObjects::ObjectClass *objectClass);
-		void onObjectClassDropped(const QPointF &pos, libraryObjects::ObjectClass *objectClass, libraryObjects::AObject *reference);
+		void onObjectClassDropped(const QPointF &pos, libraryObjects::ObjectClass *objectClass, libraryObjects::AObject *reference, QObject *source);
 
 	private:
 		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryBuiltIn() const;

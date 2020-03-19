@@ -42,11 +42,7 @@ void qtengine::ContentPanelViewExplorer::init()
 void qtengine::ContentPanelViewExplorer::onViewObjectChanged(libraryObjects::AObject *viewObject)
 {
 	_tree->clear();
-
-	auto rootItem = _tree->createItemFor(viewObject, _tree->invisibleRootItem());
-	if (rootItem)
-		rootItem->setFlags(rootItem->flags() ^ Qt::ItemIsDragEnabled);
-
+	_tree->createItemFor(viewObject, _tree->invisibleRootItem());
 	_tree->expandAll();
 }
 

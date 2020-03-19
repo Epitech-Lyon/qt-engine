@@ -8,7 +8,7 @@
 #pragma once
 
 #include "ClassType.hpp"
-#include <QtCore/QMetaType>
+#include <QtCore/QMetaMethod>
 #include <QtCore/QPair>
 #include <QtCore/QList>
 #include <QtCore/QString>
@@ -35,21 +35,21 @@ namespace types {
 		QString className() const { return _className; }
 		void setClassName(const QString &className) { setValue(_className, className, std::bind(&Constructor::classNameChanged, this, _className)); }
 
-		QList<QPair<QMetaType::Type, QString>> parameters() const { return _parameters; }
-		QPair<QMetaType::Type, QString> parameter(int index) const { return _parameters[index]; }
-		void setParameters(const QList<QPair<QMetaType::Type, QString>> &parameters) { setValue(_parameters, parameters, std::bind(&Constructor::parametersChanged, this, _parameters)); }
-		bool addParameter(QMetaType::Type parameterType, const QString &parameterName);
-		bool modifyParameterType(int index, QMetaType::Type parameterType);
+		QList<QPair<QString, QString>> parameters() const { return _parameters; }
+		QPair<QString, QString> parameter(int index) const { return _parameters[index]; }
+		void setParameters(const QList<QPair<QString, QString>> &parameters) { setValue(_parameters, parameters, std::bind(&Constructor::parametersChanged, this, _parameters)); }
+		bool addParameter(const QString &parameterType, const QString &parameterName);
+		bool modifyParameterType(int index, const QString &parameterType);
 		bool modifyParameterName(int index, const QString &parameterName);
 		void removeParameter();
 
 	signals:
 		void classNameChanged(const QString &name);
-		void parametersChanged(const QList<QPair<QMetaType::Type, QString>> &parameters);
+		void parametersChanged(const QList<QPair<QString, QString>> &parameters);
 
 	private:
 		QString _className;
-		QList<QPair<QMetaType::Type, QString>> _parameters;
+		QList<QPair<QString, QString>> _parameters;
 	};
 }
 

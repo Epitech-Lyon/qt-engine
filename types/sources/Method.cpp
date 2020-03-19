@@ -8,6 +8,8 @@
 #include "moc_Method.cpp"
 #include "Method.hpp"
 
+#include "ClassTypeManager.hpp"
+
 #include "qtpropertymanager.h"
 #include "qtvariantproperty.h"
 #include "qtgroupboxpropertybrowser.h"
@@ -18,7 +20,7 @@
 types::Method::Method()
 	: ClassType(QMetaMethod::Access::Public, Type::METHOD)
 	, _isStatic(false)
-	, _returnType(QMetaType::Type::Void)
+	, _returnType(ClassTypeManager::instance()->type(QMetaType::Void))
 	, _isConst(false)
 {
 }
@@ -26,12 +28,12 @@ types::Method::Method()
 types::Method::Method(const QMetaMethod &metaMethod)
 	: ClassType(metaMethod.access(), Type::METHOD)
 	, _isStatic(false)
-	, _returnType(static_cast<QMetaType::Type>(metaMethod.returnType()))
+	, _returnType(QMetaType::typeName(metaMethod.returnType()))
 	, _name(metaMethod.name())
 	, _isConst(false)
 {
 	for (auto parameterName : metaMethod.parameterNames())
-		addParameter(static_cast<QMetaType::Type>(metaMethod.parameterType(_parameters.size())), parameterName);
+		addParameter(QMetaType::typeName(metaMethod.parameterType(_parameters.size())), parameterName);
 }
 
 QJsonObject types::Method::serialize() const
@@ -39,15 +41,15 @@ QJsonObject types::Method::serialize() const
 	QJsonArray jsonParameters;
 	for (const auto &parameter : _parameters) {
 		QJsonObject jsonParameter;
-		jsonParameter["type"] = static_cast<int>(parameter.first);
-		jsonParameter["name"] = parameter.first;
+		jsonParameter["type"] = parameter.first;
+		jsonParameter["name"] = parameter.second;
 		jsonParameters.append(jsonParameter);
 	}
 
 	QJsonObject json;
 	json["access"] = static_cast<int>(_access);
 	json["isStatic"] = _isStatic;
-	json["returnType"] = static_cast<int>(_returnType);
+	json["returnType"] = _returnType;
 	json["name"] = _name;
 	json["parameters"] = jsonParameters;
 	json["isConst"] = _isConst;
@@ -58,12 +60,12 @@ void types::Method::deserialize(const QJsonObject &json)
 {
 	_access = static_cast<QMetaMethod::Access>(json["access"].toInt());
 	_isStatic = json["isStatic"].toBool();
-	_returnType = static_cast<QMetaType::Type>(json["returnType"].toInt());
+	_returnType = json["returnType"].toString();
 	_name = json["name"].toString();
 	for (auto jsonParameterRef : json["parameters"].toArray()) {
 		auto jsonParameter = jsonParameterRef.toObject();
 
-		addParameter(static_cast<QMetaType::Type>(jsonParameter["type"].toInt()), jsonParameter["name"].toString());
+		addParameter(jsonParameter["type"].toString(), jsonParameter["name"].toString());
 	}
 	_isConst = json["isConst"].toBool();
 }
@@ -100,17 +102,13 @@ QWidget *types::Method::initEditor()
 		};
 	}
 	{
-		QMap<QString, QMetaType::Type> types;
-		for (int i = QMetaType::UnknownType + 1; i < QMetaType::User + 1; i += 1)
-			if (QMetaType::isRegistered(i) && i != QMetaType::Void)
-				types[QMetaType::typeName(i)] = static_cast<QMetaType::Type>(i);
 		auto property = propertyManager->addProperty(QtVariantPropertyManager::enumTypeId(), "Return type");
 
-		property->setAttribute("enumNames", QStringList(types.keys()));
-		property->setValue(types.keys().indexOf(QMetaType::typeName(_returnType)));
+		property->setAttribute("enumNames", ClassTypeManager::instance()->types());
+		property->setValue(ClassTypeManager::instance()->types().indexOf(_returnType));
 		propertyEditor->addProperty(property);
-		(*propertySlot)[property] = [this, types](const QVariant &value) {
-			setReturnType(types.values()[value.toInt()]);
+		(*propertySlot)[property] = [this](const QVariant &value) {
+			setReturnType(ClassTypeManager::instance()->types()[value.toInt()]);
 		};
 	}
 	{
@@ -124,21 +122,17 @@ QWidget *types::Method::initEditor()
 	}
 	{
 		auto propertyGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), "Parameters");
-		auto addParameter = [this, propertyManager, propertyEditor, propertySlot, propertyGroup](QMetaType::Type type, const QString &name) {
+		auto addParameter = [this, propertyManager, propertyEditor, propertySlot, propertyGroup](const QString &type, const QString &name) {
 			this->addParameter(type, name);
 			auto propertySubGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId());
 			{
-				QMap<QString, QMetaType::Type> types;
-				for (int i = QMetaType::UnknownType + 1; i < QMetaType::User + 1; i += 1)
-					if (QMetaType::isRegistered(i) && i != QMetaType::Void)
-						types[QMetaType::typeName(i)] = static_cast<QMetaType::Type>(i);
 				auto property = propertyManager->addProperty(QtVariantPropertyManager::enumTypeId(), "Type");
 
-				property->setAttribute("enumNames", QStringList(types.keys()));
-				property->setValue(types.keys().indexOf(QMetaType::typeName(type)));
+				property->setAttribute("enumNames", ClassTypeManager::instance()->types());
+				property->setValue(ClassTypeManager::instance()->types().indexOf(type));
 				propertySubGroup->addSubProperty(property);
-				(*propertySlot)[property] = [this, propertyGroup, propertySubGroup, types](const QVariant &value) {
-					modifyParameterType(propertyGroup->subProperties().indexOf(propertySubGroup) - 1, types.values()[value.toInt()]);
+				(*propertySlot)[property] = [this, propertyGroup, propertySubGroup](const QVariant &value) {
+					modifyParameterType(propertyGroup->subProperties().indexOf(propertySubGroup) - 1, ClassTypeManager::instance()->types()[value.toInt()]);
 				};
 			}
 			{
@@ -174,7 +168,7 @@ QWidget *types::Method::initEditor()
 							tmp += 1;
 						parameterName = parameterName + "_" + QString::number(tmp);
 					}
-					addParameter(QMetaType::Int, parameterName);
+					addParameter(ClassTypeManager::instance()->type(QMetaType::Int), parameterName);
 				} else if (newSize < _parameters.size()) {
 					removeParameter();
 					if (propertyGroup->subProperties().size() > 1)
@@ -229,11 +223,11 @@ QString types::Method::signature() const
 
 	if (_isStatic)
 		signature += "static ";
-	signature += QString(QMetaType::typeName(_returnType)) + " " + _name + "(";
+	signature += _returnType + " " + _name + "(";
 	for (int i = 0; i < _parameters.size(); i += 1) {
 		if (i)
 			signature += ", ";
-		signature += QString(QMetaType::typeName(_parameters[i].first));
+		signature += _parameters[i].first;
 		if (!_parameters[i].second.isEmpty())
 			signature += " " + _parameters[i].second;
 	}
@@ -243,7 +237,7 @@ QString types::Method::signature() const
 	return signature;
 }
 
-bool types::Method::addParameter(QMetaType::Type parameterType, const QString &parameterName)
+bool types::Method::addParameter(const QString &parameterType, const QString &parameterName)
 {
 	for (auto &parameter : _parameters)
 		if (parameter.second == parameterName) { return false; }
@@ -253,7 +247,7 @@ bool types::Method::addParameter(QMetaType::Type parameterType, const QString &p
 	return true;
 }
 
-bool types::Method::modifyParameterType(int index, QMetaType::Type parameterType)
+bool types::Method::modifyParameterType(int index, const QString &parameterType)
 {
 	if (index < 0 || index >= _parameters.size()) { return false; }
 

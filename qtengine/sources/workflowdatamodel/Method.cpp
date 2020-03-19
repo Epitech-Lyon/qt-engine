@@ -8,6 +8,8 @@
 #include "Method.hpp"
 #include "types/includes/Method.hpp"
 
+#include "ClassTypeManager.hpp"
+
 #include "FlowController.hpp"
 #include "Type.hpp"
 
@@ -70,7 +72,7 @@ unsigned int qtengine::Method::nPorts(QtNodes::PortType portType) const
 		ret = _method->parameters().count() + 1;
 		break;
 	case QtNodes::PortType::Out:
-		ret = _method->returnType() == QMetaType::Void ? 1 : 2;
+		ret = _method->returnType() == types::ClassTypeManager::instance()->type(QMetaType::Void) ? 1 : 2;
 		break;
 	}
 	return ret;

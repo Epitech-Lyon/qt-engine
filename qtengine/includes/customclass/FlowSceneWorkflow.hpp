@@ -23,7 +23,7 @@ namespace qtengine {
 		~FlowSceneWorkflow() = default;
 
 	signals:
-		void objectClassDropped(const QPointF &pos, libraryObjects::ObjectClass *objectClass, libraryObjects::AObject *reference);
+		void objectClassDropped(const QPointF &pos, libraryObjects::ObjectClass *objectClass, libraryObjects::AObject *reference, QObject *source);
 
 	private:
 		void dragMoveEvent(QGraphicsSceneDragDropEvent *event) override;

@@ -31,6 +31,8 @@ namespace qtengine {
 
 		libraryObjects::AObject *object() const;
 		void setObject(libraryObjects::AObject *object);
+
+		libraryObjects::ObjectClass *objectClass() const;
 		void setObjectClass(libraryObjects::ObjectClass *objectClass);
 
 	private slots:

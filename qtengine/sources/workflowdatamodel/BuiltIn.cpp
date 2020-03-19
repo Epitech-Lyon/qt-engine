@@ -11,12 +11,14 @@
 
 #include "Connection.hpp"
 
+#include "ClassTypeManager.hpp"
+
 #include "qtpropertymanager.h"
 #include "qtvariantproperty.h"
 #include "qtgroupboxpropertybrowser.h"
 #include <QtWidgets/QGridLayout>
 
-qtengine::BuiltIn::BuiltIn(QVariant::Type type)
+qtengine::BuiltIn::BuiltIn(QMetaType::Type type)
 	: _type(type)
 	, _propertyEditor(new QtGroupBoxPropertyBrowser())
 	, _propertyFactory(new QtVariantEditorFactory(_propertyEditor))
@@ -28,9 +30,19 @@ qtengine::BuiltIn::BuiltIn(QVariant::Type type)
 		delete gridLayout->takeAt(0);
 
 	_propertyEditor->setFactoryForManager(_propertyManager, _propertyFactory);
-	_propertyEditor->addProperty(_propertyManager->addProperty(type, QVariant::typeToName(_type)));
+	_propertyEditor->addProperty(_propertyManager->addProperty(type, types::ClassTypeManager::instance()->type(_type)));
 	gridLayout->setMargin(0);
 	_propertyEditor->resize(_propertyEditor->sizeHint());
+}
+
+QString qtengine::BuiltIn::name() const
+{
+	return types::ClassTypeManager::instance()->type(_type);
+}
+
+QString qtengine::BuiltIn::caption() const
+{
+	return types::ClassTypeManager::instance()->type(_type);
 }
 
 unsigned int qtengine::BuiltIn::nPorts(QtNodes::PortType portType) const

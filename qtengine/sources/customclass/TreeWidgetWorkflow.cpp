@@ -102,6 +102,11 @@ void qtengine::TreeWidgetWorkflow::setObject(libraryObjects::AObject *object)
 	_object = object;
 }
 
+libraryObjects::ObjectClass *qtengine::TreeWidgetWorkflow::objectClass() const
+{
+	return _objectClass;
+}
+
 void qtengine::TreeWidgetWorkflow::setObjectClass(libraryObjects::ObjectClass *objectClass)
 {
 	_objectClass = objectClass;
@@ -171,8 +176,15 @@ void qtengine::TreeWidgetWorkflow::onDeleteClicked(QTreeWidgetItem *item)
 
 QMimeData *qtengine::TreeWidgetWorkflow::mimeData(const QList<QTreeWidgetItem *> items) const
 {
+	auto classTypeSelected = _childItems[items.front()];
+
+	auto objectClass = new libraryObjects::ObjectClass();
+	auto classType = types::ClassType::construct(classTypeSelected->type());
+	classType->deserialize(classTypeSelected->serialize());
+	objectClass->addClassType(classType);
+
 	QMimeData *mimeData = QTreeWidget::mimeData(items);
-	auto mimeDataObject = new MimeDataObject(new libraryObjects::ObjectClass(_object->metaObject()), nullptr, _object);
+	auto mimeDataObject = new MimeDataObject(objectClass, nullptr, classType->type() == types::ClassType::CONSTRUCTOR ? nullptr : _object);
 	for (auto format : mimeData->formats())
 		mimeDataObject->setData(format, mimeData->data(format));
 	return mimeDataObject;

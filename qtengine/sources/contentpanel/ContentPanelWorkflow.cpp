@@ -17,6 +17,7 @@
 #include "AObject.hpp"
 
 #include "ObjectClass.hpp"
+#include "ClassTypeManager.hpp"
 #include "types/includes/Constructor.hpp"
 #include "types/includes/Method.hpp"
 #include "types/includes/Signal.hpp"
@@ -66,26 +67,11 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 {
 	auto registry = std::make_shared<QtNodes::DataModelRegistry>();
 
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Int)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Double)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Bool)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::String)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Date)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Time)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::DateTime)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::KeySequence)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Char)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Locale)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Point)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::PointF)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Size)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::SizeF)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Rect)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::RectF)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Color)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::SizePolicy)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Font)); });
-	registry->registerModel<BuiltIn>("Built-in", []() { return std::unique_ptr<BuiltIn>(new BuiltIn(QVariant::Cursor)); });
+	for (auto type : types::ClassTypeManager::instance()->types())
+		if (!types::ClassTypeManager::instance()->isCustomType(type))
+			registry->registerModel<BuiltIn>("Built-in", [type]() {
+				return std::unique_ptr<BuiltIn>(new BuiltIn(types::ClassTypeManager::instance()->typeValue(type)));
+			});
 	return registry;
 }
 
@@ -187,11 +173,11 @@ void qtengine::ContentPanelWorkflow::onObjectClassChanged(libraryObjects::Object
 	_tree->setObjectClass(objectClass);
 }
 
-void qtengine::ContentPanelWorkflow::onObjectClassDropped(const QPointF &pos, libraryObjects::ObjectClass *objectClass, libraryObjects::AObject *reference)
+void qtengine::ContentPanelWorkflow::onObjectClassDropped(const QPointF &pos, libraryObjects::ObjectClass *objectClass, libraryObjects::AObject *reference, QObject *source)
 {
 	auto saveRegistry = _scene->takeRegistry();
 
-	auto minimumAccess = reference == _tree->object() ? QMetaMethod::Private : QMetaMethod::Public;
+	auto minimumAccess = source == _tree ? QMetaMethod::Private : reference == _tree->object() ? QMetaMethod::Protected : QMetaMethod::Public;
 	_scene->setRegistry(generateRegistryObjectClass(objectClass, minimumAccess, reference ? reference->id() : ""));
 
 	_view->openMenu(_view->mapFromScene(pos), true);

@@ -87,6 +87,14 @@ void libraryObjects::AObject::setPropertyValue(const QString &propertyName, cons
 	}
 }
 
+bool libraryObjects::AObject::isChildOf(AObject *object) const
+{
+	for (auto parent = _parent; parent; parent = parent->_parent)
+		if (parent == object)
+			return true;
+	return false;
+}
+
 void libraryObjects::AObject::insertChild(int index, AObject *child)
 {
 	if (!child || index < 0 || index > _children.size()) { return; }

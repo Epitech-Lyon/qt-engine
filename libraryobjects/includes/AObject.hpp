@@ -47,6 +47,7 @@ namespace libraryObjects {
 	public:
 		AObject *parent() const { return _parent; }
 
+		bool isChildOf(AObject *object) const;
 		QList<AObject *> children() const { return _children; }
 		void insertChild(int index, AObject *child);
 		void addChild(AObject *child);

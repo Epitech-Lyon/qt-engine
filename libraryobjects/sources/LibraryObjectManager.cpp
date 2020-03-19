@@ -6,6 +6,9 @@
 */
 
 #include "LibraryObjectManager.hpp"
+
+#include "ClassTypeManager.hpp"
+
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QJsonDocument>
@@ -61,6 +64,34 @@ libraryObjects::LibraryObjectManager::LibraryObjectManager()
 	// QObject::QLayout::QBoxLayout
 	registerObject<EVBoxLayout>();
 	registerObject<EHBoxLayout>();
+
+	///////////////////////////////////////////////////////////////////////////////
+
+	// Register Type
+	auto classTypeManager = types::ClassTypeManager::instance();
+	classTypeManager->registerType(QMetaType::Void);
+	classTypeManager->registerType(QMetaType::Int);
+	classTypeManager->registerType(QMetaType::Double);
+	classTypeManager->registerType(QMetaType::Bool);
+	classTypeManager->registerType(QMetaType::QString);
+	classTypeManager->registerType(QMetaType::QDate);
+	classTypeManager->registerType(QMetaType::QTime);
+	classTypeManager->registerType(QMetaType::QDateTime);
+	classTypeManager->registerType(QMetaType::QKeySequence);
+	classTypeManager->registerType(QMetaType::QChar);
+	classTypeManager->registerType(QMetaType::QLocale);
+	classTypeManager->registerType(QMetaType::QPoint);
+	classTypeManager->registerType(QMetaType::QPointF);
+	classTypeManager->registerType(QMetaType::QSize);
+	classTypeManager->registerType(QMetaType::QSizeF);
+	classTypeManager->registerType(QMetaType::QRect);
+	classTypeManager->registerType(QMetaType::QRectF);
+	classTypeManager->registerType(QMetaType::QColor);
+	classTypeManager->registerType(QMetaType::QSizePolicy);
+	classTypeManager->registerType(QMetaType::QFont);
+	classTypeManager->registerType(QMetaType::QCursor);
+	for (auto libraryObject : _libraryObjects)
+		classTypeManager->registerType(libraryObject->className() + "*");
 }
 
 libraryObjects::LibraryObjectManager::~LibraryObjectManager()
@@ -105,6 +136,7 @@ void libraryObjects::LibraryObjectManager::registerCustomObject(const QString &n
 {
 	_customObjects[name] = libraryObject;
 	_libraryObjects.append(libraryObject);
+	types::ClassTypeManager::instance()->registerType(libraryObject->className() + "*");
 }
 
 void libraryObjects::LibraryObjectManager::unregisterCustomObject(const QString &name)
@@ -112,6 +144,7 @@ void libraryObjects::LibraryObjectManager::unregisterCustomObject(const QString 
 	auto libraryObject = _customObjects.take(name);
 
 	_libraryObjects.removeAll(libraryObject);
+	types::ClassTypeManager::instance()->unregisterType(libraryObject->className() + "*");
 	delete libraryObject;
 }
 
@@ -119,6 +152,7 @@ void libraryObjects::LibraryObjectManager::unregisterAllCustomObjects()
 {
 	for (auto libraryObject : _customObjects) {
 		_libraryObjects.removeAll(libraryObject);
+		types::ClassTypeManager::instance()->unregisterType(libraryObject->className() + "*");
 		delete libraryObject;
 	}
 	_customObjects.clear();

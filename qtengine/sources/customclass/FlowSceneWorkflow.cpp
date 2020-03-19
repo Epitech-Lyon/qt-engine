@@ -30,5 +30,5 @@ void qtengine::FlowSceneWorkflow::dropEvent(QGraphicsSceneDragDropEvent *event)
 	auto mimeDataObject = dynamic_cast<const MimeDataObject*>(event->mimeData());
 	if (!mimeDataObject) { return; }
 
-	emit objectClassDropped(event->scenePos(), mimeDataObject->objectClass(), mimeDataObject->reference());
+	emit objectClassDropped(event->scenePos(), mimeDataObject->objectClass(), mimeDataObject->reference(), event->source());
 }

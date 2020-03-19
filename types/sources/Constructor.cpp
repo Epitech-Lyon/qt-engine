@@ -8,6 +8,8 @@
 #include "moc_Constructor.cpp"
 #include "Constructor.hpp"
 
+#include "ClassTypeManager.hpp"
+
 #include "qtpropertymanager.h"
 #include "qtvariantproperty.h"
 #include "qtgroupboxpropertybrowser.h"
@@ -25,7 +27,7 @@ types::Constructor::Constructor(const QMetaMethod &metaMethod)
 	, _className(metaMethod.name())
 {
 	for (auto parameterName : metaMethod.parameterNames())
-		addParameter(static_cast<QMetaType::Type>(metaMethod.parameterType(_parameters.size())), parameterName);
+		addParameter(QMetaType::typeName(metaMethod.parameterType(_parameters.size())), parameterName);
 }
 
 QJsonObject types::Constructor::serialize() const
@@ -33,8 +35,8 @@ QJsonObject types::Constructor::serialize() const
 	QJsonArray jsonParameters;
 	for (const auto &parameter : _parameters) {
 		QJsonObject jsonParameter;
-		jsonParameter["type"] = static_cast<int>(parameter.first);
-		jsonParameter["name"] = parameter.first;
+		jsonParameter["type"] = parameter.first;
+		jsonParameter["name"] = parameter.second;
 		jsonParameters.append(jsonParameter);
 	}
 
@@ -52,7 +54,7 @@ void types::Constructor::deserialize(const QJsonObject &json)
 	for (auto jsonParameterRef : json["parameters"].toArray()) {
 		auto jsonParameter = jsonParameterRef.toObject();
 
-		addParameter(static_cast<QMetaType::Type>(jsonParameter["type"].toInt()), jsonParameter["name"].toString());
+		addParameter(jsonParameter["type"].toString(), jsonParameter["name"].toString());
 	}
 }
 
@@ -80,21 +82,17 @@ QWidget *types::Constructor::initEditor()
 	}
 	{
 		auto propertyGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId(), "Parameters");
-		auto addParameter = [this, propertyManager, propertyEditor, propertySlot, propertyGroup](QMetaType::Type type, const QString &name) {
+		auto addParameter = [this, propertyManager, propertyEditor, propertySlot, propertyGroup](const QString &type, const QString &name) {
 			this->addParameter(type, name);
 			auto propertySubGroup = propertyManager->addProperty(QtVariantPropertyManager::groupTypeId());
 			{
-				QMap<QString, QMetaType::Type> types;
-				for (int i = QMetaType::UnknownType + 1; i < QMetaType::User + 1; i += 1)
-					if (QMetaType::isRegistered(i) && i != QMetaType::Void)
-						types[QMetaType::typeName(i)] = static_cast<QMetaType::Type>(i);
 				auto property = propertyManager->addProperty(QtVariantPropertyManager::enumTypeId(), "Type");
 
-				property->setAttribute("enumNames", QStringList(types.keys()));
-				property->setValue(types.keys().indexOf(QMetaType::typeName(type)));
+				property->setAttribute("enumNames", ClassTypeManager::instance()->types());
+				property->setValue(ClassTypeManager::instance()->types().indexOf(type));
 				propertySubGroup->addSubProperty(property);
-				(*propertySlot)[property] = [this, propertyGroup, propertySubGroup, types](const QVariant &value) {
-					modifyParameterType(propertyGroup->subProperties().indexOf(propertySubGroup) - 1, types.values()[value.toInt()]);
+				(*propertySlot)[property] = [this, propertyGroup, propertySubGroup](const QVariant &value) {
+					modifyParameterType(propertyGroup->subProperties().indexOf(propertySubGroup) - 1, ClassTypeManager::instance()->types()[value.toInt()]);
 				};
 			}
 			{
@@ -131,7 +129,7 @@ QWidget *types::Constructor::initEditor()
 							tmp += 1;
 						parameterName = parameterName + "_" + QString::number(tmp);
 					}
-					addParameter(QMetaType::Int, parameterName);
+					addParameter(ClassTypeManager::instance()->type(QMetaType::Int), parameterName);
 				} else if (newSize < _parameters.size()) {
 					removeParameter();
 					if (propertyGroup->subProperties().size() > 1)
@@ -178,7 +176,7 @@ QString types::Constructor::signature() const
 	for (int i = 0; i < _parameters.size(); i += 1) {
 		if (i)
 			signature += ", ";
-		signature += QString(QMetaType::typeName(_parameters[i].first));
+		signature += _parameters[i].first;
 		if (!_parameters[i].second.isEmpty())
 			signature += " " + _parameters[i].second;
 	}
@@ -186,7 +184,7 @@ QString types::Constructor::signature() const
 	return signature;
 }
 
-bool types::Constructor::addParameter(QMetaType::Type parameterType, const QString &parameterName)
+bool types::Constructor::addParameter(const QString &parameterType, const QString &parameterName)
 {
 	for (auto &parameter : _parameters)
 		if (parameter.second == parameterName) { return false; }
@@ -196,7 +194,7 @@ bool types::Constructor::addParameter(QMetaType::Type parameterType, const QStri
 	return true;
 }
 
-bool types::Constructor::modifyParameterType(int index, QMetaType::Type parameterType)
+bool types::Constructor::modifyParameterType(int index, const QString &parameterType)
 {
 	if (index < 0 || index >= _parameters.size()) { return false; }
 

@@ -9,7 +9,6 @@
 
 #include "NodeDataModel.hpp"
 #include <QtCore/QMetaType>
-#include <QtCore/QVariant>
 
 class QtGroupBoxPropertyBrowser;
 class QtVariantEditorFactory;
@@ -18,12 +17,12 @@ class QtVariantPropertyManager;
 namespace qtengine {
 	class BuiltIn : public QtNodes::NodeDataModel {
 	public:
-		BuiltIn(QVariant::Type type);
+		BuiltIn(QMetaType::Type type);
 		~BuiltIn() = default;
 
-		QString name() const override { return QVariant::typeToName(_type); }
+		QString name() const override;
 
-		QString caption() const override { return QVariant::typeToName(_type); }
+		QString caption() const override;
 		bool captionVisible() const override { return false; }
 
 		unsigned int nPorts(QtNodes::PortType portType) const override;
@@ -37,7 +36,7 @@ namespace qtengine {
 		QWidget *embeddedWidget() override;
 
 	private:
-		QVariant::Type _type;
+		QMetaType::Type _type;
 		QtGroupBoxPropertyBrowser *_propertyEditor;
 		QtVariantEditorFactory *_propertyFactory;
 		QtVariantPropertyManager *_propertyManager;

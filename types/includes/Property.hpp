@@ -27,15 +27,15 @@ namespace types {
 		QWidget *initEditor() override;
 
 		bool isValid() const override { return !_name.isEmpty(); }
-		QString signature() const override { return QString(QMetaType::typeName(_type)) + " " + _name; }
+		QString signature() const override { return _type + " " + _name; }
 
 		bool isUserType() const { return _userType; }
 
 		QMetaMethod::Access access() const { return _access; }
 		void setAccess(QMetaMethod::Access access) { setValue(_access, access, std::bind(&Property::accessChanged, this, _access)); }
 
-		QMetaType::Type type() const { return _type; }
-		void setType(QMetaType::Type type) { setValue(_type, type, std::bind(&Property::typeChanged, this, _type)); }
+		QString type() const { return _type; }
+		void setType(const QString &type) { setValue(_type, type, std::bind(&Property::typeChanged, this, _type)); }
 
 		QString name() const { return _name; }
 		void setName(const QString &name) { setValue(_name, name, std::bind(&Property::nameChanged, this, _name)); }
@@ -50,7 +50,7 @@ namespace types {
 
 	signals:
 		void accessChanged(QMetaMethod::Access access);
-		void typeChanged(QMetaType::Type type);
+		void typeChanged(const QString &type);
 		void nameChanged(const QString &name);
 		void setterNameChanged(const QString &setterName);
 		void getterNameChanged(const QString &getterName);
@@ -58,7 +58,7 @@ namespace types {
 	private:
 		bool _userType;
 		QMetaMethod::Access _access;
-		QMetaType::Type _type;
+		QString _type;
 		QString _name;
 		QString _setterName;
 		QString _getterName;

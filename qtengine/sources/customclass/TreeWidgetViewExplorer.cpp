@@ -140,6 +140,8 @@ void qtengine::TreeWidgetViewExplorer::dragMoveEvent(QDragMoveEvent *event)
 	if (!_objects[item]) { return; }
 
 	auto mimeDataObject = dynamic_cast<const MimeDataObject *>(event->mimeData());
+	if (_objects[item] == mimeDataObject->reference() || _objects[item]->isChildOf(mimeDataObject->reference())) { event->ignore(); return; }
+
 	auto libraryObjectParent = libraryObjects::LibraryObjectManager::instance()->libraryObjectOf(_objects[item]->classHierarchy());
 	if (!libraryObjectParent->libraryFunction()->functionDragFor(mimeDataObject->libraryObject()->classHierarchy()).isValid)
 		event->ignore();

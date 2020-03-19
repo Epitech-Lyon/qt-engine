@@ -8,6 +8,8 @@
 #include "moc_Property.cpp"
 #include "Property.hpp"
 
+#include "ClassTypeManager.hpp"
+
 #include "qtpropertymanager.h"
 #include "qtvariantproperty.h"
 #include "qtgroupboxpropertybrowser.h"
@@ -18,14 +20,14 @@
 types::Property::Property()
 	: ClassType(QMetaMethod::Access::Private, Type::PROPERTY)
 	, _userType(true)
-	, _type(QMetaType::Type::QString)
+	, _type(ClassTypeManager::instance()->type(QMetaType::QString))
 {
 }
 
 types::Property::Property(const QMetaProperty &metaProperty)
 	: ClassType(QMetaMethod::Access::Private, Type::PROPERTY)
 	, _userType(false)
-	, _type(static_cast<QMetaType::Type>(metaProperty.type()))
+	, _type(QMetaType::typeName(metaProperty.type()))
 	, _name(metaProperty.name())
 	, _setterName(metaProperty.isWritable() ? "setProperty" : "")
 	, _getterName(metaProperty.isReadable() ? "property" : "")
@@ -34,11 +36,10 @@ types::Property::Property(const QMetaProperty &metaProperty)
 
 QJsonObject types::Property::serialize() const
 {
-	if (!_userType) { return QJsonObject(); }
-
 	QJsonObject json;
+	json["isUserType"] = _userType;
 	json["access"] = static_cast<int>(_access);
-	json["type"] = static_cast<int>(_type);
+	json["type"] = _type;
 	json["name"] = _name;
 	json["setterName"] = _setterName;
 	json["getterName"] = _getterName;
@@ -47,9 +48,9 @@ QJsonObject types::Property::serialize() const
 
 void types::Property::deserialize(const QJsonObject &json)
 {
-	_userType = true;
+	_userType = json["isUserType"].toBool();
 	_access = static_cast<QMetaMethod::Access>(json["access"].toInt());
-	_type = static_cast<QMetaType::Type>(json["type"].toInt());
+	_type = json["type"].toString();
 	_name = json["name"].toString();
 	_setterName = json["setterName"].toString();
 	_getterName = json["getterName"].toString();
@@ -78,20 +79,13 @@ QWidget *types::Property::initEditor()
 		};
 	}
 	{
-		QStringList typeString;
-		QList<QMetaType::Type> types;
-		for (int i = QMetaType::UnknownType + 1; i < QMetaType::User + 1; i += 1)
-			if (QMetaType::isRegistered(i) && i != QMetaType::Void) {
-				typeString.append(QMetaType::typeName(i));
-				types.append(static_cast<QMetaType::Type>(i));
-			}
 		auto property = propertyManager->addProperty(QtVariantPropertyManager::enumTypeId(), "Type");
 
-		property->setAttribute("enumNames", typeString);
-		property->setValue(typeString.indexOf(QMetaType::typeName(_type)));
+		property->setAttribute("enumNames", ClassTypeManager::instance()->types());
+		property->setValue(ClassTypeManager::instance()->types().indexOf(_type));
 		propertyEditor->addProperty(property);
-		(*propertySlot)[property] = [this, types](const QVariant &value) {
-			setType(types[value.toInt()]);
+		(*propertySlot)[property] = [this](const QVariant &value) {
+			setType(ClassTypeManager::instance()->types()[value.toInt()]);
 		};
 	}
 	{
@@ -101,6 +95,24 @@ QWidget *types::Property::initEditor()
 		propertyEditor->addProperty(property);
 		(*propertySlot)[property] = [this](const QVariant &value) {
 			setName(value.toString());
+		};
+	}
+	{
+		auto property = propertyManager->addProperty(QVariant::String, "Setter name");
+
+		property->setValue(_setterName);
+		propertyEditor->addProperty(property);
+		(*propertySlot)[property] = [this](const QVariant &value) {
+			setSetterName(value.toString());
+		};
+	}
+	{
+		auto property = propertyManager->addProperty(QVariant::String, "Getter name");
+
+		property->setValue(_getterName);
+		propertyEditor->addProperty(property);
+		(*propertySlot)[property] = [this](const QVariant &value) {
+			setGetterName(value.toString());
 		};
 	}
 
@@ -119,8 +131,8 @@ QString types::Property::setterSignature() const
 	if (!isValid() || _setterName.isEmpty()) { return ""; }
 
 	return _userType
-		? "void " + _setterName + "(" + QMetaType::typeName(_type) + ")"
-		: "void " + _setterName + "(\"" + _name + "\", " + QMetaType::typeName(_type) + ")";
+		? "void " + _setterName + "(" + _type + ")"
+		: "void " + _setterName + "(\"" + _name + "\", " + _type + ")";
 }
 
 QString types::Property::getterSignature() const
@@ -128,8 +140,8 @@ QString types::Property::getterSignature() const
 	if (!isValid() || _getterName.isEmpty()) { return ""; }
 
 	return _userType
-		? QString(QMetaType::typeName(_type)) + " " + _getterName + "() const"
-		: QString(QMetaType::typeName(_type)) + " " + _getterName + "(\"" + _name + "\")";
+		? _type + " " + _getterName + "() const"
+		: _type + " " + _getterName + "(\"" + _name + "\")";
 }
 
 QDebug operator<<(QDebug debug, const types::Property &property)
