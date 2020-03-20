@@ -49,6 +49,7 @@ QJsonObject qtengine::Signal::save() const
 	QJsonObject json;
 
 	json["name"] = QMetaEnum::fromType<types::ClassType::Type>().key(types::ClassType::SIGNAL);
+	json["isValid"] = validationState() == QtNodes::NodeValidationState::Valid;
 	json["connect"] = _connect;
 	json["classType"] = _signal->serialize();
 	json["objectId"] = _objectId;

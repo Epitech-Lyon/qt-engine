@@ -19,6 +19,9 @@ namespace qtengine {
 
 		bool canBeRemoved() const override { return false; }
 
+		QJsonObject save() const override;
+		void restore(const QJsonObject &json) override;
+
 		QString name() const override { return "Start"; }
 
 		QString caption() const override { return "Start"; }

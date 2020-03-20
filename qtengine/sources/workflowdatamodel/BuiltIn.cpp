@@ -54,6 +54,7 @@ QJsonObject qtengine::BuiltIn::save() const
 	QJsonObject json;
 
 	json["name"] = "BuiltIn";
+	json["isValid"] = true;
 	json["type"] = static_cast<int>(_type);
 	json["value"] = libraryObjects::QVariantConverter::serialize(_property->value());
 	return json;

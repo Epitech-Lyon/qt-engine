@@ -36,6 +36,7 @@ QJsonObject qtengine::Property::save() const
 	QJsonObject json;
 
 	json["name"] = QMetaEnum::fromType<types::ClassType::Type>().key(types::ClassType::PROPERTY);
+	json["isValid"] = validationState() == QtNodes::NodeValidationState::Valid;
 	json["classType"] = _property->serialize();
 	json["objectId"] = _objectId;
 	return json;

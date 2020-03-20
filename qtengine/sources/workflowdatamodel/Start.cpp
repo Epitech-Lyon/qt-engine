@@ -15,6 +15,19 @@ qtengine::Start::Start(const QList<QPair<QString, QString>> &parameters)
 {
 }
 
+QJsonObject qtengine::Start::save() const
+{
+	QJsonObject json = QtNodes::NodeDataModel::save();
+
+	json["isValid"] = true;
+	return json;
+}
+
+void qtengine::Start::restore(const QJsonObject &json)
+{
+	QtNodes::NodeDataModel::restore(json);
+}
+
 unsigned int qtengine::Start::nPorts(QtNodes::PortType portType) const
 {
 	int ret = 0;

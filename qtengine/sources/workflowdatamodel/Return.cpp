@@ -22,6 +22,19 @@ qtengine::Return::Return(const QString &returnType)
 	refreshState();
 }
 
+QJsonObject qtengine::Return::save() const
+{
+	QJsonObject json = QtNodes::NodeDataModel::save();
+
+	json["isValid"] = validationState() == QtNodes::NodeValidationState::Valid;
+	return json;
+}
+
+void qtengine::Return::restore(const QJsonObject &json)
+{
+	QtNodes::NodeDataModel::restore(json);
+}
+
 unsigned int qtengine::Return::nPorts(QtNodes::PortType portType) const
 {
 	int ret = 0;

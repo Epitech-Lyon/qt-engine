@@ -40,6 +40,7 @@ QJsonObject qtengine::Slot::save() const
 	QJsonObject json;
 
 	json["name"] = QMetaEnum::fromType<types::ClassType::Type>().key(types::ClassType::SLOT);
+	json["isValid"] = validationState() == QtNodes::NodeValidationState::Valid;
 	json["classType"] = _slot->serialize();
 	json["objectId"] = _objectId;
 	return json;
