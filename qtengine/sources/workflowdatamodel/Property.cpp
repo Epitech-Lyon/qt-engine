@@ -27,6 +27,7 @@ void qtengine::Property::setData(const QJsonObject &propertySave, const QString 
 {
 	_property = new types::Property;
 	_property->deserialize(propertySave);
+	_property->setContent(QJsonObject());
 	_objectId = objectId;
 }
 

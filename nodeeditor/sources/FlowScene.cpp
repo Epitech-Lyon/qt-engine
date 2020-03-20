@@ -167,6 +167,8 @@ Node &FlowScene::restoreNode(QJsonObject const& nodeJson)
 	auto ngo  = detail::make_unique<NodeGraphicsObject>(*this, *node);
 	node->setGraphicsObject(std::move(ngo));
 
+	node->restore(nodeJson);
+
 	auto nodePtr = node.get();
 	_nodes[node->id()] = std::move(node);
 
