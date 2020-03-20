@@ -36,6 +36,7 @@ namespace QtNodes {
 
 		void deleteConnection(Connection& connection);
 
+		void createNode(const QString &modelName, const QPointF &pos);
 		Node &createNode(std::unique_ptr<NodeDataModel> &&dataModel);
 		Node &restoreNode(QJsonObject const& nodeJson);
 		void removeNode(Node &node, bool forceRemove = false);

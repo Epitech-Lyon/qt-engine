@@ -139,6 +139,19 @@ void FlowScene::deleteConnection(Connection& connection)
 	}
 }
 
+void FlowScene::createNode(const QString &modelName, const QPointF &pos)
+{
+	auto type = registry().create(modelName);
+
+	if (type) {
+		auto &node = createNode(std::move(type));
+
+		node.nodeGraphicsObject().setPos(pos);
+		nodePlaced(node);
+	} else
+		qWarning() << "Model not found:" << modelName;
+}
+
 Node &FlowScene::createNode(std::unique_ptr<NodeDataModel> && dataModel)
 {
 	auto node = detail::make_unique<Node>(std::move(dataModel));

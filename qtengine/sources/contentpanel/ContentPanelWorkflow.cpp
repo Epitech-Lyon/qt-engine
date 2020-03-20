@@ -26,6 +26,8 @@
 
 #include "Utils.hpp"
 
+#include "Start.hpp"
+#include "Return.hpp"
 #include "Constructor.hpp"
 #include "Method.hpp"
 #include "Signal.hpp"
@@ -201,6 +203,28 @@ void qtengine::ContentPanelWorkflow::onClassTypeDoubleClicked(types::ClassType *
 	_currentClassType = classType;
 
 	auto tmpRegistry = std::make_shared<QtNodes::DataModelRegistry>();
+	tmpRegistry->registerModel<Start>([classType]() {
+		if (classType->type() == types::ClassType::METHOD) {
+			auto method = dynamic_cast<types::Method*>(classType);
+			return std::unique_ptr<Start>(new Start(method->parameters()));
+		} else if (classType->type() == types::ClassType::SLOT) {
+			auto slot = dynamic_cast<types::Slot*>(classType);
+			return std::unique_ptr<Start>(new Start(slot->parameters()));
+		} else {
+			return std::unique_ptr<Start>(new Start({}));
+		}
+	});
+	tmpRegistry->registerModel<Return>([classType]() {
+		if (classType->type() == types::ClassType::METHOD) {
+			auto method = dynamic_cast<types::Method*>(classType);
+			return std::unique_ptr<Return>(new Return(method->returnType()));
+		} else if (classType->type() == types::ClassType::SLOT) {
+			return std::unique_ptr<Return>(new Return(types::ClassTypeManager::instance()->type(QMetaType::Void)));
+		} else {
+			auto constructor = dynamic_cast<types::Constructor*>(classType);
+			return std::unique_ptr<Return>(new Return(constructor->className() + "*"));
+		}
+	});
 	tmpRegistry->registerModel<BuiltIn>();
 	tmpRegistry->registerModel<Constructor>();
 	tmpRegistry->registerModel<Method>();
@@ -212,6 +236,20 @@ void qtengine::ContentPanelWorkflow::onClassTypeDoubleClicked(types::ClassType *
 	_scene->clearScene();
 	_scene->setRegistry(tmpRegistry);
 	_scene->loadFromJson(_currentClassType->content());
+
+	QString startName = Start({}).name();
+	QString returnName = Return("").name();
+	bool startFound = false;
+	bool returnFound = false;
+	_scene->iterateOverNodeData([startName, returnName, &startFound, &returnFound](QtNodes::NodeDataModel *model) {
+		startFound = !startFound ? model->name() == startName : startFound;
+		returnFound = !returnFound ? model->name() == returnName : returnFound;
+	});
+	if (!startFound)
+		_scene->createNode(startName, QPointF(-100, 0));
+	if (!returnFound)
+		_scene->createNode(returnName, QPointF(200, 0));
+
 	_scene->setRegistry(saveRegistry);
 }
 
