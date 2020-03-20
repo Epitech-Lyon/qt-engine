@@ -173,6 +173,7 @@ void libraryObjects::Exporter::run()
 			emit currentViewExportedChanged(i);
 		}
 	} catch (const char *e) {
+		qCritical() << e;
 		emit error(e);
 	}
 }

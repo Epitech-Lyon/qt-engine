@@ -22,9 +22,9 @@ namespace qtengine {
 		QJsonObject save() const override;
 		void restore(const QJsonObject &json) override;
 
-		QString name() const override { return "Start"; }
+		QString name() const override { return "START"; }
 
-		QString caption() const override { return "Start"; }
+		QString caption() const override { return "START"; }
 		bool captionVisible() const override { return true; }
 
 		unsigned int nPorts(QtNodes::PortType portType) const override;

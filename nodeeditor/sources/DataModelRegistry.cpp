@@ -5,6 +5,17 @@ using QtNodes::NodeDataModel;
 using QtNodes::NodeDataType;
 using QtNodes::TypeConverter;
 
+void DataModelRegistry::unregisterModel(const QString &name)
+{
+	if (_registeredItemCreators.count(name) == 0) { return; }
+
+	_registeredModelsCategory.erase(_registeredModelsCategory[name]);
+	_registeredModelsCategory.erase(name);
+	_registeredItemCreators.erase(name);
+	for (auto category : _registeredModelsCategory)
+		_categories.insert(category.second);
+}
+
 void DataModelRegistry::addPrefix(const QString &prefix)
 {
 	for (auto &tmp : _registeredModelsCategory) {

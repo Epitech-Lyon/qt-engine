@@ -129,6 +129,7 @@ void qtengine::ProjectManager::onExportProject()
 	if (dialog.exec() == QDialog::Accepted) {
 		auto exporter = new libraryObjects::Exporter(dialog.outputPath(), dialog.generateMain(), _views);
 
+		Manager::instance()->viewManager()->onSaveView();
 		if (dialog.displayProgress()) {
 			auto progressDialog = new QProgressDialog(Manager::instance()->mainWindow());
 			connect(exporter, &libraryObjects::Exporter::currentViewExportedChanged, [this, progressDialog](int index) {

@@ -53,8 +53,10 @@ QJsonObject qtengine::BuiltIn::save() const
 {
 	QJsonObject json;
 
-	json["name"] = "BuiltIn";
+	json["name"] = "BUILTIN";
 	json["isValid"] = true;
+	json["nbrInput"] = static_cast<int>(nPorts(QtNodes::PortType::In));
+	json["nbrOutput"] = static_cast<int>(nPorts(QtNodes::PortType::Out));
 	json["type"] = static_cast<int>(_type);
 	json["value"] = libraryObjects::QVariantConverter::serialize(_property->value());
 	return json;
@@ -67,7 +69,7 @@ void qtengine::BuiltIn::restore(const QJsonObject &json)
 
 QString qtengine::BuiltIn::name() const
 {
-	return _type != QMetaType::UnknownType ? types::ClassTypeManager::instance()->type(_type) : "BuiltIn";
+	return _type != QMetaType::UnknownType ? types::ClassTypeManager::instance()->type(_type) : "BUILTIN";
 }
 
 QString qtengine::BuiltIn::caption() const

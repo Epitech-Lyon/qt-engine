@@ -218,11 +218,8 @@ void qtengine::ContentPanelWorkflow::onClassTypeDoubleClicked(types::ClassType *
 		if (classType->type() == types::ClassType::METHOD) {
 			auto method = dynamic_cast<types::Method*>(classType);
 			return std::unique_ptr<Return>(new Return(method->returnType()));
-		} else if (classType->type() == types::ClassType::SLOT) {
-			return std::unique_ptr<Return>(new Return(types::ClassTypeManager::instance()->type(QMetaType::Void)));
 		} else {
-			auto constructor = dynamic_cast<types::Constructor*>(classType);
-			return std::unique_ptr<Return>(new Return(constructor->className() + "*"));
+			return std::unique_ptr<Return>(new Return(types::ClassTypeManager::instance()->type(QMetaType::Void)));
 		}
 	});
 	tmpRegistry->registerModel<BuiltIn>();
@@ -249,6 +246,16 @@ void qtengine::ContentPanelWorkflow::onClassTypeDoubleClicked(types::ClassType *
 		_scene->createNode(startName, QPointF(-100, 0));
 	if (!returnFound)
 		_scene->createNode(returnName, QPointF(200, 0));
+
+	saveRegistry->unregisterModel(returnName);
+	saveRegistry->registerModel<Return>([classType]() {
+		if (classType->type() == types::ClassType::METHOD) {
+			auto method = dynamic_cast<types::Method*>(classType);
+			return std::unique_ptr<Return>(new Return(method->returnType()));
+		} else {
+			return std::unique_ptr<Return>(new Return(types::ClassTypeManager::instance()->type(QMetaType::Void)));
+		}
+	});
 
 	_scene->setRegistry(saveRegistry);
 }

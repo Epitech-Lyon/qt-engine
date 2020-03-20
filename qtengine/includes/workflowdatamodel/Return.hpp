@@ -17,14 +17,12 @@ namespace qtengine {
 		Return(const QString &returnType);
 		~Return() = default;
 
-		bool canBeRemoved() const override { return false; }
-
 		QJsonObject save() const override;
 		void restore(const QJsonObject &json) override;
 
-		QString name() const override { return "Return"; }
+		QString name() const override { return "RETURN"; }
 
-		QString caption() const override { return "Return"; }
+		QString caption() const override { return "RETURN"; }
 		bool captionVisible() const override { return true; }
 
 		unsigned int nPorts(QtNodes::PortType portType) const override;

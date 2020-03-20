@@ -57,6 +57,8 @@ namespace QtNodes {
 			_registeredTypeConverters[id] = std::move(typeConverter);
 		}
 
+		void unregisterModel(const QString &name);
+
 		void addPrefix(const QString &prefix);
 
 		void concatenate(DataModelRegistry *registry);
