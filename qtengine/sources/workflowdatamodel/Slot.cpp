@@ -30,7 +30,7 @@ void qtengine::Slot::setData(const QJsonObject &slotSave, const QString &objectI
 	_slot->deserialize(slotSave);
 	_slot->setContent(QJsonObject());
 	_objectId = objectId;
-	for (unsigned int i = 0; i < nPorts(QtNodes::PortType::In); i += 1)
+	for (unsigned int i = 0; i < nPorts(QtNodes::PortType::In) - 1; i += 1)
 		_inputsFill << false;
 	refreshState();
 }

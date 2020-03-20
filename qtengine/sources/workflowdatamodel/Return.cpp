@@ -16,7 +16,7 @@
 
 qtengine::Return::Return(const QString &returnType)
 	: _flowControllerFill(false)
-	, _returnFill(false)
+	, _returnFill(returnType == types::ClassTypeManager::instance()->type(QMetaType::Void))
 	, _returnType(returnType)
 {
 	refreshState();

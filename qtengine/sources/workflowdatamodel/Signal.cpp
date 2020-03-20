@@ -39,7 +39,7 @@ void qtengine::Signal::setData(const QJsonObject &signalSave, const QString &obj
 	_signal->deserialize(signalSave);
 	_signal->setContent(QJsonObject());
 	_objectId = objectId;
-	for (unsigned int i = 0; i < nPorts(QtNodes::PortType::In); i += 1)
+	for (unsigned int i = 0; i < nPorts(QtNodes::PortType::In) - 1; i += 1)
 		_inputsFill << false;
 	refreshState();
 }

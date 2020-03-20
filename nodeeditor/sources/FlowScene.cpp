@@ -92,6 +92,11 @@ std::shared_ptr<Connection> FlowScene::createConnection(Node &nodeIn, PortIndex 
 
 	_connections[connection->id()] = connection;
 	connectionCreated(*connection);
+
+	connect(connection.get(), &Connection::connectionCompleted, this, [this](Connection const &c)
+	{
+		connectionCreated(c);
+	});
 	return connection;
 }
 

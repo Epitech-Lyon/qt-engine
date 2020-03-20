@@ -29,7 +29,7 @@ void qtengine::Constructor::setData(const QJsonObject &constructorSave)
 	_constructor = new types::Constructor;
 	_constructor->deserialize(constructorSave);
 	_constructor->setContent(QJsonObject());
-	for (unsigned int i = 0; i < nPorts(QtNodes::PortType::In); i += 1)
+	for (unsigned int i = 0; i < nPorts(QtNodes::PortType::In) - 1; i += 1)
 		_inputsFill << false;
 	refreshState();
 }

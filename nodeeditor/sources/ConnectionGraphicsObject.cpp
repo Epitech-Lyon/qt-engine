@@ -95,7 +95,6 @@ void ConnectionGraphicsObject::lock(bool locked)
 	setFlag(QGraphicsItem::ItemIsSelectable, !locked);
 }
 
-
 void ConnectionGraphicsObject::paint(QPainter *painter, QStyleOptionGraphicsItem const *option, QWidget*)
 {
 	painter->setClipRect(option->exposedRect);

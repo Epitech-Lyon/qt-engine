@@ -32,7 +32,7 @@ void qtengine::Method::setData(const QJsonObject &methodSave, const QString &obj
 	_method->deserialize(methodSave);
 	_method->setContent(QJsonObject());
 	_objectId = objectId;
-	for (unsigned int i = 0; i < nPorts(QtNodes::PortType::In); i += 1)
+	for (unsigned int i = 0; i < nPorts(QtNodes::PortType::In) - 1; i += 1)
 		_inputsFill << false;
 	refreshState();
 }
