@@ -39,6 +39,7 @@ namespace libraryObjects {
 
 	signals:
 		void currentViewExportedChanged(int index);
+		void error(const QString &errorMessage);
 
 	private:
 		QString _exportedDirPath;

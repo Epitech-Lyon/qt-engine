@@ -7,6 +7,8 @@
 
 #include "moc_Exporter.cpp"
 #include "Exporter.hpp"
+
+#include "ClassTypeExporter.hpp"
 #include "QVariantConverter.hpp"
 
 #include <QtCore/QBuffer>
@@ -148,18 +150,29 @@ void libraryObjects::Exporter::run()
 	qDebug() << "Export" << _views << "to" << _exportedDirPath << (_generateMain ? "with main" : "without main");
 	if (!dir.exists(_exportedDirPath))
 		if (!dir.mkpath(_exportedDirPath))
-			return (void)(qDebug() << "Error, could not create directory : " << _exportedDirPath);
+			return (void)(qCritical() << "Error, could not create directory : " << _exportedDirPath);
 	try {
 		for (int i = 0; i < _views.count(); i += 1) {
-			QFile file(_views[i]);
-			QString filename = QFileInfo(file).baseName();
-			QJsonObject obj = loadJson(QFileInfo(file).filePath())["Engine"].toObject();
+			QString baseName = QFileInfo(_views[i]).baseName();
+			QJsonObject json = loadJson(QFileInfo(_views[i]).filePath());
 
-			writeClass(_exportedDirPath + "/" + filename + ".cpp", _exportedDirPath + "/" + filename + ".hpp", obj);
+			// Export functions
+			{
+				QJsonObject jsonClass = json["Class"].toObject();
+
+				for (auto key : jsonClass.keys())
+					for (auto classTypeJsonRef : jsonClass[key].toArray()) {
+						ClassTypeExporter classTypeExporter(classTypeJsonRef.toObject());
+
+						qDebug() << classTypeExporter.signature();
+						if (classTypeExporter.hasBody())
+							qDebug() << classTypeExporter.body() << "\n";
+					}
+			}
+			writeClass(_exportedDirPath + "/" + baseName + ".cpp", _exportedDirPath + "/" + baseName + ".hpp", json["Engine"].toObject());
 			emit currentViewExportedChanged(i);
-			sleep(1);
 		}
 	} catch (const char *e) {
-		qDebug() << "Error durring export : " << e;
+		emit error(e);
 	}
 }

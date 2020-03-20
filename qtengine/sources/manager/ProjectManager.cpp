@@ -19,6 +19,7 @@
 
 #include "DialogSettingsCreateView.hpp"
 
+#include <QtWidgets/QMessageBox>
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QProgressDialog>
 #include <QtCore/QDebug>
@@ -134,11 +135,16 @@ void qtengine::ProjectManager::onExportProject()
 				progressDialog->setLabelText("Export " + QFileInfo(_views[index]).completeBaseName());
 			});
 			connect(exporter, &libraryObjects::Exporter::currentViewExportedChanged, progressDialog, &QProgressDialog::setValue);
+			connect(exporter, &libraryObjects::Exporter::error, progressDialog, &QWidget::close);
+			connect(exporter, &libraryObjects::Exporter::error, Manager::instance()->mainWindow(), [](const QString &errorMessage) {
+				QMessageBox::critical(Manager::instance()->mainWindow(), "Export", errorMessage);
+			}, Qt::QueuedConnection);
 			connect(exporter, &QThread::finished, progressDialog, &QWidget::close);
 			progressDialog->setWindowFlags(Qt::Window);
 			progressDialog->setAttribute(Qt::WA_DeleteOnClose);
 			progressDialog->setCancelButton(nullptr);
 			progressDialog->setMaximum(_views.size());
+			progressDialog->setMinimumSize(progressDialog->sizeHint());
 			progressDialog->show();
 		}
 

@@ -39,6 +39,7 @@ QJsonObject types::ClassType::serialize() const
 {
 	QJsonObject json;
 
+	json["type"] = static_cast<int>(_type);
 	json["content"] = _content;
 	json["access"] = static_cast<int>(_access);
 	return json;
