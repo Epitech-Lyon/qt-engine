@@ -96,6 +96,7 @@ namespace QtNodes {
 		void embeddedWidgetSizeUpdated();
 		void validationStateUpdated();
 		void validationMessageUpdated();
+		void nodePortUpdated();
 
 	private:
 		NodeStyle _nodeStyle;

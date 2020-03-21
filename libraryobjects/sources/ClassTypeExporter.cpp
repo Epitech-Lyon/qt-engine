@@ -11,7 +11,6 @@
 #include "Slot.hpp"
 
 #include <QtCore/QJsonArray>
-#include <QtCore/QDebug>
 
 libraryObjects::ClassTypeExporter::ClassTypeExporter(const QJsonObject &json)
 	: _classType(types::ClassType::construct(static_cast<types::ClassType::Type>(json["type"].toInt())))
@@ -82,10 +81,6 @@ void libraryObjects::ClassTypeExporter::parse()
 	if (startBlock.isNull())
 		throwMessage("Cannot find START");
 
-	auto returnBlock = findBlock("RETURN");
-	if (returnBlock.isNull())
-		throwMessage("Must have at least one RETURN");
-
 	for (auto &block : _blocks)
 		if (!block["isValid"].toBool())
 			throwMessage("All input must be filled");
@@ -93,36 +88,12 @@ void libraryObjects::ClassTypeExporter::parse()
 		if (outConnections.size() > 0 && outConnections[0].size() > 0 && outConnections[0][0].isNull)
 			throwMessage("All FlowController's output must be filled");
 
-//	for (auto inConnectionKey : _inConnections.keys()) {
-//		qDebug().nospace() << "INPUT Connection of " << inConnectionKey << ":";
-//		for (auto &connection : _inConnections[inConnectionKey])
-//			qDebug().nospace() << "\t" << connection.receiverBlockId << " " << connection.receiverIdx;
-//		qDebug() << "\n";
-//	}
-//	qDebug() << "\n";
-//	for (auto outConnectionKey : _outConnections.keys()) {
-//		qDebug().nospace() << "OUTPUT Connection of " << outConnectionKey << ":";
-//		for (auto connectionList : _outConnections[outConnectionKey])
-//			for (auto &connection : connectionList)
-//				qDebug().nospace() << "\t" << connection.receiverBlockId << " " << connection.receiverIdx;
-//		qDebug() << "\n";
-//	}
-//	qDebug() << "\n-----------------------------------------------------------------\n\n";
-
 	_body = parseBlock(startBlock);
-//	qDebug() << "\n=================================================================";
-//	qDebug().nospace() << "CODE for " << _classType->signature() << ":";
-//	qDebug() << "-----------------------------------------------------------------";
-//	qDebug().noquote() << _body;
-//	qDebug() << "=================================================================\n";
 }
 
 QString libraryObjects::ClassTypeExporter::parseBlock(const QUuid &blockId)
 {
 	QString code = _blocks[blockId]["code"].toString();
-
-//	qDebug() << "BEGIN" << _blocks[blockId]["name"].toString() << blockId;
-//	qDebug() << code;
 
 	code = parseObjClassName(blockId, code);
 	code = parseObjName(blockId, code);
@@ -131,9 +102,6 @@ QString libraryObjects::ClassTypeExporter::parseBlock(const QUuid &blockId)
 	code = parseUseVar(blockId, code);
 	code = parseCode(blockId, code);
 	code = parseSkipCode(blockId, code);
-//	qDebug() << "-----------------------------------------------------------------";
-//	qDebug() << code;
-//	qDebug() << "END\n";
 	return code;
 }
 

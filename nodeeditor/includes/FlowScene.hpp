@@ -39,6 +39,8 @@ namespace QtNodes {
 		void createNode(const QString &modelName, const QPointF &pos);
 		Node &createNode(std::unique_ptr<NodeDataModel> &&dataModel);
 		Node &restoreNode(QJsonObject const& nodeJson);
+
+		void removeAllConnectionOf(Node const &node);
 		void removeNode(Node &node, bool forceRemove = false);
 
 		DataModelRegistry &registry() const;

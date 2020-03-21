@@ -36,7 +36,7 @@ NodeGraphicsObject::NodeGraphicsObject(FlowScene &scene, Node &node)
 	setFlag(QGraphicsItem::ItemIsSelectable, true);
 	setFlag(QGraphicsItem::ItemSendsScenePositionChanges, true);
 
-	setCacheMode( QGraphicsItem::DeviceCoordinateCache );
+	setCacheMode(QGraphicsItem::DeviceCoordinateCache);
 
 	auto const &nodeStyle = node.nodeDataModel()->nodeStyle();
 	{
@@ -81,9 +81,8 @@ Node const &NodeGraphicsObject::node() const
 
 void NodeGraphicsObject::onEmbeddedWidgetChanged()
 {
-	NodeGeometry & geom = _node.nodeGeometry();
+	NodeGeometry &geom = _node.nodeGeometry();
 
-	delete _proxyWidget;
 	if (auto w = _node.nodeDataModel()->embeddedWidget()) {
 		_proxyWidget = new QGraphicsProxyWidget(this);
 		_proxyWidget->setWidget(w);
@@ -93,8 +92,7 @@ void NodeGraphicsObject::onEmbeddedWidgetChanged()
 		if (w->sizePolicy().verticalPolicy() & QSizePolicy::ExpandFlag)
 			// If the widget wants to use as much vertical space as possible, set it to have the geom's equivalentWidgetHeight.
 			_proxyWidget->setMinimumHeight(geom.equivalentWidgetHeight());
-		_proxyWidget->setPos(geom.widgetPosition());
-		update();
+		moveEmbeddedWidget();
 		_proxyWidget->setOpacity(1.0);
 		_proxyWidget->setFlag(QGraphicsItem::ItemIgnoresParentOpacity);
 	}
@@ -120,6 +118,17 @@ void NodeGraphicsObject::moveConnections() const
 		for (auto const & connections : connectionEntries)
 			for (auto & con : connections)
 				con.second->getConnectionGraphicsObject().move();
+	}
+}
+
+void NodeGraphicsObject::moveEmbeddedWidget()
+{
+	NodeGeometry &geom = _node.nodeGeometry();
+
+	geom.recalculateSize();
+	if (_proxyWidget) {
+		_proxyWidget->setPos(geom.widgetPosition());
+		update();
 	}
 }
 
@@ -158,7 +167,7 @@ void NodeGraphicsObject::mousePressEvent(QGraphicsSceneMouseEvent * event)
 		int const portIndex = nodeGeometry.checkHitScenePoint(portToCheck, event->scenePos(), sceneTransform());
 
 		if (portIndex != INVALID) {
-			NodeState const & nodeState = _node.nodeState();
+			NodeState const &nodeState = _node.nodeState();
 			std::unordered_map<QUuid, Connection*> connections = nodeState.connections(portToCheck, portIndex);
 
 			// start dragging existing connection

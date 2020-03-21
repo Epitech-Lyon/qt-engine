@@ -65,19 +65,6 @@ QWidget *types::Property::initEditor()
 
 	auto propertySlot = new QMap<QtProperty *, std::function<void (const QVariant &)>>;
 	{
-		auto property = propertyManager->addProperty(QtVariantPropertyManager::enumTypeId(), "Access");
-		QStringList accessString;
-
-		for (auto access : {QMetaMethod::Private, QMetaMethod::Protected, QMetaMethod::Public})
-			accessString << types::accessToString(access);
-		property->setAttribute("enumNames", accessString);
-		property->setValue(accessString.indexOf(types::accessToString(_access)));
-		propertyEditor->addProperty(property);
-		(*propertySlot)[property] = [this](const QVariant &value) {
-			setAccess(static_cast<QMetaMethod::Access>(value.toInt()));
-		};
-	}
-	{
 		auto property = propertyManager->addProperty(QtVariantPropertyManager::enumTypeId(), "Type");
 
 		property->setAttribute("enumNames", ClassTypeManager::instance()->types());
@@ -131,7 +118,7 @@ QString types::Property::setterSignature() const
 
 	return _userType
 		? "void " + _setterName + "(" + _type + ")"
-		: "void " + _setterName + "(\"" + _name + "\", " + _type + ")";
+		: "void " + _setterName + "(const char *name, const QVariant &value)";
 }
 
 QString types::Property::getterSignature() const
@@ -140,7 +127,7 @@ QString types::Property::getterSignature() const
 
 	return _userType
 		? _type + " " + _getterName + "() const"
-		: _type + " " + _getterName + "(\"" + _name + "\")";
+		: _type + " " + _getterName + "(const char *name) const";
 }
 
 QDebug operator<<(QDebug debug, const types::Property &property)

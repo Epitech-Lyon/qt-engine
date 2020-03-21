@@ -15,6 +15,8 @@ namespace types {
 }
 
 namespace qtengine {
+	class SwitchButton;
+
 	class Property : public QtNodes::NodeDataModel {
 	public:
 		Property();
@@ -38,9 +40,21 @@ namespace qtengine {
 
 		QtNodes::NodeDataModel::ConnectionPolicy portOutConnectionPolicy(QtNodes::PortIndex portIndex) const override;
 
+		QWidget *embeddedWidget() override;
+
+	public slots:
+		void inputConnectionCreated(QtNodes::Connection const &) override;
+		void inputConnectionDeleted(QtNodes::Connection const &) override;
+
 	private:
+		void refreshState();
 		QString code() const;
 
+		bool _needBtn;
+		bool _get;
+		SwitchButton *_switchButton;
+		bool _flowControllerFill;
+		bool _valueFill;
 		types::Property *_property;
 		QUuid _objectId;
 	};

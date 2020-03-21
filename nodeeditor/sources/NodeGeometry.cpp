@@ -38,6 +38,23 @@ NodeGeometry::NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel)
 	_boldFontMetrics = QFontMetrics(f);
 }
 
+NodeGeometry &NodeGeometry::operator=(const NodeGeometry &nodeGeometry)
+{
+	_width = nodeGeometry._width;
+	_height = nodeGeometry._height;
+	_inputPortWidth = nodeGeometry._inputPortWidth;
+	_outputPortWidth = nodeGeometry._outputPortWidth;
+	_entryHeight = nodeGeometry._entryHeight;
+	_spacing = nodeGeometry._spacing;
+	_hovered = nodeGeometry._hovered;
+	_nSources = nodeGeometry._nSources;
+	_nSinks = nodeGeometry._nSinks;
+	_draggingPos = nodeGeometry._draggingPos;
+	_fontMetrics = nodeGeometry._fontMetrics;
+	_boldFontMetrics = nodeGeometry._boldFontMetrics;
+	return *this;
+}
+
 unsigned int NodeGeometry::nSources() const
 {
 	return _dataModel->nPorts(PortType::Out);

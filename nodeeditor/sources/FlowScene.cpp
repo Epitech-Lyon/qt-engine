@@ -167,6 +167,9 @@ Node &FlowScene::createNode(std::unique_ptr<NodeDataModel> && dataModel)
 	auto nodePtr = node.get();
 	_nodes[node->id()] = std::move(node);
 
+	connect(nodePtr, &Node::removeAllConnections, this, [this](Node const &node) {
+		removeAllConnectionOf(node);
+	});
 	nodeCreated(*nodePtr);
 	return *nodePtr;
 }
@@ -190,9 +193,25 @@ Node &FlowScene::restoreNode(QJsonObject const& nodeJson)
 	auto nodePtr = node.get();
 	_nodes[node->id()] = std::move(node);
 
+	connect(nodePtr, &Node::removeAllConnections, this, [this](Node const &node) {
+		removeAllConnectionOf(node);
+	});
+
 	nodePlaced(*nodePtr);
 	nodeCreated(*nodePtr);
 	return *nodePtr;
+}
+
+void FlowScene::removeAllConnectionOf(Node const &node)
+{
+	for (auto portType: {PortType::In, PortType::Out}) {
+		auto nodeState = node.nodeState();
+		auto const &nodeEntries = nodeState.getEntries(portType);
+
+		for (auto &connections : nodeEntries)
+			for (auto const &pair : connections)
+				deleteConnection(*pair.second);
+	}
 }
 
 void FlowScene::removeNode(Node &node, bool forceRemove)
@@ -201,14 +220,7 @@ void FlowScene::removeNode(Node &node, bool forceRemove)
 	// call signal
 	nodeDeleted(node);
 
-	for (auto portType: {PortType::In,PortType::Out}) {
-		auto nodeState = node.nodeState();
-		auto const &nodeEntries = nodeState.getEntries(portType);
-
-		for (auto &connections : nodeEntries)
-			for (auto const &pair : connections)
-				deleteConnection(*pair.second);
-	}
+	removeAllConnectionOf(node);
 	_nodes.erase(node.id());
 }
 

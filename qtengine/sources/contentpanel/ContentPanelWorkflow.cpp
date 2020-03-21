@@ -151,7 +151,7 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 	}
 	for (auto classType : objectClass->getClassType(types::ClassType::PROPERTY)) {
 		auto property = dynamic_cast<types::Property *>(classType);
-		if (!property || property->access() < minimumAccess || objectId.isNull()) { continue; }
+		if (!property || objectId.isNull()) { continue; }
 
 		auto propertySave = property->serialize();
 		registry->registerModel<Method>(metaEnumKeyOf(classType->type()), [propertySave, objectId]() {

@@ -60,8 +60,14 @@ namespace QtNodes {
 		/// and propagates it to the connection
 		void onDataUpdated(PortIndex index);
 
-		/// update the graphic part if the size of the embeddedwidget changes
+		/// Update the graphic part if the size of the embeddedwidget changes
 		void onNodeSizeUpdated();
+
+		/// Update the number of port and delete connection if needs
+		void onNodePortUpdated();
+
+	Q_SIGNALS:
+		void removeAllConnections(Node &node);
 
 	private:
 		QUuid _uid;

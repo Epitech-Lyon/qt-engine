@@ -10,14 +10,27 @@
 
 #include "ObjectManager.hpp"
 
+#include "SwitchButton.hpp"
+
 #include "FlowController.hpp"
 #include "Type.hpp"
 
 #include "Connection.hpp"
 
 qtengine::Property::Property()
-	: _property(nullptr)
+	: _needBtn(true)
+	, _get(true)
+	, _switchButton(new SwitchButton("Set", "Get"))
+	, _flowControllerFill(false)
+	, _valueFill(false)
+	, _property(nullptr)
 {
+	connect(_switchButton, &SwitchButton::valueChanged, this, [this](bool value) {
+		_get = value;
+		emit nodePortUpdated();
+		refreshState();
+	});
+	_switchButton->setValue(_get);
 }
 
 qtengine::Property::~Property()
@@ -30,7 +43,10 @@ void qtengine::Property::setData(const QJsonObject &propertySave, const QUuid &o
 	_property = new types::Property;
 	_property->deserialize(propertySave);
 	_property->setContent(QJsonObject());
+	_needBtn = !_property->setterName().isEmpty() && !_property->getterName().isEmpty();
+	_get = _needBtn ? _get : !_property->getterName().isEmpty() ? true : false;
 	_objectId = objectId;
+	emit embeddedWidgetChanged();
 }
 
 QJsonObject qtengine::Property::save() const
@@ -44,6 +60,7 @@ QJsonObject qtengine::Property::save() const
 	json["code"] = code();
 	json["objClassName"] = libraryObjects::ObjectManager::instance()->objectClassName(_objectId);
 	json["objName"] = libraryObjects::ObjectManager::instance()->objectName(_objectId);
+	json["get"] = _get;
 	json["classType"] = _property->serialize();
 	json["objectId"] = _objectId.toString();
 	return json;
@@ -51,6 +68,7 @@ QJsonObject qtengine::Property::save() const
 
 void qtengine::Property::restore(const QJsonObject &json)
 {
+	_switchButton->setValue(json["get"].toBool());
 	setData(json["classType"].toObject(), QUuid(json["objectId"].toString()));
 }
 
@@ -72,10 +90,10 @@ unsigned int qtengine::Property::nPorts(QtNodes::PortType portType) const
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = !_property->setterName().isEmpty() + 1;
+		ret = _get ? 0 : 2;
 		break;
 	case QtNodes::PortType::Out:
-		ret = !_property->getterName().isEmpty() + 1;
+		ret = _get && !_property->isUserType() ? 2 : 1;
 		break;
 	}
 	return ret;
@@ -92,7 +110,7 @@ QtNodes::NodeDataType qtengine::Property::dataType(QtNodes::PortType portType, Q
 		ret = portIndex == 0 ? FlowController().type() : Type(_property->type()).type();
 		break;
 	case QtNodes::PortType::Out:
-		ret = portIndex == 0 ? FlowController().type() : Type(_property->type()).type();
+		ret = _get && !_property->isUserType() && portIndex == 0 ? FlowController().type() : Type(_property->type()).type();
 		break;
 	}
 	return ret;
@@ -120,9 +138,66 @@ QtNodes::NodeDataModel::ConnectionPolicy qtengine::Property::portOutConnectionPo
 	return portIndex > 0 ? ConnectionPolicy::Many : ConnectionPolicy::One;
 }
 
+void qtengine::Property::inputConnectionCreated(QtNodes::Connection const &connection)
+{
+	int portIndex = connection.getPortIndex(QtNodes::PortType::In);
+
+	if (portIndex == 0)
+		_flowControllerFill = true;
+	else
+		_valueFill = true;
+	refreshState();
+}
+
+void qtengine::Property::inputConnectionDeleted(QtNodes::Connection const &connection)
+{
+	int portIndex = connection.getPortIndex(QtNodes::PortType::In);
+
+	if (portIndex == 0)
+		_flowControllerFill = false;
+	else
+		_valueFill = false;
+	refreshState();
+}
+
+void qtengine::Property::refreshState()
+{
+	if (_get || (_flowControllerFill && _valueFill)) {
+		setValidationState(QtNodes::NodeValidationState::Valid);
+		setValidationMessage("");
+	} else {
+		setValidationState(QtNodes::NodeValidationState::Warning);
+		setValidationMessage("Missing inputs");
+	}
+}
+
+QWidget *qtengine::Property::embeddedWidget()
+{
+	return _needBtn ? _switchButton : nullptr;
+}
+
 QString qtengine::Property::code() const
 {
-	QString ret = "E_VAR(" + _property->name() + ")";
+	QString ret;
 
+	if (_get) {
+		if (_property->isUserType()) {
+			ret += "E_VAR(" + _property->name() + ")";
+			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->";
+			ret += _property->getterName() + "()";
+		} else {
+			ret += _property->type() + " E_VAR()_E = ";
+			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->";
+			ret += _property->getterName() + "(" + _property->name() + ");\nE_CODE(0)_E";
+		}
+	} else {
+		if (_property->isUserType()) {
+			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->";
+			ret += _property->setterName() + "(E_USEVAR(1)_E);\nE_CODE(0)_E";
+		} else {
+			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->";
+			ret += _property->setterName() + "(" + _property->name() + "QVariant::fromValue(E_USEVAR(1)_E));\nE_CODE(0)_E";
+		}
+	}
 	return ret;
 }

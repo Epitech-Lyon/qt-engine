@@ -25,6 +25,7 @@ qtengine::Signal::Signal()
 {
 	connect(_switchButton, &SwitchButton::valueChanged, this, [this](bool value) {
 		_connect = value;
+		emit nodePortUpdated();
 		refreshState();
 	});
 	_switchButton->setValue(_connect);
@@ -41,7 +42,7 @@ void qtengine::Signal::setData(const QJsonObject &signalSave, const QUuid &objec
 	_signal->deserialize(signalSave);
 	_signal->setContent(QJsonObject());
 	_objectId = objectId;
-	for (unsigned int i = 0; i < nPorts(QtNodes::PortType::In) - 1; i += 1)
+	for (int i = 0; i < _signal->parameters().size(); i += 1)
 		_inputsFill << false;
 	refreshState();
 }
@@ -87,7 +88,7 @@ unsigned int qtengine::Signal::nPorts(QtNodes::PortType portType) const
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = _signal->parameters().count() + 1;
+		ret = _connect ? 1 : _signal->parameters().count() + 1;
 		break;
 	case QtNodes::PortType::Out:
 		ret = 1;

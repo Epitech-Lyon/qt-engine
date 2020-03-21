@@ -37,6 +37,7 @@ Node::Node(std::unique_ptr<NodeDataModel> &&dataModel)
 	connect(_nodeDataModel.get(), &NodeDataModel::embeddedWidgetSizeUpdated, this, &Node::onNodeSizeUpdated);
 	connect(_nodeDataModel.get(), &NodeDataModel::validationStateUpdated, this, &Node::onNodeSizeUpdated);
 	connect(_nodeDataModel.get(), &NodeDataModel::validationMessageUpdated, this, &Node::onNodeSizeUpdated);
+	connect(_nodeDataModel.get(), &NodeDataModel::nodePortUpdated, this, &Node::onNodePortUpdated);
 }
 
 QJsonObject Node::save() const
@@ -149,11 +150,19 @@ void Node::onDataUpdated(PortIndex index)
 
 void Node::onNodeSizeUpdated()
 {
-    if (nodeDataModel()->embeddedWidget())
-        nodeDataModel()->embeddedWidget()->adjustSize();
-    nodeGeometry().recalculateSize();
-    for (PortType type: {PortType::In, PortType::Out})
-        for (auto &conn_set : nodeState().getEntries(type))
-            for (auto &pair: conn_set)
-                pair.second->getConnectionGraphicsObject().move();
+	if (nodeDataModel()->embeddedWidget())
+		nodeDataModel()->embeddedWidget()->adjustSize();
+	_nodeGraphicsObject->moveEmbeddedWidget();
+	for (PortType type: {PortType::In, PortType::Out})
+		for (auto &conn_set : nodeState().getEntries(type))
+			for (auto &pair: conn_set)
+				pair.second->getConnectionGraphicsObject().move();
+}
+
+void Node::onNodePortUpdated()
+{
+	emit removeAllConnections(*this);
+	_nodeState = NodeState(_nodeDataModel);
+	_nodeGeometry = NodeGeometry(_nodeDataModel);
+	_nodeGraphicsObject->moveEmbeddedWidget();
 }

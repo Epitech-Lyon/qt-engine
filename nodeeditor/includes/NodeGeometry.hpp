@@ -23,6 +23,7 @@ namespace QtNodes {
 	class NodeGeometry {
 	public:
 		NodeGeometry(std::unique_ptr<NodeDataModel> const &dataModel);
+		NodeGeometry &operator=(const NodeGeometry &nodeGeometry);
 
 		unsigned int height() const { return _height; }
 		void setHeight(unsigned int h) { _height = h; }
