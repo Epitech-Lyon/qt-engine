@@ -185,15 +185,15 @@ QString qtengine::Signal::code() const
 	if (_connect) {
 		ret += "connect(" + libraryObjects::ObjectManager::instance()->objectName(_objectId);
 		ret += ", &" + libraryObjects::ObjectManager::instance()->objectClassName(_objectId) + "::" + _signal->name();
-		ret += ", E_OBJNAME(O0)_E, &E_OBJCLASSNAME(O0)_E::E_SLOTNAME(O0)_E);\nE_SKIPCODE(O0)_E";
+		ret += ", E_OBJNAME(0)_E, &E_OBJCLASSNAME(0)_E::E_SLOTNAME(0)_E);\nE_SKIPCODE(0)_E";
 	} else {
 		ret += "emit " + libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->" + _signal->name() + "(";
 		for (int i = 0; i < _inputsFill.size(); i += 1) {
 			if (i > 0)
 				ret += ", ";
-			ret += "E_USEVAR(I" + QString::number(i + 1) + ")_E";
+			ret += "E_USEVAR(" + QString::number(i + 1) + ")_E";
 		}
-		ret += ");\nE_CODE(O0)_E";
+		ret += ");\nE_CODE(0)_E";
 	}
 	return ret;
 }

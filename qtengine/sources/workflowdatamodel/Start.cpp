@@ -93,6 +93,6 @@ QString qtengine::Start::code() const
 
 	for (auto &parameter : _parameters)
 		ret += "E_VAR(" + parameter.second + ")_E";
-	ret += "E_CODE(O0)_E";
+	ret += "E_CODE(0)_E";
 	return ret;
 }

@@ -15,6 +15,7 @@
 
 libraryObjects::ClassTypeExporter::ClassTypeExporter(const QJsonObject &json)
 	: _classType(types::ClassType::construct(static_cast<types::ClassType::Type>(json["type"].toInt())))
+	, _skipCode(false)
 {
 	_classType->deserialize(json);
 	if (!_classType->isValid())
@@ -48,6 +49,16 @@ QUuid libraryObjects::ClassTypeExporter::findBlock(const QString &blockName) con
 	return QUuid();
 }
 
+QString libraryObjects::ClassTypeExporter::createVarName() const
+{
+	int i = 1;
+	QString ret = "val_";
+
+	while (_varNames.values().contains(ret + QString::number(i)))
+		i += 1;
+	return ret + QString::number(i);
+}
+
 void libraryObjects::ClassTypeExporter::parse()
 {
 	for (auto blockJsonRef : _classType->content()["nodes"].toArray()) {
@@ -66,7 +77,7 @@ void libraryObjects::ClassTypeExporter::parse()
 		int outIdx = connectionJson["out_index"].toInt();
 
 		_inConnections[inBlockId][inIdx] = Connection(outBlockId, outIdx);
-		_outConnections[outBlockId][outIdx] = Connection(inBlockId, inIdx);
+		_outConnections[outBlockId][outIdx].append(Connection(inBlockId, inIdx));
 	}
 
 	auto startBlock = findBlock("START");
@@ -81,7 +92,7 @@ void libraryObjects::ClassTypeExporter::parse()
 		if (!block["isValid"].toBool())
 			throwMessage("All input must be filled");
 	for (auto &outConnections : _outConnections)
-		if (outConnections.size() > 0 && outConnections[0].isNull)
+		if (outConnections.size() > 0 && outConnections[0].size() > 0 && outConnections[0][0].isNull)
 			throwMessage("All FlowController's output must be filled");
 
 //	for (auto inConnectionKey : _inConnections.keys()) {
@@ -93,8 +104,9 @@ void libraryObjects::ClassTypeExporter::parse()
 //	qDebug() << "\n";
 //	for (auto outConnectionKey : _outConnections.keys()) {
 //		qDebug().nospace() << "OUTPUT Connection of " << outConnectionKey << ":";
-//		for (auto &connection : _outConnections[outConnectionKey])
-//			qDebug().nospace() << "\t" << connection.receiverBlockId << " " << connection.receiverIdx;
+//		for (auto connectionList : _outConnections[outConnectionKey])
+//			for (auto &connection : connectionList)
+//				qDebug().nospace() << "\t" << connection.receiverBlockId << " " << connection.receiverIdx;
 //		qDebug() << "\n";
 //	}
 //	qDebug() << "\n-----------------------------------------------------------------\n\n";
@@ -107,94 +119,140 @@ void libraryObjects::ClassTypeExporter::parse()
 	qDebug() << "=================================================================\n";
 }
 
-QString libraryObjects::ClassTypeExporter::parseBlock(const QUuid &blockId) const
+QString libraryObjects::ClassTypeExporter::parseBlock(const QUuid &blockId)
 {
 	QString code = _blocks[blockId]["code"].toString();
 
-	qDebug() << "BEGIN" << _blocks[blockId]["name"].toString() << blockId;
-	qDebug() << code;
+//	qDebug() << "BEGIN" << _blocks[blockId]["name"].toString() << blockId;
+//	qDebug() << code;
 
 	code = parseObjClassName(blockId, code);
 	code = parseObjName(blockId, code);
 	code = parseSlotName(blockId, code);
-//	code = parseVar(blockId, code);
-//	code = parseUseVar(blockId, code);
+	code = parseVar(blockId, code);
+	code = parseUseVar(blockId, code);
 	code = parseCode(blockId, code);
-//	code = parseSkipCode(blockId, code);
-	qDebug() << "-----------------------------------------------------------------";
-	qDebug() << code;
-	qDebug() << "END\n";
+	code = parseSkipCode(blockId, code);
+//	qDebug() << "-----------------------------------------------------------------";
+//	qDebug() << code;
+//	qDebug() << "END\n";
 	return code;
 }
 
-QString libraryObjects::ClassTypeExporter::parseObjClassName(const QUuid &blockId, const QString &code) const
+QString libraryObjects::ClassTypeExporter::parseObjClassName(const QUuid &blockId, const QString &code)
 {
-	return parseRegexOnConnection(QRegExp("E_OBJCLASSNAME\\((I|O)([0-9])\\)_E"), code, blockId, [this](const Connection &connection) {
-		return _blocks[connection.receiverBlockId]["objClassName"].toString();
+	QRegExp regex("E_OBJCLASSNAME\\(([0-9])\\)_E");
+
+	return parseRegexOn(regex, code, [this, &regex, &blockId](const QString &code) {
+		Connection connection = _outConnections[blockId][regex.cap(1).toInt()].front();
+		QString newCode = code;
+
+		newCode.replace(regex.pos(0), regex.matchedLength(), _blocks[connection.receiverBlockId]["objClassName"].toString());
+		return newCode;
 	});
 }
 
-QString libraryObjects::ClassTypeExporter::parseObjName(const QUuid &blockId, const QString &code) const
+QString libraryObjects::ClassTypeExporter::parseObjName(const QUuid &blockId, const QString &code)
 {
-	return parseRegexOnConnection(QRegExp("E_OBJNAME\\((I|O)([0-9])\\)_E"), code, blockId, [this](const Connection &connection) {
-		return _blocks[connection.receiverBlockId]["objName"].toString();
+	QRegExp regex("E_OBJNAME\\(([0-9])\\)_E");
+
+	return parseRegexOn(regex, code, [this, &regex, &blockId](const QString &code) {
+		Connection connection = _outConnections[blockId][regex.cap(1).toInt()].front();
+		QString newCode = code;
+
+		newCode.replace(regex.pos(0), regex.matchedLength(), _blocks[connection.receiverBlockId]["objName"].toString());
+		return newCode;
 	});
 }
 
-QString libraryObjects::ClassTypeExporter::parseSlotName(const QUuid &blockId, const QString &code) const
+QString libraryObjects::ClassTypeExporter::parseSlotName(const QUuid &blockId, const QString &code)
 {
-	return parseRegexOnConnection(QRegExp("E_SLOTNAME\\((I|O)([0-9])\\)_E"), code, blockId, [this](const Connection &connection) {
+	QRegExp regex("E_SLOTNAME\\(([0-9])\\)_E");
+
+	return parseRegexOn(regex, code, [this, &regex, &blockId](const QString &code) {
+		Connection connection = _outConnections[blockId][regex.cap(1).toInt()].front();
+
 		auto classTypeJson = _blocks[connection.receiverBlockId]["classType"].toObject();
-
 		if (static_cast<types::ClassType::Type>(classTypeJson["type"].toInt()) != types::ClassType::SLOT)
 			throwMessage("Signals must be connected with a slot");
+
+		QString newCode = code;
 		types::Slot slot;
 		slot.deserialize(classTypeJson);
-		return slot.name();
+		newCode.replace(regex.pos(0), regex.matchedLength(), slot.name());
+		return newCode;
 	});
 }
 
-QString libraryObjects::ClassTypeExporter::parseVar(const QUuid &, const QString &code) const
+QString libraryObjects::ClassTypeExporter::parseVar(const QUuid &blockId, const QString &code)
 {
 	QRegExp regex("E_VAR\\((\\w*)\\)_E");
 
-	return parseRegexOn(regex, code, [&regex](const QString &code) {
+	return parseRegexOn(regex, code, [this, &regex, &blockId](const QString &code) {
 		QString newCode = code;
+		QString varName = regex.cap(1);
 
+		if (varName.isEmpty()) {
+			_varNames[blockId] = createVarName();
+			newCode.replace(regex.pos(0), regex.matchedLength(), _varNames[blockId]);
+		} else {
+			_varNames[blockId] = varName;
+			newCode.replace(regex.pos(0), regex.matchedLength(), "");
+		}
 		return newCode;
 	});
 }
 
-QString libraryObjects::ClassTypeExporter::parseUseVar(const QUuid &, const QString &code) const
+QString libraryObjects::ClassTypeExporter::parseUseVar(const QUuid &blockId, const QString &code)
 {
 	QRegExp regex("E_USEVAR\\(([0-9])\\)_E");
 
-	return parseRegexOn(regex, code, [&regex](const QString &code) {
+	return parseRegexOn(regex, code, [this, &regex, &blockId](const QString &code) {
 		QString newCode = code;
+		int portIdx = regex.cap(1).toInt();
+		Connection connection = _inConnections[blockId][portIdx];
 
+		if (connection.isNull)
+			newCode.replace(regex.pos(0), regex.matchedLength(), "");
+		else if (_varNames.contains(connection.receiverBlockId))
+			newCode.replace(regex.pos(0), regex.matchedLength(), _varNames[connection.receiverBlockId]);
+		else
+			newCode.replace(regex.pos(0), regex.matchedLength(), parseBlock(connection.receiverBlockId));
 		return newCode;
 	});
 }
 
-QString libraryObjects::ClassTypeExporter::parseCode(const QUuid &blockId, const QString &code) const
+QString libraryObjects::ClassTypeExporter::parseCode(const QUuid &blockId, const QString &code)
 {
-	return parseRegexOnConnection(QRegExp("E_CODE\\((I|O)([0-9])\\)_E"), code, blockId, [this](const Connection &connection) {
-		return parseBlock(connection.receiverBlockId);
+	QRegExp regex("E_CODE\\(([0-9])\\)_E");
+	bool skipCode = _skipCode;
+
+	_skipCode = false;
+	return parseRegexOn(regex, code, [this, &regex, &blockId, skipCode](const QString &code) {
+		Connection connection = _outConnections[blockId][regex.cap(1).toInt()].front();
+		QString newCode = parseBlock(connection.receiverBlockId);
+
+		return skipCode ? newCode : QString(code).replace(regex.pos(0), regex.matchedLength(), newCode);
 	});
 }
 
-QString libraryObjects::ClassTypeExporter::parseSkipCode(const QUuid &, const QString &code) const
+QString libraryObjects::ClassTypeExporter::parseSkipCode(const QUuid &blockId, const QString &code)
 {
-	QRegExp regex("E_SKIPCODE\\((I|O)([0-9])\\)_E");
+	QRegExp regex("E_SKIPCODE\\(([0-9])\\)_E");
+	bool skipCode = _skipCode;
 
-	return parseRegexOn(regex, code, [](const QString &code) {
-		QString newCode = code;
+	_skipCode = false;
+	return parseRegexOn(regex, code, [this, &regex, &blockId, skipCode](const QString &code) {
+		Connection connection = _outConnections[blockId][regex.cap(1).toInt()].front();
 
-		return newCode;
+		_skipCode = true;
+		QString newCode = parseBlock(connection.receiverBlockId);
+
+		return skipCode ? newCode : QString(code).replace(regex.pos(0), regex.matchedLength(), newCode);
 	});
 }
 
-QString libraryObjects::ClassTypeExporter::parseRegexOn(const QRegExp &regex, const QString &code, RegExpCallback callBack) const
+QString libraryObjects::ClassTypeExporter::parseRegexOn(const QRegExp &regex, const QString &code, RegExpCallback callBack)
 {
 	QString newCode = code;
 	int pos = 0;
@@ -202,24 +260,4 @@ QString libraryObjects::ClassTypeExporter::parseRegexOn(const QRegExp &regex, co
 	while ((pos = regex.indexIn(newCode)) != -1)
 		newCode = callBack(newCode);
 	return newCode;
-}
-
-QString libraryObjects::ClassTypeExporter::parseRegexOnConnection(const QRegExp &regex, const QString &code, const QUuid &blockId, ConnectionCallback callBack) const
-{
-	return parseRegexOn(regex, code, [this, &regex, &blockId, callBack](const QString &code) {
-		QString newCode = code;
-		QString portType = regex.cap(1);
-		int portIdx = regex.cap(2).toInt();
-		Connection connection = portType == "I"
-			? _inConnections[blockId][portIdx]
-			: portType == "O"
-				? _outConnections[blockId][portIdx]
-				: Connection();
-
-		if (connection.isNull)
-			newCode.replace(regex.pos(0), regex.matchedLength(), "");
-		else
-			newCode.replace(regex.pos(0), regex.matchedLength(), callBack(connection));
-		return newCode;
-	});
 }

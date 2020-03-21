@@ -53,26 +53,26 @@ namespace libraryObjects {
 			int receiverIdx;
 		} Connection;
 		typedef std::function<QString (const QString &)> RegExpCallback;
-		typedef std::function<QString (const Connection &)> ConnectionCallback;
 
 		void throwMessage(const QString &errorMessage) const;
 		QUuid findBlock(const QString &blockName) const;
+		QString createVarName() const;
+
 		void parse();
-		QString parseBlock(const QUuid &blockId) const;
-		QString parseObjClassName(const QUuid &blockId, const QString &code) const;
-		QString parseObjName(const QUuid &blockId, const QString &code) const;
-		QString parseSlotName(const QUuid &blockId, const QString &code) const;
-		QString parseVar(const QUuid &blockId, const QString &code) const;
-		QString parseUseVar(const QUuid &blockId, const QString &code) const;
-		QString parseCode(const QUuid &blockId, const QString &code) const;
-		QString parseSkipCode(const QUuid &blockId, const QString &code) const;
-		QString parseRegexOn(const QRegExp &regex, const QString &code, RegExpCallback callBack) const;
-		QString parseRegexOnConnection(const QRegExp &regex, const QString &code, const QUuid &blockId, ConnectionCallback callBack) const;
+		QString parseBlock(const QUuid &blockId);
+		QString parseObjClassName(const QUuid &blockId, const QString &code);
+		QString parseObjName(const QUuid &blockId, const QString &code);
+		QString parseSlotName(const QUuid &blockId, const QString &code);
+		QString parseVar(const QUuid &blockId, const QString &code);
+		QString parseUseVar(const QUuid &blockId, const QString &code);
+		QString parseCode(const QUuid &blockId, const QString &code);
+		QString parseSkipCode(const QUuid &blockId, const QString &code);
+		QString parseRegexOn(const QRegExp &regex, const QString &code, RegExpCallback callBack);
 
 		QMap<QUuid, QJsonObject> _blocks;
-		QMap<QUuid, QVector<Connection>> _outConnections;
+		QMap<QUuid, QVector<QList<Connection>>> _outConnections;
 		QMap<QUuid, QVector<Connection>> _inConnections;
 		QMap<QUuid, QString> _varNames;
-		QMap<QString, QString> _varValues;
+		bool _skipCode;
 	};
 }

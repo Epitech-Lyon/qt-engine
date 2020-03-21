@@ -169,9 +169,9 @@ QString qtengine::Method::code() const
 	for (int i = 0; i < _inputsFill.size(); i += 1) {
 		if (i > 0)
 			ret += ", ";
-		ret += "E_USEVAR(I" + QString::number(i + 1) + ")_E";
+		ret += "E_USEVAR(" + QString::number(i + 1) + ")_E";
 	}
-	ret += ");\nE_CODE(O0)_E";
+	ret += ");\nE_CODE(0)_E";
 	if (_method->isStatic() && _objectId.isNull())
 		ret = libraryObjects::ObjectManager::instance()->objectClassName(_objectId) + "::" + ret;
 	else

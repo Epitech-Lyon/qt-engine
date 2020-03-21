@@ -125,5 +125,5 @@ QString qtengine::Return::code() const
 {
 	return (_returnType == types::ClassTypeManager::instance()->type(QMetaType::Void))
 		? "return;\n"
-		: "return(E_USEVAR(I1)_E);\n";
+		: "return (E_USEVAR(1)_E);\n";
 }
