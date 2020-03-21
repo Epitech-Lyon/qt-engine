@@ -47,6 +47,7 @@ namespace qtengine {
 
 		bool _flowControllerFill;
 		QVector<bool> _inputsFill;
+		bool _connect;
 		types::Slot *_slot;
 		QUuid _objectId;
 	};

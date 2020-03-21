@@ -90,10 +90,10 @@ unsigned int qtengine::Property::nPorts(QtNodes::PortType portType) const
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = _get ? 0 : 2;
+		ret = _get ? _property->isUserType() ? 0 : 1 : 2;
 		break;
 	case QtNodes::PortType::Out:
-		ret = _get && !_property->isUserType() ? 2 : 1;
+		ret = _get ? _property->isUserType() ? 1 : 2 : 1;
 		break;
 	}
 	return ret;
@@ -110,7 +110,7 @@ QtNodes::NodeDataType qtengine::Property::dataType(QtNodes::PortType portType, Q
 		ret = portIndex == 0 ? FlowController().type() : Type(_property->type()).type();
 		break;
 	case QtNodes::PortType::Out:
-		ret = _get && !_property->isUserType() && portIndex == 0 ? FlowController().type() : Type(_property->type()).type();
+		ret = !_get || !_property->isUserType() ? FlowController().type() : Type(_property->type()).type();
 		break;
 	}
 	return ret;
@@ -182,7 +182,7 @@ QString qtengine::Property::code() const
 
 	if (_get) {
 		if (_property->isUserType()) {
-			ret += "E_VAR(" + _property->name() + ")";
+			ret += "E_VAR(" + _property->name() + ")_E";
 			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->";
 			ret += _property->getterName() + "()";
 		} else {

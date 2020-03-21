@@ -22,6 +22,7 @@ namespace qtengine {
 		~Signal();
 
 		void setData(const QJsonObject &signalSave, const QUuid &objectId);
+		bool connectToSlot() const { return _connect; }
 
 		QJsonObject save() const override;
 		void restore(const QJsonObject &json) override;
@@ -44,6 +45,8 @@ namespace qtengine {
 	public slots:
 		void inputConnectionCreated(QtNodes::Connection const &) override;
 		void inputConnectionDeleted(QtNodes::Connection const &) override;
+		void outputConnectionCreated(QtNodes::Connection const &) override;
+		void outputConnectionDeleted(QtNodes::Connection const &) override;
 
 	private:
 		void refreshState();
@@ -53,6 +56,8 @@ namespace qtengine {
 		SwitchButton *_switchButton;
 		bool _flowControllerFill;
 		QVector<bool> _inputsFill;
+		bool _flowControllerOutFill;
+		bool _errorSlot;
 		types::Signal *_signal;
 		QUuid _objectId;
 	};

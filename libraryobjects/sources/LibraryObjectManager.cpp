@@ -16,6 +16,7 @@
 
 #include "EFileSystemModel.hpp"
 
+#include "EObject.hpp"
 #include "EWidget.hpp"
 #include "ELabel.hpp"
 #include "ELCDNumber.hpp"
@@ -34,6 +35,8 @@
 
 libraryObjects::LibraryObjectManager::LibraryObjectManager()
 {
+	registerObject<EObject>();
+
 	// QObject
 	registerObject<EWidget>();
 

@@ -16,11 +16,15 @@
 #include "Type.hpp"
 
 #include "Connection.hpp"
+#include "Node.hpp"
+#include "Slot.hpp"
 
 qtengine::Signal::Signal()
 	: _connect(true)
 	, _switchButton(new SwitchButton("Emit", "Connect"))
 	, _flowControllerFill(false)
+	, _flowControllerOutFill(false)
+	, _errorSlot(false)
 	, _signal(nullptr)
 {
 	connect(_switchButton, &SwitchButton::valueChanged, this, [this](bool value) {
@@ -158,19 +162,67 @@ void qtengine::Signal::inputConnectionDeleted(QtNodes::Connection const &connect
 	refreshState();
 }
 
+void qtengine::Signal::outputConnectionCreated(QtNodes::Connection const &connection)
+{
+	int portIndex = connection.getPortIndex(QtNodes::PortType::In);
+
+	if (portIndex == 0)
+		_flowControllerOutFill = true;
+	if (_connect && portIndex == 0) {
+		auto nodeDataModel = connection.getNode(QtNodes::PortType::In)->nodeDataModel();
+
+		if (!dynamic_cast<Slot*>(nodeDataModel)) {
+			setValidationState(QtNodes::NodeValidationState::Warning);
+			setValidationMessage("Must be connected to a slot");
+			_errorSlot = true;
+		} else if (static_cast<int>(nodeDataModel->nPorts(QtNodes::PortType::In) - 1) != _signal->parameters().size()) {
+			setValidationState(QtNodes::NodeValidationState::Warning);
+			setValidationMessage("Signal and slot must have the same number of arguments");
+			_errorSlot = true;
+		} else
+			for (unsigned int i = 1; i < nodeDataModel->nPorts(QtNodes::PortType::In); i += 1)
+				if (nodeDataModel->dataType(QtNodes::PortType::In, i).id != Type(_signal->parameter(i - 1).first).type().id) {
+					setValidationState(QtNodes::NodeValidationState::Warning);
+					setValidationMessage("Signal and slot must have the same type of arguments");
+					_errorSlot = true;
+					break;
+				}
+	}
+	refreshState();
+}
+
+void qtengine::Signal::outputConnectionDeleted(QtNodes::Connection const &connection)
+{
+	int portIndex = connection.getPortIndex(QtNodes::PortType::In);
+
+	if (portIndex == 0)
+		_flowControllerOutFill = false;
+	_errorSlot = false;
+	refreshState();
+}
+
 void qtengine::Signal::refreshState()
 {
-	auto allFilled = true;
+	if (_connect) {
+		if (_flowControllerFill && _flowControllerOutFill && !_errorSlot) {
+			setValidationState(QtNodes::NodeValidationState::Valid);
+			setValidationMessage("");
+		} else if (!_errorSlot) {
+			setValidationState(QtNodes::NodeValidationState::Warning);
+			setValidationMessage(_flowControllerOutFill ? "Missing inputs" : "Missing outputs");
+		}
+	} else {
+		auto allFilled = true;
 
-	if (!_connect)
 		for (auto inputFill : _inputsFill)
 			allFilled = allFilled && inputFill;
-	if (_flowControllerFill && allFilled) {
-		setValidationState(QtNodes::NodeValidationState::Valid);
-		setValidationMessage("");
-	} else {
-		setValidationState(QtNodes::NodeValidationState::Warning);
-		setValidationMessage("Missing inputs");
+		if (_flowControllerFill && allFilled) {
+			setValidationState(QtNodes::NodeValidationState::Valid);
+			setValidationMessage("");
+		} else {
+			setValidationState(QtNodes::NodeValidationState::Warning);
+			setValidationMessage("Missing inputs");
+		}
 	}
 }
 
@@ -186,7 +238,7 @@ QString qtengine::Signal::code() const
 	if (_connect) {
 		ret += "connect(" + libraryObjects::ObjectManager::instance()->objectName(_objectId);
 		ret += ", &" + libraryObjects::ObjectManager::instance()->objectClassName(_objectId) + "::" + _signal->name();
-		ret += ", E_OBJNAME(0)_E, &E_OBJCLASSNAME(0)_E::E_SLOTNAME(0)_E);\nE_SKIPCODE(0)_E";
+		ret += ", E_OBJNAME(0)_E, &E_OBJCLASSNAME(0)_E::E_SLOTNAME(0)_E);\nE_CODE(0)_E";
 	} else {
 		ret += "emit " + libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->" + _signal->name() + "(";
 		for (int i = 0; i < _inputsFill.size(); i += 1) {

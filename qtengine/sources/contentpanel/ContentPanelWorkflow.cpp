@@ -241,19 +241,14 @@ void qtengine::ContentPanelWorkflow::onClassTypeDoubleClicked(types::ClassType *
 	_scene->loadFromJson(_currentClassType->content());
 
 	QString startName = Start({}).name();
-	QString returnName = Return("").name();
 	bool startFound = false;
-	bool returnFound = false;
-	_scene->iterateOverNodeData([startName, returnName, &startFound, &returnFound](QtNodes::NodeDataModel *model) {
+	_scene->iterateOverNodeData([startName, &startFound](QtNodes::NodeDataModel *model) {
 		startFound = !startFound ? model->name() == startName : startFound;
-		returnFound = !returnFound ? model->name() == returnName : returnFound;
 	});
 	if (!startFound)
 		_scene->createNode(startName, QPointF(-100, 0));
-	if (!returnFound)
-		_scene->createNode(returnName, QPointF(200, 0));
 
-	saveRegistry->unregisterModel(returnName);
+	saveRegistry->unregisterModel(Return("").name());
 	saveRegistry->registerModel<Return>([classType]() {
 		if (classType->type() == types::ClassType::METHOD) {
 			auto method = dynamic_cast<types::Method*>(classType);

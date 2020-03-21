@@ -66,13 +66,11 @@ namespace libraryObjects {
 		QString parseVar(const QUuid &blockId, const QString &code);
 		QString parseUseVar(const QUuid &blockId, const QString &code);
 		QString parseCode(const QUuid &blockId, const QString &code);
-		QString parseSkipCode(const QUuid &blockId, const QString &code);
 		QString parseRegexOn(const QRegExp &regex, const QString &code, RegExpCallback callBack);
 
 		QMap<QUuid, QJsonObject> _blocks;
 		QMap<QUuid, QVector<QList<Connection>>> _outConnections;
 		QMap<QUuid, QVector<Connection>> _inConnections;
 		QMap<QUuid, QString> _varNames;
-		bool _skipCode;
 	};
 }

@@ -14,9 +14,12 @@
 #include "Type.hpp"
 
 #include "Connection.hpp"
+#include "Node.hpp"
+#include "Signal.hpp"
 
 qtengine::Slot::Slot()
 	: _flowControllerFill(false)
+	, _connect(false)
 	, _slot(nullptr)
 {
 }
@@ -76,7 +79,7 @@ unsigned int qtengine::Slot::nPorts(QtNodes::PortType portType) const
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = _slot->parameters().count() + 1;
+		ret = _connect ? 1 : _slot->parameters().count() + 1;
 		break;
 	case QtNodes::PortType::Out:
 		ret = 1;
@@ -128,9 +131,11 @@ void qtengine::Slot::inputConnectionCreated(QtNodes::Connection const &connectio
 {
 	int portIndex = connection.getPortIndex(QtNodes::PortType::In);
 
-	if (portIndex == 0)
+	if (portIndex == 0) {
 		_flowControllerFill = true;
-	else
+		auto signalDataModel = dynamic_cast<Signal*>(connection.getNode(QtNodes::PortType::Out)->nodeDataModel());
+		_connect = signalDataModel && signalDataModel->connectToSlot();
+	} else
 		_inputsFill[portIndex - 1] = true;
 	refreshState();
 }
@@ -139,9 +144,10 @@ void qtengine::Slot::inputConnectionDeleted(QtNodes::Connection const &connectio
 {
 	int portIndex = connection.getPortIndex(QtNodes::PortType::In);
 
-	if (portIndex == 0)
+	if (portIndex == 0) {
 		_flowControllerFill = false;
-	else
+		_connect = false;
+	} else
 		_inputsFill[portIndex - 1] = false;
 	refreshState();
 }
@@ -150,8 +156,9 @@ void qtengine::Slot::refreshState()
 {
 	auto allFilled = true;
 
-	for (auto inputFill : _inputsFill)
-		allFilled = allFilled && inputFill;
+	if (!_connect)
+		for (auto inputFill : _inputsFill)
+			allFilled = allFilled && inputFill;
 	if (_flowControllerFill && allFilled) {
 		setValidationState(QtNodes::NodeValidationState::Valid);
 		setValidationMessage("");
@@ -163,13 +170,18 @@ void qtengine::Slot::refreshState()
 
 QString qtengine::Slot::code() const
 {
-	QString ret = libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->" + _slot->name() + "(";
-
-	for (int i = 0; i < _inputsFill.size(); i += 1) {
-		if (i > 0)
-			ret += ", ";
-		ret += "E_USEVAR(" + QString::number(i + 1) + ")_E";
+	QString ret;
+	
+	if (_connect) {
+		ret += "E_CODE(0)_E";
+	} else {
+		ret += libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->" + _slot->name() + "(";
+		for (int i = 0; i < _inputsFill.size(); i += 1) {
+			if (i > 0)
+				ret += ", ";
+			ret += "E_USEVAR(" + QString::number(i + 1) + ")_E";
+		}
+		ret += ");\nE_CODE(0)_E";
 	}
-	ret += ");\nE_CODE(0)_E";
 	return ret;
 }
