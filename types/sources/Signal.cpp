@@ -67,19 +67,6 @@ QWidget *types::Signal::initEditor()
 
 	auto propertySlot = new QMap<QtProperty *, std::function<void (const QVariant &)>>;
 	{
-		auto property = propertyManager->addProperty(QtVariantPropertyManager::enumTypeId(), "Access");
-		QStringList accessString;
-
-		for (auto access : {QMetaMethod::Private, QMetaMethod::Protected, QMetaMethod::Public})
-			accessString << types::accessToString(access);
-		property->setAttribute("enumNames", accessString);
-		property->setValue(accessString.indexOf(types::accessToString(_access)));
-		propertyEditor->addProperty(property);
-		(*propertySlot)[property] = [this](const QVariant &value) {
-			setAccess(static_cast<QMetaMethod::Access>(value.toInt()));
-		};
-	}
-	{
 		auto property = propertyManager->addProperty(QVariant::String, "Name");
 
 		property->setValue(_name);

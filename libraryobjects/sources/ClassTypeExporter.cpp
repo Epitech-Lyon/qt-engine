@@ -36,9 +36,7 @@ QString libraryObjects::ClassTypeExporter::signature() const
 
 void libraryObjects::ClassTypeExporter::throwMessage(const QString &errorMessage) const
 {
-	QString ret = _classType->signature() + ": " + errorMessage;
-
-	throw ret.toLocal8Bit().data();
+	throw _classType->signature() + ": " + errorMessage;
 }
 
 QUuid libraryObjects::ClassTypeExporter::findBlock(const QString &blockName) const
@@ -112,11 +110,11 @@ void libraryObjects::ClassTypeExporter::parse()
 //	qDebug() << "\n-----------------------------------------------------------------\n\n";
 
 	_body = parseBlock(startBlock);
-	qDebug() << "\n=================================================================";
-	qDebug().nospace() << "CODE for " << _classType->signature() << ":";
-	qDebug() << "-----------------------------------------------------------------";
-	qDebug().noquote() << _body;
-	qDebug() << "=================================================================\n";
+//	qDebug() << "\n=================================================================";
+//	qDebug().nospace() << "CODE for " << _classType->signature() << ":";
+//	qDebug() << "-----------------------------------------------------------------";
+//	qDebug().noquote() << _body;
+//	qDebug() << "=================================================================\n";
 }
 
 QString libraryObjects::ClassTypeExporter::parseBlock(const QUuid &blockId)

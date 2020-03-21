@@ -25,7 +25,7 @@ namespace libraryObjects {
 
 		QString signature() const;
 
-		bool hasBody() const { return _body.size() == 0; }
+		bool hasBody() const { return !_body.isEmpty(); }
 		QString body() const { return _body; }
 
 	private:

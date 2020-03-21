@@ -166,14 +166,17 @@ void libraryObjects::Exporter::run()
 
 						qDebug() << classTypeExporter.signature();
 						if (classTypeExporter.hasBody())
-							qDebug() << classTypeExporter.body() << "\n";
+							qDebug().noquote() << classTypeExporter.body() << "\n";
 					}
 			}
 			writeClass(_exportedDirPath + "/" + baseName + ".cpp", _exportedDirPath + "/" + baseName + ".hpp", json["Engine"].toObject());
 			emit currentViewExportedChanged(i);
 		}
 	} catch (const char *e) {
-		qCritical() << e;
+		qCritical() << "Error:" << e;
+		emit error(e);
+	} catch (const QString &e) {
+		qCritical() << "Error:" << e;
 		emit error(e);
 	}
 }

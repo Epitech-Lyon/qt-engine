@@ -38,7 +38,7 @@ QJsonObject types::Property::serialize() const
 {
 	QJsonObject json = ClassType::serialize();
 	json["isUserType"] = _userType;
-	json["type"] = _type;
+	json["typeName"] = _type;
 	json["name"] = _name;
 	json["setterName"] = _setterName;
 	json["getterName"] = _getterName;
@@ -49,7 +49,7 @@ void types::Property::deserialize(const QJsonObject &json)
 {
 	ClassType::deserialize(json);
 	_userType = json["isUserType"].toBool();
-	_type = json["type"].toString();
+	_type = json["typeName"].toString();
 	_name = json["name"].toString();
 	_setterName = json["setterName"].toString();
 	_getterName = json["getterName"].toString();

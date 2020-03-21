@@ -28,6 +28,8 @@
 
 #include "Start.hpp"
 #include "Return.hpp"
+#include "If.hpp"
+#include "While.hpp"
 #include "Constructor.hpp"
 #include "Method.hpp"
 #include "Signal.hpp"
@@ -175,6 +177,8 @@ void qtengine::ContentPanelWorkflow::onObjectChanged(libraryObjects::AObject *ob
 	auto registry = generateRegistryObjectClass(&objectClass, QMetaMethod::Protected, object->id());
 	registry->addPrefix("base class/");
 	registry->concatenate(generateRegistryBuiltIn().get());
+	registry->registerModel<If>();
+	registry->registerModel<While>();
 
 	_scene->setRegistry(registry);
 }
@@ -222,6 +226,8 @@ void qtengine::ContentPanelWorkflow::onClassTypeDoubleClicked(types::ClassType *
 			return std::unique_ptr<Return>(new Return(types::ClassTypeManager::instance()->type(QMetaType::Void)));
 		}
 	});
+	tmpRegistry->registerModel<If>();
+	tmpRegistry->registerModel<While>();
 	tmpRegistry->registerModel<BuiltIn>();
 	tmpRegistry->registerModel<Constructor>();
 	tmpRegistry->registerModel<Method>();
