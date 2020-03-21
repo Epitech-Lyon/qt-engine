@@ -29,6 +29,9 @@ QJsonObject qtengine::Return::save() const
 	json["isValid"] = validationState() == QtNodes::NodeValidationState::Valid;
 	json["nbrInput"] = static_cast<int>(nPorts(QtNodes::PortType::In));
 	json["nbrOutput"] = static_cast<int>(nPorts(QtNodes::PortType::Out));
+	json["code"] = code();
+	json["objClassName"] = "";
+	json["objName"] = "";
 	return json;
 }
 
@@ -116,4 +119,11 @@ void qtengine::Return::refreshState()
 		setValidationState(QtNodes::NodeValidationState::Warning);
 		setValidationMessage("Missing inputs");
 	}
+}
+
+QString qtengine::Return::code() const
+{
+	return (_returnType == types::ClassTypeManager::instance()->type(QMetaType::Void))
+		? "return;\n"
+		: "return(E_USEVAR(I1)_E);\n";
 }

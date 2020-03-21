@@ -8,6 +8,8 @@
 #include "Slot.hpp"
 #include "types/includes/Slot.hpp"
 
+#include "ObjectManager.hpp"
+
 #include "FlowController.hpp"
 #include "Type.hpp"
 
@@ -24,7 +26,7 @@ qtengine::Slot::~Slot()
 	delete _slot;
 }
 
-void qtengine::Slot::setData(const QJsonObject &slotSave, const QString &objectId)
+void qtengine::Slot::setData(const QJsonObject &slotSave, const QUuid &objectId)
 {
 	_slot = new types::Slot;
 	_slot->deserialize(slotSave);
@@ -43,14 +45,17 @@ QJsonObject qtengine::Slot::save() const
 	json["isValid"] = validationState() == QtNodes::NodeValidationState::Valid;
 	json["nbrInput"] = static_cast<int>(nPorts(QtNodes::PortType::In));
 	json["nbrOutput"] = static_cast<int>(nPorts(QtNodes::PortType::Out));
+	json["code"] = code();
+	json["objClassName"] = libraryObjects::ObjectManager::instance()->objectClassName(_objectId);
+	json["objName"] = libraryObjects::ObjectManager::instance()->objectName(_objectId);
 	json["classType"] = _slot->serialize();
-	json["objectId"] = _objectId;
+	json["objectId"] = _objectId.toString();
 	return json;
 }
 
 void qtengine::Slot::restore(const QJsonObject &json)
 {
-	setData(json["classType"].toObject(), json["objectId"].toString());
+	setData(json["classType"].toObject(), QUuid(json["objectId"].toString()));
 }
 
 QString qtengine::Slot::name() const
@@ -154,4 +159,17 @@ void qtengine::Slot::refreshState()
 		setValidationState(QtNodes::NodeValidationState::Warning);
 		setValidationMessage("Missing inputs");
 	}
+}
+
+QString qtengine::Slot::code() const
+{
+	QString ret = libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->" + _slot->name() + "(";
+
+	for (int i = 0; i < _inputsFill.size(); i += 1) {
+		if (i > 0)
+			ret += ", ";
+		ret += "E_USEVAR(I" + QString::number(i + 1) + ")_E";
+	}
+	ret += ");\nE_CODE(O0)_E";
+	return ret;
 }

@@ -19,7 +19,7 @@ namespace qtengine {
 		Slot();
 		~Slot();
 
-		void setData(const QJsonObject &slotSave, const QString &objectId);
+		void setData(const QJsonObject &slotSave, const QUuid &objectId);
 
 		QJsonObject save() const override;
 		void restore(const QJsonObject &json) override;
@@ -43,9 +43,11 @@ namespace qtengine {
 
 	private:
 		void refreshState();
+		QString code() const;
+
 		bool _flowControllerFill;
 		QVector<bool> _inputsFill;
 		types::Slot *_slot;
-		QString _objectId;
+		QUuid _objectId;
 	};
 }

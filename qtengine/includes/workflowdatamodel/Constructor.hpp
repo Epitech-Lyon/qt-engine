@@ -43,6 +43,8 @@ namespace qtengine {
 
 	private:
 		void refreshState();
+		QString code() const;
+
 		bool _flowControllerFill;
 		QVector<bool> _inputsFill;
 		types::Constructor *_constructor;

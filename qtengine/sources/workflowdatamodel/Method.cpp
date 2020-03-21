@@ -8,6 +8,7 @@
 #include "Method.hpp"
 #include "types/includes/Method.hpp"
 
+#include "ObjectManager.hpp"
 #include "ClassTypeManager.hpp"
 
 #include "FlowController.hpp"
@@ -26,7 +27,7 @@ qtengine::Method::~Method()
 	delete _method;
 }
 
-void qtengine::Method::setData(const QJsonObject &methodSave, const QString &objectId)
+void qtengine::Method::setData(const QJsonObject &methodSave, const QUuid &objectId)
 {
 	_method = new types::Method();
 	_method->deserialize(methodSave);
@@ -45,14 +46,17 @@ QJsonObject qtengine::Method::save() const
 	json["isValid"] = validationState() == QtNodes::NodeValidationState::Valid;
 	json["nbrInput"] = static_cast<int>(nPorts(QtNodes::PortType::In));
 	json["nbrOutput"] = static_cast<int>(nPorts(QtNodes::PortType::Out));
+	json["code"] = code();
+	json["objClassName"] = libraryObjects::ObjectManager::instance()->objectClassName(_objectId);
+	json["objName"] = libraryObjects::ObjectManager::instance()->objectName(_objectId);
 	json["classType"] = _method->serialize();
-	json["objectId"] = _objectId;
+	json["objectId"] = _objectId.toString();
 	return json;
 }
 
 void qtengine::Method::restore(const QJsonObject &json)
 {
-	setData(json["classType"].toObject(), json["objectId"].toString());
+	setData(json["classType"].toObject(), QUuid(json["objectId"].toString()));
 }
 
 QString qtengine::Method::name() const
@@ -156,4 +160,23 @@ void qtengine::Method::refreshState()
 		setValidationState(QtNodes::NodeValidationState::Warning);
 		setValidationMessage("Missing inputs");
 	}
+}
+
+QString qtengine::Method::code() const
+{
+	QString ret = _method->name() + "(";
+
+	for (int i = 0; i < _inputsFill.size(); i += 1) {
+		if (i > 0)
+			ret += ", ";
+		ret += "E_USEVAR(I" + QString::number(i + 1) + ")_E";
+	}
+	ret += ");\nE_CODE(O0)_E";
+	if (_method->isStatic() && _objectId.isNull())
+		ret = libraryObjects::ObjectManager::instance()->objectClassName(_objectId) + "::" + ret;
+	else
+		ret = libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->" + ret;
+	if (nPorts(QtNodes::PortType::Out) == 2)
+		ret = _method->returnType() + " E_VAR()_E = " + ret;
+	return ret;
 }

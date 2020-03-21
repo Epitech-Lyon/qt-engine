@@ -8,6 +8,7 @@
 #pragma once
 
 #include "NodeDataModel.hpp"
+#include <QtCore/QUuid>
 
 namespace types {
 	class Method;
@@ -19,7 +20,7 @@ namespace qtengine {
 		Method();
 		~Method();
 
-		void setData(const QJsonObject &methodSave, const QString &objectId);
+		void setData(const QJsonObject &methodSave, const QUuid &objectId);
 
 		QJsonObject save() const override;
 		void restore(const QJsonObject &json) override;
@@ -43,9 +44,11 @@ namespace qtengine {
 
 	private:
 		void refreshState();
+		QString code() const;
+
 		bool _flowControllerFill;
 		QVector<bool> _inputsFill;
 		types::Method *_method;
-		QString _objectId;
+		QUuid _objectId;
 	};
 }

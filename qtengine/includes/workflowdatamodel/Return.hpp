@@ -37,6 +37,8 @@ namespace qtengine {
 
 	private:
 		void refreshState();
+		QString code() const;
+
 		bool _flowControllerFill;
 		bool _returnFill;
 		QString _returnType;

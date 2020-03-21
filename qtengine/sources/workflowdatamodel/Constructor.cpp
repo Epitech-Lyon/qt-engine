@@ -42,6 +42,9 @@ QJsonObject qtengine::Constructor::save() const
 	json["isValid"] = validationState() == QtNodes::NodeValidationState::Valid;
 	json["nbrInput"] = static_cast<int>(nPorts(QtNodes::PortType::In));
 	json["nbrOutput"] = static_cast<int>(nPorts(QtNodes::PortType::Out));
+	json["code"] = code();
+	json["objClassName"] = "";
+	json["objName"] = "";
 	json["classType"] = _constructor->serialize();
 	return json;
 }
@@ -152,4 +155,17 @@ void qtengine::Constructor::refreshState()
 		setValidationState(QtNodes::NodeValidationState::Warning);
 		setValidationMessage("Missing inputs");
 	}
+}
+
+QString qtengine::Constructor::code() const
+{
+	QString ret = _constructor->className() + " *E_VAR()_E = new " + _constructor->className() + "(";
+
+	for (int i = 0; i < _inputsFill.size(); i += 1) {
+		if (i > 0)
+			ret += ", ";
+		ret += "E_USEVAR(I" + QString::number(i + 1) + ")_E";
+	}
+	ret += ");\nE_CODE(O0)_E";
+	return ret;
 }

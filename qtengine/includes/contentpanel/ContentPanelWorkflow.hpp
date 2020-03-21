@@ -11,6 +11,7 @@
 
 #include <QtCore/QMetaObject>
 #include <QtCore/QMetaMethod>
+#include <QtCore/QUuid>
 
 namespace QtNodes {
 	class FlowView;
@@ -48,7 +49,7 @@ namespace qtengine {
 
 	private:
 		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryBuiltIn() const;
-		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryObjectClass(libraryObjects::ObjectClass *objectClass, QMetaMethod::Access minimumAccess, const QString &objectId) const;
+		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryObjectClass(libraryObjects::ObjectClass *objectClass, QMetaMethod::Access minimumAccess, const QUuid &objectId) const;
 
 		TreeWidgetWorkflow *_tree;
 		QtNodes::FlowView *_view;

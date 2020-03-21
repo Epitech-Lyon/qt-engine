@@ -6,7 +6,6 @@
 */
 
 #include "BuiltIn.hpp"
-#include "FlowController.hpp"
 #include "Type.hpp"
 
 #include "Connection.hpp"
@@ -57,6 +56,9 @@ QJsonObject qtengine::BuiltIn::save() const
 	json["isValid"] = true;
 	json["nbrInput"] = static_cast<int>(nPorts(QtNodes::PortType::In));
 	json["nbrOutput"] = static_cast<int>(nPorts(QtNodes::PortType::Out));
+	json["code"] = code();
+	json["objClassName"] = "";
+	json["objName"] = "";
 	json["type"] = static_cast<int>(_type);
 	json["value"] = libraryObjects::QVariantConverter::serialize(_property->value());
 	return json;
@@ -93,7 +95,7 @@ unsigned int qtengine::BuiltIn::nPorts(QtNodes::PortType portType) const
 	return ret;
 }
 
-QtNodes::NodeDataType qtengine::BuiltIn::dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+QtNodes::NodeDataType qtengine::BuiltIn::dataType(QtNodes::PortType portType, QtNodes::PortIndex) const
 {
 	QtNodes::NodeDataType ret;
 
@@ -103,7 +105,7 @@ QtNodes::NodeDataType qtengine::BuiltIn::dataType(QtNodes::PortType portType, Qt
 	case QtNodes::PortType::In:
 		break;
 	case QtNodes::PortType::Out:
-		ret = portIndex == 0 ? FlowController().type() : Type(types::ClassTypeManager::instance()->type(_type)).type();
+		ret = Type(types::ClassTypeManager::instance()->type(_type)).type();
 		break;
 	}
 	return ret;
@@ -132,4 +134,9 @@ QtNodes::NodeDataModel::ConnectionPolicy qtengine::BuiltIn::portOutConnectionPol
 QWidget *qtengine::BuiltIn::embeddedWidget()
 {
 	return _propertyEditor;
+}
+
+QString qtengine::BuiltIn::code() const
+{
+	return libraryObjects::QVariantConverter::toString(_property->value());
 }

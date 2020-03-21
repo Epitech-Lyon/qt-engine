@@ -22,6 +22,9 @@ QJsonObject qtengine::Start::save() const
 	json["isValid"] = true;
 	json["nbrInput"] = static_cast<int>(nPorts(QtNodes::PortType::In));
 	json["nbrOutput"] = static_cast<int>(nPorts(QtNodes::PortType::Out));
+	json["code"] = code();
+	json["objClassName"] = "";
+	json["objName"] = "";
 	return json;
 }
 
@@ -82,4 +85,14 @@ QString qtengine::Start::portCaption(QtNodes::PortType portType, QtNodes::PortIn
 QtNodes::NodeDataModel::ConnectionPolicy qtengine::Start::portOutConnectionPolicy(QtNodes::PortIndex portIndex) const
 {
 	return portIndex > 0 ? ConnectionPolicy::Many : ConnectionPolicy::One;
+}
+
+QString qtengine::Start::code() const
+{
+	QString ret;
+
+	for (auto &parameter : _parameters)
+		ret += "E_VAR(" + parameter.second + ")_E";
+	ret += "E_CODE(O0)_E";
+	return ret;
 }

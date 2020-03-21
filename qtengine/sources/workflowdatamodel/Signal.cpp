@@ -8,6 +8,8 @@
 #include "Signal.hpp"
 #include "types/includes/Signal.hpp"
 
+#include "ObjectManager.hpp"
+
 #include "SwitchButton.hpp"
 
 #include "FlowController.hpp"
@@ -33,7 +35,7 @@ qtengine::Signal::~Signal()
 	delete _signal;
 }
 
-void qtengine::Signal::setData(const QJsonObject &signalSave, const QString &objectId)
+void qtengine::Signal::setData(const QJsonObject &signalSave, const QUuid &objectId)
 {
 	_signal = new types::Signal;
 	_signal->deserialize(signalSave);
@@ -52,16 +54,19 @@ QJsonObject qtengine::Signal::save() const
 	json["isValid"] = validationState() == QtNodes::NodeValidationState::Valid;
 	json["nbrInput"] = static_cast<int>(nPorts(QtNodes::PortType::In));
 	json["nbrOutput"] = static_cast<int>(nPorts(QtNodes::PortType::Out));
+	json["code"] = code();
+	json["objClassName"] = libraryObjects::ObjectManager::instance()->objectClassName(_objectId);
+	json["objName"] = libraryObjects::ObjectManager::instance()->objectName(_objectId);
 	json["connect"] = _connect;
 	json["classType"] = _signal->serialize();
-	json["objectId"] = _objectId;
+	json["objectId"] = _objectId.toString();
 	return json;
 }
 
 void qtengine::Signal::restore(const QJsonObject &json)
 {
 	_switchButton->setValue(json["connect"].toBool());
-	setData(json["classType"].toObject(), json["objectId"].toString());
+	setData(json["classType"].toObject(), QUuid(json["objectId"].toString()));
 }
 
 QString qtengine::Signal::name() const
@@ -171,4 +176,24 @@ void qtengine::Signal::refreshState()
 QWidget *qtengine::Signal::embeddedWidget()
 {
 	return _switchButton;
+}
+
+QString qtengine::Signal::code() const
+{
+	QString ret;
+
+	if (_connect) {
+		ret += "connect(" + libraryObjects::ObjectManager::instance()->objectName(_objectId);
+		ret += ", &" + libraryObjects::ObjectManager::instance()->objectClassName(_objectId) + "::" + _signal->name();
+		ret += ", E_OBJNAME(O0)_E, &E_OBJCLASSNAME(O0)_E::E_SLOTNAME(O0)_E);\nE_SKIPCODE(O0)_E";
+	} else {
+		ret += "emit " + libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->" + _signal->name() + "(";
+		for (int i = 0; i < _inputsFill.size(); i += 1) {
+			if (i > 0)
+				ret += ", ";
+			ret += "E_USEVAR(I" + QString::number(i + 1) + ")_E";
+		}
+		ret += ");\nE_CODE(O0)_E";
+	}
+	return ret;
 }

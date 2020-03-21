@@ -10,6 +10,7 @@
 #include <QtCore/QJsonObject>
 #include <QtCore/QMap>
 #include <QtCore/QUuid>
+#include <QtCore/QRegExp>
 
 namespace types {
 	class ClassType;
@@ -25,11 +26,11 @@ namespace libraryObjects {
 		QString signature() const;
 
 		bool hasBody() const { return _body.size() == 0; }
-		QStringList body() const { return _body; }
+		QString body() const { return _body; }
 
 	private:
 		types::ClassType *_classType;
-		QStringList _body;
+		QString _body;
 
 	// Parsing
 	private:
@@ -51,14 +52,27 @@ namespace libraryObjects {
 			QUuid receiverBlockId;
 			int receiverIdx;
 		} Connection;
+		typedef std::function<QString (const QString &)> RegExpCallback;
+		typedef std::function<QString (const Connection &)> ConnectionCallback;
 
 		void throwMessage(const QString &errorMessage) const;
-		void parse();
-		void parseBlock(const QUuid &blockId);
 		QUuid findBlock(const QString &blockName) const;
+		void parse();
+		QString parseBlock(const QUuid &blockId) const;
+		QString parseObjClassName(const QUuid &blockId, const QString &code) const;
+		QString parseObjName(const QUuid &blockId, const QString &code) const;
+		QString parseSlotName(const QUuid &blockId, const QString &code) const;
+		QString parseVar(const QUuid &blockId, const QString &code) const;
+		QString parseUseVar(const QUuid &blockId, const QString &code) const;
+		QString parseCode(const QUuid &blockId, const QString &code) const;
+		QString parseSkipCode(const QUuid &blockId, const QString &code) const;
+		QString parseRegexOn(const QRegExp &regex, const QString &code, RegExpCallback callBack) const;
+		QString parseRegexOnConnection(const QRegExp &regex, const QString &code, const QUuid &blockId, ConnectionCallback callBack) const;
 
 		QMap<QUuid, QJsonObject> _blocks;
 		QMap<QUuid, QVector<Connection>> _outConnections;
 		QMap<QUuid, QVector<Connection>> _inConnections;
+		QMap<QUuid, QString> _varNames;
+		QMap<QString, QString> _varValues;
 	};
 }

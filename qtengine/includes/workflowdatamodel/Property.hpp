@@ -20,7 +20,7 @@ namespace qtengine {
 		Property();
 		~Property();
 
-		void setData(const QJsonObject &propertySave, const QString &objectId);
+		void setData(const QJsonObject &propertySave, const QUuid &objectId);
 
 		QJsonObject save() const override;
 		void restore(const QJsonObject &json) override;
@@ -39,7 +39,9 @@ namespace qtengine {
 		QtNodes::NodeDataModel::ConnectionPolicy portOutConnectionPolicy(QtNodes::PortIndex portIndex) const override;
 
 	private:
+		QString code() const;
+
 		types::Property *_property;
-		QString _objectId;
+		QUuid _objectId;
 	};
 }

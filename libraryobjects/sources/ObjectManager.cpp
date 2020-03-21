@@ -33,12 +33,14 @@ void libraryObjects::ObjectManager::registerObject(AObject *object)
 	object->setObjectName(objectName);
 	connect(object, &AObject::propertyUpdated, this, &ObjectManager::onPropertyUpdated);
 	_objects[object->objectName()] = object;
+	_objectsId[object->id()] = object;
 }
 
 void libraryObjects::ObjectManager::unregisterObject(AObject *object)
 {
 	disconnect(object, &AObject::propertyUpdated, this, &ObjectManager::onPropertyUpdated);
 	_objects.remove(_objects.key(object));
+	_objectsId.remove(object->id());
 }
 
 void libraryObjects::ObjectManager::onPropertyUpdated(const QString &propertyName, const QVariant &propertyValue)
@@ -57,4 +59,18 @@ void libraryObjects::ObjectManager::onPropertyUpdated(const QString &propertyNam
 			}
 		}
 	}
+}
+
+QString libraryObjects::ObjectManager::objectClassName(const QUuid &objectId) const
+{
+	auto object = this->object(objectId);
+
+	return object ? object->className() : "";
+}
+
+QString libraryObjects::ObjectManager::objectName(const QUuid &objectId) const
+{
+	auto object = this->object(objectId);
+
+	return object ? object->objectName() : "";
 }

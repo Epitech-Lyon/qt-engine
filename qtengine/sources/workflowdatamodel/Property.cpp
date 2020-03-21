@@ -8,6 +8,8 @@
 #include "Property.hpp"
 #include "types/includes/Property.hpp"
 
+#include "ObjectManager.hpp"
+
 #include "FlowController.hpp"
 #include "Type.hpp"
 
@@ -23,7 +25,7 @@ qtengine::Property::~Property()
 	delete _property;
 }
 
-void qtengine::Property::setData(const QJsonObject &propertySave, const QString &objectId)
+void qtengine::Property::setData(const QJsonObject &propertySave, const QUuid &objectId)
 {
 	_property = new types::Property;
 	_property->deserialize(propertySave);
@@ -39,14 +41,17 @@ QJsonObject qtengine::Property::save() const
 	json["isValid"] = validationState() == QtNodes::NodeValidationState::Valid;
 	json["nbrInput"] = static_cast<int>(nPorts(QtNodes::PortType::In));
 	json["nbrOutput"] = static_cast<int>(nPorts(QtNodes::PortType::Out));
+	json["code"] = code();
+	json["objClassName"] = libraryObjects::ObjectManager::instance()->objectClassName(_objectId);
+	json["objName"] = libraryObjects::ObjectManager::instance()->objectName(_objectId);
 	json["classType"] = _property->serialize();
-	json["objectId"] = _objectId;
+	json["objectId"] = _objectId.toString();
 	return json;
 }
 
 void qtengine::Property::restore(const QJsonObject &json)
 {
-	setData(json["classType"].toObject(), json["objectId"].toString());
+	setData(json["classType"].toObject(), QUuid(json["objectId"].toString()));
 }
 
 QString qtengine::Property::name() const
@@ -113,4 +118,11 @@ QString qtengine::Property::portCaption(QtNodes::PortType portType, QtNodes::Por
 QtNodes::NodeDataModel::ConnectionPolicy qtengine::Property::portOutConnectionPolicy(QtNodes::PortIndex portIndex) const
 {
 	return portIndex > 0 ? ConnectionPolicy::Many : ConnectionPolicy::One;
+}
+
+QString qtengine::Property::code() const
+{
+	QString ret = "E_VAR(" + _property->name() + ")";
+
+	return ret;
 }

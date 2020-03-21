@@ -85,7 +85,7 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 	return registry;
 }
 
-std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistryObjectClass(libraryObjects::ObjectClass *objectClass, QMetaMethod::Access minimumAccess, const QString &objectId) const
+std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistryObjectClass(libraryObjects::ObjectClass *objectClass, QMetaMethod::Access minimumAccess, const QUuid &objectId) const
 {
 	auto registry = std::make_shared<QtNodes::DataModelRegistry>();
 
@@ -101,7 +101,7 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 
 	for (auto classType : objectClass->getClassType(types::ClassType::CONSTRUCTOR)) {
 		auto constructor = dynamic_cast<types::Constructor *>(classType);
-		if (!constructor || constructor->access() < minimumAccess || !objectId.isEmpty()) { continue; }
+		if (!constructor || constructor->access() < minimumAccess || !objectId.isNull()) { continue; }
 
 		auto constructorSave = constructor->serialize();
 		registry->registerModel<Constructor>(metaEnumKeyOf(classType->type()), [constructorSave]() {
@@ -113,7 +113,7 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 	}
 	for (auto classType : objectClass->getClassType(types::ClassType::METHOD)) {
 		auto method = dynamic_cast<types::Method *>(classType);
-		if (!method || method->access() < minimumAccess || (objectId.isEmpty() && !method->isStatic())) { continue; }
+		if (!method || method->access() < minimumAccess || (objectId.isNull() && !method->isStatic())) { continue; }
 
 		auto methodSave = method->serialize();
 		registry->registerModel<Method>(metaEnumKeyOf(classType->type()), [methodSave, objectId]() {
@@ -125,7 +125,7 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 	}
 	for (auto classType : objectClass->getClassType(types::ClassType::SIGNAL)) {
 		auto signal = dynamic_cast<types::Signal *>(classType);
-		if (!signal || signal->access() < minimumAccess || objectId.isEmpty()) { continue; }
+		if (!signal || signal->access() < minimumAccess || objectId.isNull()) { continue; }
 
 		auto signalSave = signal->serialize();
 		registry->registerModel<Signal>(metaEnumKeyOf(classType->type()), [signalSave, objectId]() {
@@ -137,7 +137,7 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 	}
 	for (auto classType : objectClass->getClassType(types::ClassType::SLOT)) {
 		auto slot = dynamic_cast<types::Slot *>(classType);
-		if (!slot || slot->access() < minimumAccess || objectId.isEmpty()) { continue; }
+		if (!slot || slot->access() < minimumAccess || objectId.isNull()) { continue; }
 
 		auto slotSave = slot->serialize();
 		registry->registerModel<Slot>(metaEnumKeyOf(classType->type()), [slotSave, objectId]() {
@@ -149,7 +149,7 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 	}
 	for (auto classType : objectClass->getClassType(types::ClassType::PROPERTY)) {
 		auto property = dynamic_cast<types::Property *>(classType);
-		if (!property || property->access() < minimumAccess || objectId.isEmpty()) { continue; }
+		if (!property || property->access() < minimumAccess || objectId.isNull()) { continue; }
 
 		auto propertySave = property->serialize();
 		registry->registerModel<Method>(metaEnumKeyOf(classType->type()), [propertySave, objectId]() {

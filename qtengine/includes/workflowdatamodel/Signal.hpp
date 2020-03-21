@@ -21,7 +21,7 @@ namespace qtengine {
 		Signal();
 		~Signal();
 
-		void setData(const QJsonObject &signalSave, const QString &objectId);
+		void setData(const QJsonObject &signalSave, const QUuid &objectId);
 
 		QJsonObject save() const override;
 		void restore(const QJsonObject &json) override;
@@ -47,12 +47,13 @@ namespace qtengine {
 
 	private:
 		void refreshState();
+		QString code() const;
+
 		bool _connect;
 		SwitchButton *_switchButton;
-
 		bool _flowControllerFill;
 		QVector<bool> _inputsFill;
 		types::Signal *_signal;
-		QString _objectId;
+		QUuid _objectId;
 	};
 }

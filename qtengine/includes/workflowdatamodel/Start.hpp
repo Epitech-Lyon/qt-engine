@@ -36,6 +36,8 @@ namespace qtengine {
 		QtNodes::NodeDataModel::ConnectionPolicy portOutConnectionPolicy(QtNodes::PortIndex portIndex) const override;
 
 	private:
+		QString code() const;
+
 		QList<QPair<QString, QString>> _parameters;
 	};
 }

@@ -43,6 +43,8 @@ namespace qtengine {
 		QWidget *embeddedWidget() override;
 
 	private:
+		QString code() const;
+
 		QMetaType::Type _type;
 		QtGroupBoxPropertyBrowser *_propertyEditor;
 		QtVariantEditorFactory *_propertyFactory;

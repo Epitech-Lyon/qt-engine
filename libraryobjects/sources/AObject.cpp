@@ -15,7 +15,7 @@
 #include <QtCore/QUuid>
 
 libraryObjects::AObject::AObject(QObject *object, const QString &classHierarchy)
-	: _id(QUuid::createUuid().toString())
+	: _id(QUuid::createUuid())
 	, _object(object)
 	, _classHierarchy(classHierarchy)
 	, _className(classHierarchy.split("::").last())
@@ -48,7 +48,7 @@ QJsonObject libraryObjects::AObject::serializeProperties() const
 			else
 				json[property.name] = value;
 		}
-	json["id"] = _id;
+	json["id"] = _id.toString();
 	return json;
 }
 
@@ -62,7 +62,9 @@ void libraryObjects::AObject::deserializeProperties(const QJsonObject &json)
 		if (!value.isNull())
 			setPropertyValue(key, value);
 	}
-	_id = json["id"].toString();
+	_id = QUuid(json["id"].toString());
+	ObjectManager::instance()->unregisterObject(this);
+	ObjectManager::instance()->registerObject(this);
 }
 
 void libraryObjects::AObject::initProperties(const QMetaObject *metaObject)
