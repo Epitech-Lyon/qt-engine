@@ -76,7 +76,7 @@ namespace QtNodes {
 
 		void clearNode(PortType portType);
 
-		NodeDataType dataType(PortType portType) const;
+		std::shared_ptr<NodeData> data(PortType portType) const;
 
 		void setTypeConverter(TypeConverter converter);
 

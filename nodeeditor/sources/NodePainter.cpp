@@ -81,12 +81,12 @@ void NodePainter::drawConnectionPoints(QPainter *painter, NodeGeometry const &ge
 	float diameter = nodeStyle.ConnectionPointDiameter;
 	auto reducedDiameter = diameter * 0.6;
 
-	for(PortType portType: {PortType::Out, PortType::In}) {
+	for (PortType portType: {PortType::Out, PortType::In}) {
 		size_t n = state.getEntries(portType).size();
 
 		for (unsigned int i = 0; i < n; ++i) {
 			QPointF p = geom.portScenePosition(i, portType);
-			auto const &dataType = model->dataType(portType, i);
+			auto const &data = model->data(portType, i);
 			bool canConnect = (state.getEntries(portType)[i].empty() || (portType == PortType::Out && model->portOutConnectionPolicy(i) == NodeDataModel::ConnectionPolicy::Many) );
 			double r = 1.0;
 
@@ -96,10 +96,12 @@ void NodePainter::drawConnectionPoints(QPainter *painter, NodeGeometry const &ge
 				bool typeConvertable = false;
 
 				if (portType == PortType::In)
-					typeConvertable = scene.registry().getTypeConverter(state.reactingDataType(), dataType) != nullptr;
+					typeConvertable = scene.registry().getTypeConverter(state.reactingData()->type(), data->type()) != nullptr;
 				else
-					typeConvertable = scene.registry().getTypeConverter(dataType, state.reactingDataType()) != nullptr;
-				if (state.reactingDataType().id == dataType.id || typeConvertable) {
+					typeConvertable = scene.registry().getTypeConverter(data->type(), state.reactingData()->type()) != nullptr;
+				if ((portType == PortType::In && state.reactingData()->sameType(data))
+				 || (portType == PortType::Out && data->sameType(state.reactingData()))
+				 || typeConvertable) {
 					double const thres = 40.0;
 					r = (dist < thres) ? (2.0 - dist / thres ) : 1.0;
 				} else {
@@ -108,7 +110,7 @@ void NodePainter::drawConnectionPoints(QPainter *painter, NodeGeometry const &ge
 				}
 			}
 			if (connectionStyle.useDataDefinedColors())
-				painter->setBrush(connectionStyle.normalColor(dataType.id));
+				painter->setBrush(connectionStyle.normalColor(data->type().id));
 			else
 				painter->setBrush(nodeStyle.ConnectionPointColor);
 			painter->drawEllipse(p, reducedDiameter * r, reducedDiameter * r);
@@ -129,10 +131,10 @@ void NodePainter::drawFilledConnectionPoints(QPainter *painter, NodeGeometry con
 			QPointF p = geom.portScenePosition(i, portType);
 
 			if (!state.getEntries(portType)[i].empty()) {
-				auto const & dataType = model->dataType(portType, i);
+				auto const &data = model->data(portType, i);
 
 				if (connectionStyle.useDataDefinedColors()) {
-					QColor const c = connectionStyle.normalColor(dataType.id);
+					QColor const c = connectionStyle.normalColor(data->type().id);
 					painter->setPen(c);
 					painter->setBrush(c);
 				} else {
@@ -195,7 +197,7 @@ void NodePainter::drawEntryLabels(QPainter *painter, NodeGeometry const &geom, N
 			if (model->portCaptionVisible(portType, i))
 				s = model->portCaption(portType, i);
 			else
-				s = model->dataType(portType, i).name;
+				s = model->data(portType, i)->type().name;
 
 			auto rect = metrics.boundingRect(s);
 

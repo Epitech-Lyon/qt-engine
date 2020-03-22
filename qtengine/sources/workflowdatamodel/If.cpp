@@ -56,18 +56,21 @@ unsigned int qtengine::If::nPorts(QtNodes::PortType portType) const
 	return ret;
 }
 
-QtNodes::NodeDataType qtengine::If::dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+std::shared_ptr<QtNodes::NodeData> qtengine::If::data(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
 {
-	QtNodes::NodeDataType ret;
+	std::shared_ptr<QtNodes::NodeData> ret = std::shared_ptr<QtNodes::NodeData>(new QtNodes::NodeData());
 
 	switch (portType) {
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = portIndex == 0 ? FlowController().type() : Type(types::ClassTypeManager::instance()->type(QMetaType::Bool)).type();
+		if (portIndex == 0)
+			ret = std::shared_ptr<QtNodes::NodeData>(new FlowController());
+		else
+			ret = std::shared_ptr<QtNodes::NodeData>(new Type(types::ClassTypeManager::instance()->type(QMetaType::Bool)));
 		break;
 	case QtNodes::PortType::Out:
-		ret = FlowController().type();
+		ret = std::shared_ptr<QtNodes::NodeData>(new FlowController());
 		break;
 	}
 	return ret;

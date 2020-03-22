@@ -45,6 +45,8 @@ void qtengine::Signal::setData(const QJsonObject &signalSave, const QUuid &objec
 	_signal = new types::Signal;
 	_signal->deserialize(signalSave);
 	_signal->setContent(QJsonObject());
+	if (_signal->name() == "objectNameChanged")
+		_switchButton->setEnabled(false);
 	_objectId = objectId;
 	for (int i = 0; i < _signal->parameters().size(); i += 1)
 		_inputsFill << false;
@@ -101,18 +103,21 @@ unsigned int qtengine::Signal::nPorts(QtNodes::PortType portType) const
 	return ret;
 }
 
-QtNodes::NodeDataType qtengine::Signal::dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+std::shared_ptr<QtNodes::NodeData> qtengine::Signal::data(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
 {
-	QtNodes::NodeDataType ret;
+	std::shared_ptr<QtNodes::NodeData> ret = std::shared_ptr<QtNodes::NodeData>(new QtNodes::NodeData());
 
 	switch (portType) {
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = portIndex == 0 ? FlowController().type() : Type(_signal->parameters()[portIndex - 1].first).type();
+		if (portIndex == 0)
+			ret = std::shared_ptr<QtNodes::NodeData>(new FlowController());
+		else
+			ret = std::shared_ptr<QtNodes::NodeData>(new Type(_signal->parameters()[portIndex - 1].first));
 		break;
 	case QtNodes::PortType::Out:
-		ret = FlowController().type();
+		ret = std::shared_ptr<QtNodes::NodeData>(new FlowController());
 		break;
 	}
 	return ret;
@@ -126,10 +131,10 @@ QString qtengine::Signal::portCaption(QtNodes::PortType portType, QtNodes::PortI
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = portIndex == 0 ? "" : dataType(portType, portIndex).name + " " + _signal->parameters()[portIndex - 1].second;
+		ret = portIndex == 0 ? "" : data(portType, portIndex)->type().name + " " + _signal->parameters()[portIndex - 1].second;
 		break;
 	case QtNodes::PortType::Out:
-		ret = portIndex == 0 ? "" : dataType(portType, portIndex).name;
+		ret = portIndex == 0 ? "" : data(portType, portIndex)->type().name;
 		break;
 	}
 	return ret;
@@ -181,7 +186,7 @@ void qtengine::Signal::outputConnectionCreated(QtNodes::Connection const &connec
 			_errorSlot = true;
 		} else
 			for (unsigned int i = 1; i < nodeDataModel->nPorts(QtNodes::PortType::In); i += 1)
-				if (nodeDataModel->dataType(QtNodes::PortType::In, i).id != Type(_signal->parameter(i - 1).first).type().id) {
+				if (!nodeDataModel->data(QtNodes::PortType::In, i)->sameType(std::shared_ptr<QtNodes::NodeData>(new Type(_signal->parameter(i - 1).first)))) {
 					setValidationState(QtNodes::NodeValidationState::Warning);
 					setValidationMessage("Signal and slot must have the same type of arguments");
 					_errorSlot = true;

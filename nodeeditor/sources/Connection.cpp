@@ -79,7 +79,7 @@ QJsonObject Connection::save() const
 			auto getTypeJson = [this](PortType type)
 			{
 				QJsonObject typeJson;
-				NodeDataType nodeType = this->dataType(type);
+				NodeDataType nodeType = this->data(type)->type();
 				typeJson["id"] = nodeType.id;
 				typeJson["name"] = nodeType.name;
 
@@ -259,13 +259,13 @@ void Connection::clearNode(PortType portType)
 		_outPortIndex = INVALID;
 }
 
-NodeDataType Connection::dataType(PortType portType) const
+std::shared_ptr<NodeData> Connection::data(PortType portType) const
 {
 	if (_inNode && _outNode) {
 		auto const &model = (portType == PortType::In) ? _inNode->nodeDataModel() : _outNode->nodeDataModel();
 		PortIndex index = (portType == PortType::In) ? _inPortIndex : _outPortIndex;
 
-		return model->dataType(portType, index);
+		return model->data(portType, index);
 	} else {
 		Node *validNode;
 		PortIndex index = INVALID;
@@ -280,7 +280,7 @@ NodeDataType Connection::dataType(PortType portType) const
 		if (validNode) {
 			auto const &model = validNode->nodeDataModel();
 
-			return model->dataType(portType, index);
+			return model->data(portType, index);
 		}
 	}
 	Q_UNREACHABLE();

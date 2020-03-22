@@ -95,9 +95,9 @@ unsigned int qtengine::BuiltIn::nPorts(QtNodes::PortType portType) const
 	return ret;
 }
 
-QtNodes::NodeDataType qtengine::BuiltIn::dataType(QtNodes::PortType portType, QtNodes::PortIndex) const
+std::shared_ptr<QtNodes::NodeData> qtengine::BuiltIn::data(QtNodes::PortType portType, QtNodes::PortIndex) const
 {
-	QtNodes::NodeDataType ret;
+	std::shared_ptr<QtNodes::NodeData> ret = std::shared_ptr<QtNodes::NodeData>(new QtNodes::NodeData());
 
 	switch (portType) {
 	case QtNodes::PortType::None:
@@ -105,7 +105,7 @@ QtNodes::NodeDataType qtengine::BuiltIn::dataType(QtNodes::PortType portType, Qt
 	case QtNodes::PortType::In:
 		break;
 	case QtNodes::PortType::Out:
-		ret = Type(types::ClassTypeManager::instance()->type(_type)).type();
+		ret = std::shared_ptr<QtNodes::NodeData>(new Type(types::ClassTypeManager::instance()->type(_type)));
 		break;
 	}
 	return ret;

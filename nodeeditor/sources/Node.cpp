@@ -70,14 +70,14 @@ QUuid Node::id() const
 	return _uid;
 }
 
-void Node::reactToPossibleConnection(PortType reactingPortType, NodeDataType const &reactingDataType, QPointF const &scenePoint)
+void Node::reactToPossibleConnection(PortType reactingPortType, std::shared_ptr<NodeData> reactingData, QPointF const &scenePoint)
 {
 	QTransform const t = _nodeGraphicsObject->sceneTransform();
 	QPointF p = t.inverted().map(scenePoint);
 
 	_nodeGeometry.setDraggingPosition(p);
 	_nodeGraphicsObject->update();
-	_nodeState.setReaction(NodeState::REACTING, reactingPortType, reactingDataType);
+	_nodeState.setReaction(NodeState::REACTING, reactingPortType, reactingData);
 }
 
 void Node::resetReactionToConnection()
@@ -130,7 +130,7 @@ NodeDataModel *Node::nodeDataModel() const
 
 void Node::propagateData(std::shared_ptr<NodeData> nodeData, PortIndex inPortIndex) const
 {
-	_nodeDataModel->setInData(std::move(nodeData), inPortIndex);
+	_nodeDataModel->setInData(nodeData, inPortIndex);
 
 	//Recalculate the nodes visuals. A data change can result in the node taking more space than before, so this forces a recalculate+repaint on the affected node
 	_nodeGraphicsObject->setGeometryChanged();

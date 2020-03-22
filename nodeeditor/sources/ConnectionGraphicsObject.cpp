@@ -117,7 +117,7 @@ void ConnectionGraphicsObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 	state.interactWithNode(node);
 	if (node)
-		node->reactToPossibleConnection(state.requiredPort(), _connection.dataType(oppositePort(state.requiredPort())), event->scenePos());
+		node->reactToPossibleConnection(state.requiredPort(), _connection.data(oppositePort(state.requiredPort())), event->scenePos());
 
 	QPointF offset = event->pos() - event->lastPos();
 

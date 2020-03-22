@@ -99,18 +99,24 @@ unsigned int qtengine::Property::nPorts(QtNodes::PortType portType) const
 	return ret;
 }
 
-QtNodes::NodeDataType qtengine::Property::dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+std::shared_ptr<QtNodes::NodeData> qtengine::Property::data(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
 {
-	QtNodes::NodeDataType ret;
+	std::shared_ptr<QtNodes::NodeData> ret = std::shared_ptr<QtNodes::NodeData>(new QtNodes::NodeData());
 
 	switch (portType) {
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = portIndex == 0 ? FlowController().type() : Type(_property->type()).type();
+		if (portIndex == 0)
+			ret = std::shared_ptr<QtNodes::NodeData>(new FlowController());
+		else
+			ret = std::shared_ptr<QtNodes::NodeData>(new Type(_property->type()));
 		break;
 	case QtNodes::PortType::Out:
-		ret = !_get || !_property->isUserType() ? FlowController().type() : Type(_property->type()).type();
+		if (!_get || !_property->isUserType())
+			ret = std::shared_ptr<QtNodes::NodeData>(new FlowController());
+		else
+			ret = std::shared_ptr<QtNodes::NodeData>(new Type(_property->type()));
 		break;
 	}
 	return ret;
@@ -188,7 +194,7 @@ QString qtengine::Property::code() const
 		} else {
 			ret += _property->type() + " E_VAR()_E = ";
 			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->";
-			ret += _property->getterName() + "(" + _property->name() + ");\nE_CODE(0)_E";
+			ret += _property->getterName() + "(" + _property->name() + ").toValue<" + _property->type() + ">();\nE_CODE(0)_E";
 		}
 	} else {
 		if (_property->isUserType()) {

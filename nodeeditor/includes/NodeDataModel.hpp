@@ -64,7 +64,7 @@ namespace QtNodes {
 		virtual std::shared_ptr<NodeData> outData(PortIndex) { return std::shared_ptr<NodeData>(); }
 
 		virtual unsigned int nPorts(PortType portType) const = 0;
-		virtual NodeDataType dataType(PortType portType, PortIndex portIndex) const = 0;
+		virtual std::shared_ptr<NodeData> data(PortType portType, PortIndex portIndex) const = 0;
 
 		virtual ConnectionPolicy portOutConnectionPolicy(PortIndex) const { return ConnectionPolicy::One; }
 

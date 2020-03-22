@@ -8,6 +8,7 @@
 #pragma once
 
 #include <QtCore/QString>
+#include <memory>
 
 namespace QtNodes {
 	struct NodeDataType
@@ -23,12 +24,12 @@ namespace QtNodes {
 	public:
 		virtual ~NodeData() = default;
 
-		virtual bool sameType(NodeData const &nodeData) const
+		virtual bool sameType(std::shared_ptr<NodeData> const &nodeData) const
 		{
-			return this->type().id == nodeData.type().id;
+			return this->type().id == nodeData->type().id;
 		}
 
 		/// Type for inner use
-		virtual NodeDataType type() const = 0;
+		virtual NodeDataType type() const { return {}; }
 	};
 }

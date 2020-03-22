@@ -28,7 +28,7 @@ namespace qtengine {
 		bool captionVisible() const override { return true; }
 
 		unsigned int nPorts(QtNodes::PortType portType) const override;
-		QtNodes::NodeDataType dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override;
+		std::shared_ptr<QtNodes::NodeData> data(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override;
 
 		QString portCaption(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const override;
 		bool portCaptionVisible(QtNodes::PortType, QtNodes::PortIndex) const override { return true; }

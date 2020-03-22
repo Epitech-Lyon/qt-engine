@@ -88,18 +88,21 @@ unsigned int qtengine::Slot::nPorts(QtNodes::PortType portType) const
 	return ret;
 }
 
-QtNodes::NodeDataType qtengine::Slot::dataType(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
+std::shared_ptr<QtNodes::NodeData> qtengine::Slot::data(QtNodes::PortType portType, QtNodes::PortIndex portIndex) const
 {
-	QtNodes::NodeDataType ret;
+	std::shared_ptr<QtNodes::NodeData> ret = std::shared_ptr<QtNodes::NodeData>(new QtNodes::NodeData());
 
 	switch (portType) {
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = portIndex == 0 ? FlowController().type() : Type(_slot->parameters()[portIndex - 1].first).type();
+		if (portIndex == 0)
+			ret = std::shared_ptr<QtNodes::NodeData>(new FlowController());
+		else
+			ret = std::shared_ptr<QtNodes::NodeData>(new Type(_slot->parameters()[portIndex - 1].first));
 		break;
 	case QtNodes::PortType::Out:
-		ret = FlowController().type();
+		ret = std::shared_ptr<QtNodes::NodeData>(new FlowController());
 		break;
 	}
 	return ret;
@@ -113,10 +116,10 @@ QString qtengine::Slot::portCaption(QtNodes::PortType portType, QtNodes::PortInd
 	case QtNodes::PortType::None:
 		break;
 	case QtNodes::PortType::In:
-		ret = portIndex == 0 ? "" : dataType(portType, portIndex).name + " " + _slot->parameters()[portIndex - 1].second;
+		ret = portIndex == 0 ? "" : data(portType, portIndex)->type().name + " " + _slot->parameters()[portIndex - 1].second;
 		break;
 	case QtNodes::PortType::Out:
-		ret = portIndex == 0 ? "" : dataType(portType, portIndex).name;
+		ret = portIndex == 0 ? "" : data(portType, portIndex)->type().name;
 		break;
 	}
 	return ret;

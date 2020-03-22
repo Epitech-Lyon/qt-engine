@@ -5,7 +5,7 @@
 #include "Connection.hpp"
 
 using QtNodes::NodeState;
-using QtNodes::NodeDataType;
+using QtNodes::NodeData;
 using QtNodes::NodeDataModel;
 using QtNodes::PortType;
 using QtNodes::PortIndex;
@@ -61,16 +61,16 @@ PortType NodeState::reactingPortType() const
 	return _reactingPortType;
 }
 
-NodeDataType NodeState::reactingDataType() const
+std::shared_ptr<NodeData> NodeState::reactingData() const
 {
-	return _reactingDataType;
+	return _reactingData;
 }
 
-void NodeState::setReaction(ReactToConnectionState reaction, PortType reactingPortType, NodeDataType reactingDataType)
+void NodeState::setReaction(ReactToConnectionState reaction, PortType reactingPortType, std::shared_ptr<NodeData> reactingData)
 {
 	_reaction = reaction;
 	_reactingPortType = reactingPortType;
-	_reactingDataType = std::move(reactingDataType);
+	_reactingData = reactingData;
 }
 
 bool NodeState::isReacting() const

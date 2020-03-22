@@ -45,9 +45,9 @@ namespace QtNodes {
 
 		ReactToConnectionState reaction() const;
 		PortType reactingPortType() const;
-		NodeDataType reactingDataType() const;
+		std::shared_ptr<NodeData> reactingData() const;
 
-		void setReaction(ReactToConnectionState reaction, PortType reactingPortType = PortType::None, NodeDataType reactingDataType = NodeDataType());
+		void setReaction(ReactToConnectionState reaction, PortType reactingPortType = PortType::None, std::shared_ptr<NodeData> reactingData = std::shared_ptr<NodeData>(new NodeData()));
 		bool isReacting() const;
 
 		void setResizing(bool resizing);
@@ -59,7 +59,7 @@ namespace QtNodes {
 
 		ReactToConnectionState _reaction;
 		PortType _reactingPortType;
-		NodeDataType _reactingDataType;
+		std::shared_ptr<NodeData> _reactingData;
 
 		bool _resizing;
 	};

@@ -123,13 +123,13 @@ static void drawNormalLine(QPainter *painter, Connection const &connection)
 	if (connectionStyle.useDataDefinedColors()) {
 		using QtNodes::PortType;
 
-		auto dataTypeOut = connection.dataType(PortType::Out);
-		auto dataTypeIn = connection.dataType(PortType::In);
+		auto dataOut = connection.data(PortType::Out);
+		auto dataIn = connection.data(PortType::In);
 
-		gradientColor = (dataTypeOut.id != dataTypeIn.id);
+		gradientColor = dataOut->sameType(dataIn);
 
-		normalColorOut  = connectionStyle.normalColor(dataTypeOut.id);
-		normalColorIn   = connectionStyle.normalColor(dataTypeIn.id);
+		normalColorOut  = connectionStyle.normalColor(dataOut->type().id);
+		normalColorIn   = connectionStyle.normalColor(dataIn->type().id);
 		selectedColor = normalColorOut.darker(200);
 	}
 

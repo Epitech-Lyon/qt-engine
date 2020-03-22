@@ -12,6 +12,7 @@
 #include <QtCore/QMap>
 
 #include "LibraryObject.hpp"
+#include "ClassTypeManager.hpp"
 
 namespace libraryObjects {
 	class LibraryObjectManager {
@@ -22,6 +23,7 @@ namespace libraryObjects {
 		QList<LibraryObject *> libraryObjects() const;
 		LibraryObject *libraryObjectOf(const QString &classHierarchy) const;
 		LibraryObject *libraryObjectOfClassName(const QString &className) const;
+		LibraryObject *libraryObjectOfType(const QString &type) const;
 
 		void registerCustomObject(const QString &name, LibraryObject *libraryObject);
 		LibraryObject *customObject(const QString &name) const { return _customObjects[name]; }
@@ -34,8 +36,10 @@ namespace libraryObjects {
 		template <typename Object> void registerObject()
 		{
 			auto constructor = []() { auto object = new Object(); Object::init(object); return object; };
+			auto libraryObject = new LibraryObject(constructor, Object::serializeData, Object::deserializeData, Object::classHierarchy(), Object::classIncludePath(), Object::icon(), Object::libraryFunction());
 
-			_libraryObjects << new LibraryObject(constructor, Object::serializeData, Object::deserializeData, Object::classHierarchy(), Object::classIncludePath(), Object::icon(), Object::libraryFunction());
+			_libraryObjects << libraryObject;
+			types::ClassTypeManager::instance()->registerType(libraryObject->className() + "*");
 		}
 
 		QList<LibraryObject *> _libraryObjects;

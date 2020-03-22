@@ -45,15 +45,16 @@ bool NodeConnectionInteraction::canConnect(PortIndex &portIndex, TypeConverter &
 		return false;
 
 	// 4) Connection type equals node port type, or there is a registered type conversion that can translate between the two
-	auto connectionDataType = _connection->dataType(oppositePort(requiredPort));
+	auto connectionData = _connection->data(oppositePort(requiredPort));
 	auto const &modelTarget = _node->nodeDataModel();
-	NodeDataType candidateNodeDataType = modelTarget->dataType(requiredPort, portIndex);
+	std::shared_ptr<NodeData> candidateNodeData = modelTarget->data(requiredPort, portIndex);
 
-	if (connectionDataType.id != candidateNodeDataType.id) {
+	if ((requiredPort == PortType::In && !connectionData->sameType(candidateNodeData))
+	|| (requiredPort == PortType::Out && !candidateNodeData->sameType(connectionData))) {
 		if (requiredPort == PortType::In)
-			converter = _scene->registry().getTypeConverter(connectionDataType, candidateNodeDataType);
+			converter = _scene->registry().getTypeConverter(connectionData->type(), candidateNodeData->type());
 		else if (requiredPort == PortType::Out)
-			converter = _scene->registry().getTypeConverter(candidateNodeDataType , connectionDataType);
+			converter = _scene->registry().getTypeConverter(candidateNodeData->type() , connectionData->type());
 		return (converter != nullptr);
 	}
 	return true;

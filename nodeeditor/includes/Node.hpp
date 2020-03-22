@@ -40,7 +40,7 @@ namespace QtNodes {
 		void restore(QJsonObject const &json) override;
 
 		QUuid id() const;
-		void reactToPossibleConnection(PortType, NodeDataType const &, QPointF const &scenePoint);
+		void reactToPossibleConnection(PortType, std::shared_ptr<NodeData>, QPointF const &scenePoint);
 		void resetReactionToConnection();
 
 		NodeGraphicsObject const &nodeGraphicsObject() const;

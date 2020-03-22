@@ -7,8 +7,6 @@
 
 #include "LibraryObjectManager.hpp"
 
-#include "ClassTypeManager.hpp"
-
 #include <QtCore/QFile>
 #include <QtCore/QFileInfo>
 #include <QtCore/QJsonDocument>
@@ -94,12 +92,6 @@ libraryObjects::LibraryObjectManager::LibraryObjectManager()
 	// QObject::QLayout::QBoxLayout
 	registerObject<EVBoxLayout>();
 	registerObject<EHBoxLayout>();
-
-	///////////////////////////////////////////////////////////////////////////////
-
-	// Register Type
-	for (auto libraryObject : _libraryObjects)
-		types::ClassTypeManager::instance()->registerType(libraryObject->className() + "*");
 }
 
 libraryObjects::LibraryObjectManager::~LibraryObjectManager()
@@ -138,6 +130,15 @@ libraryObjects::LibraryObject *libraryObjects::LibraryObjectManager::libraryObje
 		if (libraryObject->className() == className)
 			return libraryObject;
 	return nullptr;
+}
+
+libraryObjects::LibraryObject *libraryObjects::LibraryObjectManager::libraryObjectOfType(const QString &type) const
+{
+	if (!types::ClassTypeManager::instance()->isCustomType(type)) { return nullptr; }
+
+	QString className(type);
+	className.chop(1);
+	return libraryObjectOfClassName(className);
 }
 
 void libraryObjects::LibraryObjectManager::registerCustomObject(const QString &name, LibraryObject *libraryObject)
