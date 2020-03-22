@@ -17,9 +17,12 @@
 #include "EFileSystemModel.hpp"
 
 #include "EObject.hpp"
+#include "EAction.hpp"
 #include "EWidget.hpp"
 #include "ELineEdit.hpp"
 #include "EProgressBar.hpp"
+#include "EMenu.hpp"
+#include "EMenuBar.hpp"
 #include "EComboBox.hpp"
 #include "EFontComboBox.hpp"
 #include "ECheckBox.hpp"
@@ -43,17 +46,19 @@
 
 libraryObjects::LibraryObjectManager::LibraryObjectManager()
 {
-	registerObject<EObject>();
-
 	// QObject
-	registerObject<EWidget>();
+	registerObject<EObject>();
+	registerObject<EAction>();
 
 	// QObject::QAbstractItemModel
 	registerObject<EFileSystemModel>();
 
 	// QObject::QWidget
+	registerObject<EWidget>();
 	registerObject<ELineEdit>();
 	registerObject<EProgressBar>();
+	registerObject<EMenu>();
+	registerObject<EMenuBar>();
 
 	// QObject::QWidget::QComboBox
 	registerObject<EComboBox>();

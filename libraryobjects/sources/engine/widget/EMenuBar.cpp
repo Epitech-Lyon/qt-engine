@@ -1,0 +1,90 @@
+/*
+** EPITECH PROJECT, 2020
+** qt-engine
+** File description:
+** EMenuBar
+*/
+
+#include "EMenuBar.hpp"
+#include "EObject.hpp"
+
+#include "LibraryFunction.hpp"
+
+#include <QtWidgets/QMenu>
+#include <QtWidgets/QAction>
+
+template<> void libraryObjects::EMenuBar::init(AObject *object)
+{
+	EObject::init(object);
+}
+
+template<> QString libraryObjects::EMenuBar::classIncludePath()
+{
+	return "#include <QtWidgets/QMenuBar>";
+}
+
+template<> QIcon libraryObjects::EMenuBar::icon()
+{
+	return QIcon();
+}
+
+template<> libraryObjects::LibraryFunction *libraryObjects::EMenuBar::libraryFunction()
+{
+	auto libraryFunction = EObject::libraryFunction();
+
+	libraryFunction->addFunctionDrag(Object<QAction>::classHierarchy(), LibraryFunction::FunctionDrag("insertAction", MenuBar::insertAction, "removeAction", MenuBar::removeAction));
+	libraryFunction->addFunctionDrag(Object<QMenu>::classHierarchy(), LibraryFunction::FunctionDrag("insertMenu", MenuBar::insertMenu, "removeMenu", MenuBar::removeMenu));
+	return libraryFunction;
+}
+
+bool libraryObjects::MenuBar::insertAction(AObject *parent, int index, AObject *child)
+{
+	auto menuBar = dynamic_cast<QMenuBar*>(parent->object());
+	if (!menuBar) { return false; }
+
+	auto action = dynamic_cast<QAction*>(child->object());
+	if (!action) { return false; }
+
+	menuBar->insertAction(menuBar->actions().at(index), action);
+	parent->insertChild(index, child);
+	return true;
+}
+
+bool libraryObjects::MenuBar::removeAction(AObject *parent, AObject *child)
+{
+	auto menuBar = dynamic_cast<QMenuBar*>(parent->object());
+	if (!menuBar) { return false; }
+
+	auto action = dynamic_cast<QAction*>(child->object());
+	if (!action) { return false; }
+
+	menuBar->removeAction(action);
+	parent->removeChild(child);
+	return true;
+}
+
+bool libraryObjects::MenuBar::insertMenu(AObject *parent, int index, AObject *child)
+{
+	auto menuBar = dynamic_cast<QMenuBar*>(parent->object());
+	if (!menuBar) { return false; }
+
+	auto menu = dynamic_cast<QMenu*>(child->object());
+	if (!menu) { return false; }
+
+	menuBar->insertMenu(menuBar->actions().at(index), menu);
+	parent->insertChild(index, child);
+	return true;
+}
+
+bool libraryObjects::MenuBar::removeMenu(AObject *parent, AObject *child)
+{
+	auto menuBar = dynamic_cast<QMenuBar*>(parent->object());
+	if (!menuBar) { return false; }
+
+	auto menu = dynamic_cast<QMenu*>(child->object());
+	if (!menu) { return false; }
+
+	menuBar->removeAction(menu->menuAction());
+	parent->removeChild(child);
+	return true;
+}

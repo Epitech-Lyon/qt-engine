@@ -13,7 +13,7 @@ template<> void libraryObjects::ETextEdit::init(AObject *object)
 	auto text = dynamic_cast<QTextEdit*>(object->object());
 
 	EAbstractScrollArea::init(object);
-	connect(text, &QTextEdit::textChanged, [object, text]()
+	connect(text, &QTextEdit::textChanged, object, [object, text]()
 	{
 		emit object->propertyUpdated("markdown", text->toMarkdown());
 		emit object->propertyUpdated("html", text->toHtml());

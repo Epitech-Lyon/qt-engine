@@ -12,4 +12,9 @@
 
 namespace libraryObjects {
 	typedef Object<QToolButton> EToolButton;
+
+	namespace ToolButton {
+		bool setMenu(AObject *parent, int index, AObject *child);
+		bool unsetMenu(AObject *parent, AObject *child);
+	}
 }

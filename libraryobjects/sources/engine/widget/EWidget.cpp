@@ -17,8 +17,8 @@ template<> void libraryObjects::EWidget::init(AObject *object)
 	auto widget = dynamic_cast<QWidget*>(object->object());
 
 	EObject::init(object);
-	connect(widget, &QWidget::windowIconChanged, [object](const QIcon &icon) { emit object->propertyUpdated("windowIcon", icon); });
-	connect(widget, &QWidget::windowTitleChanged, [object](const QString &title) { emit object->propertyUpdated("windowTitle", title); });
+	connect(widget, &QWidget::windowIconChanged, object, [object](const QIcon &icon) { emit object->propertyUpdated("windowIcon", icon); });
+	connect(widget, &QWidget::windowTitleChanged, object, [object](const QString &title) { emit object->propertyUpdated("windowTitle", title); });
 }
 
 template<> QIcon libraryObjects::EWidget::icon()

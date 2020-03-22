@@ -13,7 +13,7 @@ template<> void libraryObjects::ELineEdit::init(AObject *object)
 	auto lineEdit = dynamic_cast<QLineEdit*>(object->object());
 
 	EObject::init(object);
-	connect(lineEdit, &QLineEdit::textChanged, [object](const QString &text) { emit object->propertyUpdated("text", text); });
+	connect(lineEdit, &QLineEdit::textChanged, object, [object](const QString &text) { emit object->propertyUpdated("text", text); });
 }
 
 template<> QString libraryObjects::ELineEdit::classIncludePath()

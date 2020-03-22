@@ -13,7 +13,7 @@ template<> void libraryObjects::EPlainTextEdit::init(AObject *object)
 	auto plainText = dynamic_cast<QPlainTextEdit*>(object->object());
 
 	EAbstractScrollArea::init(object);
-	connect(plainText, &QPlainTextEdit::textChanged, [object, plainText]() { emit object->propertyUpdated("plainText", plainText->toPlainText()); });
+	connect(plainText, &QPlainTextEdit::textChanged, object, [object, plainText]() { emit object->propertyUpdated("plainText", plainText->toPlainText()); });
 }
 
 template<> QString libraryObjects::EPlainTextEdit::classIncludePath()

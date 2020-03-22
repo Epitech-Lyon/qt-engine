@@ -18,8 +18,8 @@ template<> void libraryObjects::EComboBox::init(AObject *object)
 	auto comboBox = dynamic_cast<QComboBox*>(object->object());
 
 	EObject::init(object);
-	connect(comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), [object](int index) { emit object->propertyUpdated("currentIndex", index); });
-	connect(comboBox, &QComboBox::currentTextChanged, [object](const QString &text) { emit object->propertyUpdated("currentText", text); });
+	connect(comboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), object, [object](int index) { emit object->propertyUpdated("currentIndex", index); });
+	connect(comboBox, &QComboBox::currentTextChanged, object, [object](const QString &text) { emit object->propertyUpdated("currentText", text); });
 }
 
 template<> QJsonObject libraryObjects::EComboBox::serializeData(AObject *object)
