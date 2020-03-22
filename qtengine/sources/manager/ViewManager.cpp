@@ -19,6 +19,7 @@
 #include <QtCore/QDebug>
 
 #include "LibraryObject.hpp"
+#include "ObjectManager.hpp"
 #include "Object.hpp"
 #include "ObjectClass.hpp"
 #include "types/includes/Constructor.hpp"
@@ -64,6 +65,7 @@ void qtengine::ViewManager::createView(const QString &viewPath, libraryObjects::
 	_viewPath = fileInfo.filePath();
 	_viewName = fileInfo.baseName();
 	_viewObject = libraryObject->constructor();
+	libraryObjects::ObjectManager::instance()->setObjectAsRoot(_viewObject);
 	_viewObjectClass = new libraryObjects::ObjectClass();
 
 	auto constructor = new types::Constructor();
@@ -78,6 +80,8 @@ void qtengine::ViewManager::createView(const QString &viewPath, libraryObjects::
 	emit viewObjectChanged(_viewObject);
 	emit viewObjectClassChanged(_viewObjectClass);
 	setCurrentObject(_viewObject);
+
+	Manager::instance()->mainWindow()->setTitleView(_viewName);
 }
 
 void qtengine::ViewManager::createViewFrom(const QString &viewPath, const QString &viewPathSource)
@@ -111,6 +115,8 @@ void qtengine::ViewManager::closeView()
 	emit viewObjectClassChanged(nullptr);
 	setCurrentObject(nullptr);
 
+	Manager::instance()->mainWindow()->setTitleView("");
+
 	delete oldViewObject;
 	delete oldViewObjectClass;
 }
@@ -130,6 +136,7 @@ void qtengine::ViewManager::onOpenView(const QString &viewPath)
 	}
 	_viewIsOpened = true;
 	_viewObject = libraryObjects::ViewConverter().deserialize(json["Engine"].toObject());
+	libraryObjects::ObjectManager::instance()->setObjectAsRoot(_viewObject);
 	if (!_viewObject) { qCritical() << "Impossible to open" << _viewPath; return; }
 	_viewPath = fileInfo.absoluteFilePath();
 	_viewName = fileInfo.baseName();
@@ -142,6 +149,8 @@ void qtengine::ViewManager::onOpenView(const QString &viewPath)
 	emit viewObjectChanged(_viewObject);
 	emit viewObjectClassChanged(_viewObjectClass);
 	setCurrentObject(_viewObject);
+
+	Manager::instance()->mainWindow()->setTitleView(_viewName);
 }
 
 void qtengine::ViewManager::onSaveView()

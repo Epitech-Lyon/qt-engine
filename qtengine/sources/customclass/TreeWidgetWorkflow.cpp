@@ -114,7 +114,6 @@ void qtengine::TreeWidgetWorkflow::setObjectClass(libraryObjects::ObjectClass *o
 	_objectClass = objectClass;
 	clear();
 
-	setEnabled(_objectClass);
 	if (!_objectClass) { return; }
 
 	for (int i = 0; i < QMetaEnum::fromType<types::ClassType::Type>().keyCount(); i += 1)

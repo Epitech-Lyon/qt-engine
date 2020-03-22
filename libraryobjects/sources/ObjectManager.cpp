@@ -41,6 +41,8 @@ void libraryObjects::ObjectManager::unregisterObject(AObject *object)
 	disconnect(object, &AObject::propertyUpdated, this, &ObjectManager::onPropertyUpdated);
 	_objects.remove(_objects.key(object));
 	_objectsId.remove(object->id());
+	if (_rootObject == object)
+		_rootObject = nullptr;
 }
 
 void libraryObjects::ObjectManager::onPropertyUpdated(const QString &propertyName, const QVariant &propertyValue)
@@ -68,9 +70,9 @@ QString libraryObjects::ObjectManager::objectClassName(const QUuid &objectId) co
 	return object ? object->className() : "";
 }
 
-QString libraryObjects::ObjectManager::objectName(const QUuid &objectId) const
+QString libraryObjects::ObjectManager::objectName(const QUuid &objectId, bool returnThis) const
 {
 	auto object = this->object(objectId);
 
-	return object ? object->objectName() : "";
+	return object ? returnThis && _rootObject == object ? "this" : object->objectName() : "";
 }

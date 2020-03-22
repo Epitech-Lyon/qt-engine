@@ -14,6 +14,7 @@
 
 #include "Manager.hpp"
 #include "ViewManager.hpp"
+#include "MainWindow.hpp"
 #include "AObject.hpp"
 
 #include "ObjectClass.hpp"
@@ -171,6 +172,7 @@ void qtengine::ContentPanelWorkflow::onObjectChanged(libraryObjects::AObject *ob
 	_tree->setObject(object);
 	_tree->clear();
 	_scene->clearScene();
+	Manager::instance()->mainWindow()->setTitleClassType("");
 	if (!object) { return; }
 
 	libraryObjects::ObjectClass objectClass(object->object()->metaObject());
@@ -187,6 +189,9 @@ void qtengine::ContentPanelWorkflow::onObjectChanged(libraryObjects::AObject *ob
 void qtengine::ContentPanelWorkflow::onObjectClassChanged(libraryObjects::ObjectClass *objectClass)
 {
 	_tree->setObjectClass(objectClass);
+
+	_tree->setEnabled(objectClass);
+	_view->setEnabled(objectClass);
 }
 
 void qtengine::ContentPanelWorkflow::onObjectClassDropped(const QPointF &pos, libraryObjects::ObjectClass *objectClass, libraryObjects::AObject *reference, QObject *source)
@@ -202,10 +207,14 @@ void qtengine::ContentPanelWorkflow::onObjectClassDropped(const QPointF &pos, li
 
 void qtengine::ContentPanelWorkflow::onClassTypeDoubleClicked(types::ClassType *classType)
 {
-	if (classType->type() == types::ClassType::SIGNAL || classType->type() == types::ClassType::PROPERTY) { return; }
+	if (classType && (classType->type() == types::ClassType::SIGNAL || classType->type() == types::ClassType::PROPERTY)) { return; }
 
 	onSaveRequested();
 	_currentClassType = classType;
+
+	Manager::instance()->mainWindow()->setTitleClassType(_currentClassType ? _currentClassType->signature() : "");
+
+	if (!classType) { return; }
 
 	auto tmpRegistry = std::make_shared<QtNodes::DataModelRegistry>();
 	tmpRegistry->registerModel<Start>([classType]() {

@@ -78,6 +78,8 @@ void qtengine::ProjectManager::openProject(const QString &projectPath)
 	emit projectNameChanged(_projectName);
 	emit recentProjectsChanged(_recentsProject);
 	emitViewsChanged();
+
+	Manager::instance()->mainWindow()->setTitleProject(_projectName);
 }
 
 void qtengine::ProjectManager::onNewProject()
@@ -168,6 +170,8 @@ void qtengine::ProjectManager::onCloseProject()
 	emit projectPathChanged(_projectPath);
 	emit projectPathChanged(_projectName);
 	emitViewsChanged();
+
+	Manager::instance()->mainWindow()->setTitleProject("");
 }
 
 void qtengine::ProjectManager::onCreateView()

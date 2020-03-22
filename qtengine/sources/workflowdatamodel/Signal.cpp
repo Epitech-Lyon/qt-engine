@@ -236,11 +236,11 @@ QString qtengine::Signal::code() const
 	QString ret;
 
 	if (_connect) {
-		ret += "connect(" + libraryObjects::ObjectManager::instance()->objectName(_objectId);
+		ret += "connect(" + libraryObjects::ObjectManager::instance()->objectName(_objectId, true);
 		ret += ", &" + libraryObjects::ObjectManager::instance()->objectClassName(_objectId) + "::" + _signal->name();
 		ret += ", E_OBJNAME(0)_E, &E_OBJCLASSNAME(0)_E::E_SLOTNAME(0)_E);\nE_CODE(0)_E";
 	} else {
-		ret += "emit " + libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->" + _signal->name() + "(";
+		ret += "emit " + libraryObjects::ObjectManager::instance()->objectName(_objectId, true) + "->" + _signal->name() + "(";
 		for (int i = 0; i < _inputsFill.size(); i += 1) {
 			if (i > 0)
 				ret += ", ";

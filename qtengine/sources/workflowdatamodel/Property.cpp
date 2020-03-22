@@ -183,19 +183,19 @@ QString qtengine::Property::code() const
 	if (_get) {
 		if (_property->isUserType()) {
 			ret += "E_VAR(" + _property->name() + ")_E";
-			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->";
+			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId, true) + "->";
 			ret += _property->getterName() + "()";
 		} else {
 			ret += _property->type() + " E_VAR()_E = ";
-			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->";
+			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId, true) + "->";
 			ret += _property->getterName() + "(" + _property->name() + ");\nE_CODE(0)_E";
 		}
 	} else {
 		if (_property->isUserType()) {
-			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->";
+			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId, true) + "->";
 			ret += _property->setterName() + "(E_USEVAR(1)_E);\nE_CODE(0)_E";
 		} else {
-			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->";
+			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId, true) + "->";
 			ret += _property->setterName() + "(" + _property->name() + "QVariant::fromValue(E_USEVAR(1)_E));\nE_CODE(0)_E";
 		}
 	}

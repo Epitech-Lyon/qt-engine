@@ -25,9 +25,9 @@ qtengine::MainWindow::MainWindow(Manager *manager)
 	: _manager(manager)
 {
 	setenv("FONTCONFIG_PATH", "/etc/fonts", 0);
-	setWindowTitle("Qt-Engine");
 	setAttribute(Qt::WA_DeleteOnClose);
 
+	refreshTitle();
 	initMenuBar();
 	initInterface();
 }
@@ -51,7 +51,7 @@ void qtengine::MainWindow::initMenuBar()
 	auto menuFileRecents = menuFile->addMenu("Open recent project");
 	projectActions << menuFile->addAction("Save project", projectManager, &ProjectManager::onSaveProject, QKeySequence::Save);
 	projectActions << menuFile->addAction("Export project", projectManager, &ProjectManager::onExportProject, QKeySequence("Ctrl+E"));
-	projectActions << menuFile->addAction("Close project", projectManager, &ProjectManager::onSaveProject, QKeySequence::Close);
+	projectActions << menuFile->addAction("Close project", projectManager, &ProjectManager::onCloseProject, QKeySequence::Close);
 	menuFile->addSeparator();
 	projectActions << menuFile->addAction("Save view", viewManager, &ViewManager::onSaveView, QKeySequence("Ctrl+Shift+V"));
 	menuFile->addSeparator();
@@ -120,4 +120,32 @@ void qtengine::MainWindow::deserialize(const QJsonObject &json)
 		base = new LayoutPanelSplitter(Qt::Horizontal, centralWidget);
 	base->deserialize(json["State"].toObject());
 	centralWidget->setChild(base);
+}
+
+void qtengine::MainWindow::setTitleProject(const QString &titleProject)
+{
+	_titleProject = titleProject;
+	refreshTitle();
+}
+
+void qtengine::MainWindow::setTitleView(const QString &titleView)
+{
+	_titleView = titleView;
+	refreshTitle();
+}
+
+void qtengine::MainWindow::setTitleClassType(const QString &titleClassType)
+{
+	_titleClassType = titleClassType;
+	refreshTitle();
+}
+
+void qtengine::MainWindow::refreshTitle()
+{
+	QString title("Qt-Engine");
+
+	title += _titleProject.isEmpty() ? "" : " - " + _titleProject;
+	title += _titleView.isEmpty() ? "" : " - " + _titleView;
+	title += _titleClassType.isEmpty() ? "" : " - " + _titleClassType;
+	setWindowTitle(title);
 }
