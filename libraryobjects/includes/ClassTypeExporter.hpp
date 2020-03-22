@@ -27,6 +27,7 @@ namespace libraryObjects {
 
 		bool hasBody() const { return !_body.isEmpty(); }
 		QString body() const { return _body; }
+		types::ClassType *classType() const { return _classType; }
 
 	private:
 		types::ClassType *_classType;
