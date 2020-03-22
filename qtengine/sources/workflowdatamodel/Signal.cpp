@@ -48,6 +48,8 @@ void qtengine::Signal::setData(const QJsonObject &signalSave, const QUuid &objec
 	if (_signal->name() == "objectNameChanged")
 		_switchButton->setEnabled(false);
 	_objectId = objectId;
+	if (_signal->name() == "objectNameChanged")
+		_switchButton->setEnabled(false);
 	for (int i = 0; i < _signal->parameters().size(); i += 1)
 		_inputsFill << false;
 	refreshState();
