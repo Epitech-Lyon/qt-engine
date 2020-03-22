@@ -41,8 +41,11 @@ namespace qtengine {
 		libraryObjects::ObjectClass *objectClass() const;
 		void setObjectClass(libraryObjects::ObjectClass *objectClass);
 
+		void selectDefaultConstructor();
+
 	signals:
 		void classTypeDoubleClicked(types::ClassType *classType);
+		void classTypeDeleted(types::ClassType *classType);
 
 	private slots:
 		void onCustomContextMenuRequested(const QPoint &pos);

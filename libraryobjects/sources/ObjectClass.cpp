@@ -85,9 +85,41 @@ types::ClassType *libraryObjects::ObjectClass::addClassType(types::ClassType *cl
 {
 	if (!classType->isValid()) { return nullptr; }
 
-	for (auto tmpClassType : _classTypes[classType->type()])
-		if (tmpClassType->signature() == classType->signature())
-			return tmpClassType;
+	auto findSameAs = [this](const QString &signature) -> types::ClassType* {
+		for (auto classTypeList : _classTypes)
+			for (auto classType : classTypeList) {
+				if (classType->signature() == signature)
+					return classType;
+				else if (classType->type() == types::ClassType::PROPERTY) {
+					auto propertyType = dynamic_cast<types::Property*>(classType);
+
+					if (!propertyType->setterName().isEmpty() && propertyType->setterName() == signature)
+						return classType;
+					if (!propertyType->getterName().isEmpty() && propertyType->getterName() == signature)
+						return classType;
+				}
+			}
+		return nullptr;
+	};
+
+	types::ClassType *ret = findSameAs(classType->signature());
+
+	if (ret)
+		return ret;
+	if (classType->type() == types::ClassType::PROPERTY) {
+		auto propertyType = dynamic_cast<types::Property*>(classType);
+
+		if (!propertyType->setterName().isEmpty()) {
+			ret = findSameAs(propertyType->setterName());
+			if (ret)
+				return ret;
+		}
+		if (!propertyType->getterName().isEmpty()) {
+			ret = findSameAs(propertyType->getterName());
+			if (ret)
+				return ret;
+		}
+	}
 
 	_classTypes[classType->type()].append(classType);
 	return classType;

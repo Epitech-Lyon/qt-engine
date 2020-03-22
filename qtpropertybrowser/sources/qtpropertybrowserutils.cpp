@@ -39,13 +39,18 @@
 
 #include "moc_qtpropertybrowserutils_p.cpp"
 #include "qtpropertybrowserutils_p.h"
+
 #include <QtWidgets/QApplication>
-#include <QtGui/QPainter>
 #include <QtWidgets/QHBoxLayout>
-#include <QtGui/QMouseEvent>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMenu>
+#include <QtWidgets/QToolButton>
+#include <QtWidgets/QFileDialog>
+
+#include <QtGui/QPainter>
+#include <QtGui/QMouseEvent>
+
 #include <QtCore/QLocale>
 
 QT_BEGIN_NAMESPACE
@@ -302,6 +307,48 @@ void QtBoolEdit::mousePressEvent(QMouseEvent *event)
     } else {
         QWidget::mousePressEvent(event);
     }
+}
+
+QtFileEdit::QtFileEdit(QWidget *parent)
+    : QWidget(parent)
+{
+    QHBoxLayout *layout = new QHBoxLayout(this);
+    layout->setMargin(0);
+    layout->setSpacing(0);
+
+    _lineEdit = new QLineEdit(this);
+    _lineEdit->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred));
+    layout->addWidget(_lineEdit);
+
+    QToolButton *button = new QToolButton(this);
+    button->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred));
+    button->setText(QLatin1String("..."));
+    layout->addWidget(button);
+
+    connect(_lineEdit, SIGNAL(textEdited(const QString &)), this, SIGNAL(filePathChanged(const QString &)));
+    connect(button, SIGNAL(clicked()), this, SLOT(onButtonClicked()));
+
+    setFocusProxy(_lineEdit);
+}
+
+QString QtFileEdit::filePath() const
+{
+    return _lineEdit->text();
+}
+
+void QtFileEdit::setFilePath(const QString &filePath)
+{
+    _lineEdit->setText(filePath);
+}
+
+void QtFileEdit::onButtonClicked()
+{
+    QString filePath = QFileDialog::getOpenFileName(this, tr("Choose a file"), _lineEdit->text(), m_filter);
+
+    if (filePath.isNull())
+        return;
+    _lineEdit->setText(filePath);
+    emit filePathChanged(filePath);
 }
 
 QT_END_NAMESPACE

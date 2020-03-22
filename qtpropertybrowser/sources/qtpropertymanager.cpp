@@ -6424,6 +6424,95 @@ void QtCursorPropertyManager::uninitializeProperty(QtProperty *property)
     d_ptr->m_values.remove(property);
 }
 
+class QtFilePathPropertyManagerPrivate
+{
+    QtFilePathPropertyManager *q_ptr;
+    Q_DECLARE_PUBLIC(QtFilePathPropertyManager)
+
+public:
+    struct Data
+    {
+        QString val;
+        QString filter;
+    };
+
+    typedef QMap<const QtProperty *, Data> PropertyValueMap;
+    PropertyValueMap m_values;
+};
+
+QtFilePathPropertyManager::QtFilePathPropertyManager(QObject *parent)
+    : QtAbstractPropertyManager(parent), d_ptr(new QtFilePathPropertyManagerPrivate)
+{
+}
+
+QtFilePathPropertyManager::~QtFilePathPropertyManager()
+{
+    clear();
+}
+
+QString QtFilePathPropertyManager::value(const QtProperty *property) const
+{
+    return getValue<QString>(d_ptr->m_values, property);
+}
+
+QString QtFilePathPropertyManager::filter(const QtProperty *property) const
+{
+    return getData<QString>(d_ptr->m_values, &QtFilePathPropertyManagerPrivate::Data::filter, property);
+}
+
+void QtFilePathPropertyManager::setValue(QtProperty *property, const QString &val)
+{
+    const QtFilePathPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    QtFilePathPropertyManagerPrivate::Data data = it.value();
+
+    if (data.val == val)
+        return;
+
+    data.val = val;
+    it.value() = data;
+
+    emit propertyChanged(property);
+    emit valueChanged(property, data.val);
+}
+
+void QtFilePathPropertyManager::setFilter(QtProperty *property, const QString &filter)
+{
+    const QtFilePathPropertyManagerPrivate::PropertyValueMap::iterator it = d_ptr->m_values.find(property);
+    if (it == d_ptr->m_values.end())
+        return;
+
+    QtFilePathPropertyManagerPrivate::Data data = it.value() ;
+
+    if (data.filter == filter)
+        return;
+
+    data.filter = filter;
+    it.value() = data;
+
+    emit filterChanged(property, data.filter);
+}
+
+QString QtFilePathPropertyManager::valueText(const QtProperty *property) const
+{
+    const QtFilePathPropertyManagerPrivate::PropertyValueMap::const_iterator it = d_ptr->m_values.constFind(property);
+    if (it == d_ptr->m_values.constEnd())
+        return QString();
+    return it.value().val;
+}
+
+void QtFilePathPropertyManager::initializeProperty(QtProperty *property)
+{
+    d_ptr->m_values[property] = QtFilePathPropertyManagerPrivate::Data();
+}
+
+void QtFilePathPropertyManager::uninitializeProperty(QtProperty *property)
+{
+    d_ptr->m_values.remove(property);
+}
+
 QT_END_NAMESPACE
 
 #include "moc_qtpropertymanager.cpp"

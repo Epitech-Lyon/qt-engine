@@ -120,12 +120,17 @@ void qtengine::TreeWidgetWorkflow::setObjectClass(libraryObjects::ObjectClass *o
 	for (int i = 0; i < QMetaEnum::fromType<types::ClassType::Type>().keyCount(); i += 1)
 		for (auto classType : _objectClass->getClassType(static_cast<types::ClassType::Type>(i)))
 			addTypeItem(classType);
+	selectDefaultConstructor();
+	expandAll();
+}
+
+void qtengine::TreeWidgetWorkflow::selectDefaultConstructor()
+{
 	for (auto classType : _objectClass->getClassType(types::ClassType::CONSTRUCTOR))
 		if (dynamic_cast<types::Constructor*>(classType)->parameters().size() == 0) {
 			setCurrentItem(_childItems.key(classType));
 			emit classTypeDoubleClicked(classType);
 		}
-	expandAll();
 }
 
 void qtengine::TreeWidgetWorkflow::addTypeItem(types::ClassType *classType)
@@ -173,6 +178,7 @@ void qtengine::TreeWidgetWorkflow::onDeleteClicked(QTreeWidgetItem *item)
 {
 	auto classType = _childItems[item];
 
+	emit classTypeDeleted(classType);
 	_objectClass->removeClassType(classType);
 	_childItems.remove(item);
 	delete item;

@@ -681,8 +681,7 @@ QWidget *QtCheckBoxFactory::createEditor(QtBoolPropertyManager *manager, QtPrope
     editor->setChecked(manager->value(property));
 
     connect(editor, SIGNAL(toggled(bool)), this, SLOT(slotSetValue(bool)));
-    connect(editor, SIGNAL(destroyed(QObject*)),
-                this, SLOT(slotEditorDestroyed(QObject*)));
+    connect(editor, SIGNAL(destroyed(QObject*)), this, SLOT(slotEditorDestroyed(QObject*)));
     return editor;
 }
 
@@ -2493,8 +2492,7 @@ QtFontEditorFactory::~QtFontEditorFactory()
 */
 void QtFontEditorFactory::connectPropertyManager(QtFontPropertyManager *manager)
 {
-    connect(manager, SIGNAL(valueChanged(QtProperty*,QFont)),
-            this, SLOT(slotPropertyChanged(QtProperty*,QFont)));
+    connect(manager, SIGNAL(valueChanged(QtProperty*,QFont)), this, SLOT(slotPropertyChanged(QtProperty*,QFont)));
 }
 
 /*!
@@ -2520,6 +2518,87 @@ QWidget *QtFontEditorFactory::createEditor(QtFontPropertyManager *manager,
 void QtFontEditorFactory::disconnectPropertyManager(QtFontPropertyManager *manager)
 {
     disconnect(manager, SIGNAL(valueChanged(QtProperty*,QFont)), this, SLOT(slotPropertyChanged(QtProperty*,QFont)));
+}
+
+class QtFilePathEditorFactoryPrivate : public  EditorFactoryPrivate<QtFileEdit>
+{
+    QtFilePathEditorFactory *q_ptr;
+    Q_DECLARE_PUBLIC(QtFilePathEditorFactory)
+
+public:
+    void slotPropertyChanged(QtProperty *property, const QString &value);
+    void slotFilterChanged(QtProperty *property, const QString &filter);
+    void slotSetValue(const QString &value);
+};
+
+void QtFilePathEditorFactoryPrivate::slotPropertyChanged(QtProperty *property, const QString &value)
+{
+    const PropertyToEditorListMap::const_iterator it = m_createdEditors.constFind(property);
+    if (it == m_createdEditors.constEnd())
+        return;
+
+    for (QtFileEdit *e : it.value())
+        e->setFilePath(value);
+}
+
+void QtFilePathEditorFactoryPrivate::slotFilterChanged(QtProperty *property, const QString &filter)
+{
+    const PropertyToEditorListMap::const_iterator it = m_createdEditors.constFind(property);
+    if (it == m_createdEditors.constEnd())
+        return;
+
+    for (QtFileEdit *e : it.value())
+        e->setFilter(filter);
+}
+
+void QtFilePathEditorFactoryPrivate::slotSetValue(const QString &value)
+{
+    QObject *object = q_ptr->sender();
+    const EditorToPropertyMap::ConstIterator ecend = m_editorToProperty.constEnd();
+    for (EditorToPropertyMap::ConstIterator itEditor = m_editorToProperty.constBegin(); itEditor != ecend; ++itEditor)
+        if (itEditor.key() == object) {
+            QtProperty *property = itEditor.value();
+            QtFilePathPropertyManager *manager = q_ptr->propertyManager(property);
+            if (!manager)
+                return;
+            manager->setValue(property, value);
+            return;
+        }
+}
+
+QtFilePathEditorFactory::QtFilePathEditorFactory(QObject *parent)
+    : QtAbstractEditorFactory<QtFilePathPropertyManager>(parent)
+    , d_ptr(new QtFilePathEditorFactoryPrivate())
+{
+    d_ptr->q_ptr = this;
+}
+
+QtFilePathEditorFactory::~QtFilePathEditorFactory()
+{
+    qDeleteAll(d_ptr->m_editorToProperty.keys());
+}
+
+void QtFilePathEditorFactory::connectPropertyManager(QtFilePathPropertyManager *manager)
+{
+    connect(manager, SIGNAL(valueChanged(QtProperty*, const QString &)), this, SLOT(slotPropertyChanged(QtProperty*, const QString &)));
+    connect(manager, SIGNAL(filterChanged(QtProperty*, const QString &)), this, SLOT(slotFilterChanged(QtProperty*, const QString &)));
+}
+
+QWidget *QtFilePathEditorFactory::createEditor(QtFilePathPropertyManager *manager, QtProperty *property, QWidget *parent)
+{
+    QtFileEdit *editor = d_ptr->createEditor(property, parent);
+    editor->setFilePath(manager->value(property));
+    editor->setFilter(manager->filter(property));
+
+    connect(editor, SIGNAL(filePathChanged(const QString &)), this, SLOT(slotSetValue(const QString &)));
+    connect(editor, SIGNAL(destroyed(QObject*)), this, SLOT(slotEditorDestroyed(QObject*)));
+    return editor;
+}
+
+void QtFilePathEditorFactory::disconnectPropertyManager(QtFilePathPropertyManager *manager)
+{
+    disconnect(manager, SIGNAL(valueChanged(QtProperty*, const QString &)), this, SLOT(slotPropertyChanged(QtProperty*, const QString &)));
+    disconnect(manager, SIGNAL(filterChanged(QtProperty*, const QString &)), this, SLOT(slotFilterChanged(QtProperty*, const QString &)));
 }
 
 QT_END_NAMESPACE

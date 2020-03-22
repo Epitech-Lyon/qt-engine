@@ -84,7 +84,7 @@ QString qtengine::While::portCaption(QtNodes::PortType portType, QtNodes::PortIn
 		ret = portIndex == 0 ? "" : "condition";
 		break;
 	case QtNodes::PortType::Out:
-		ret = portIndex == 0 ? "True" : "False";
+		ret = portIndex == 0 ? "in" : "out";
 		break;
 	}
 	return ret;
@@ -128,7 +128,5 @@ QString qtengine::While::code() const
 	return
 		"while (E_USEVAR(1)_E) {\n"
 		"E_CODE(0)_E"
-		"} else {\n"
-		"E_CODE(1)_E"
-		"}\n";
+		"}\nE_CODE(1)_E";
 }

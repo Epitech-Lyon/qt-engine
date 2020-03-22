@@ -739,6 +739,38 @@ private:
     Q_DISABLE_COPY_MOVE(QtCursorPropertyManager)
 };
 
+class QtFilePathPropertyManagerPrivate;
+
+class QtFilePathPropertyManager : public QtAbstractPropertyManager
+{
+    Q_OBJECT
+
+public:
+    QtFilePathPropertyManager(QObject *parent = 0);
+    ~QtFilePathPropertyManager();
+
+    QString value(const QtProperty *property) const;
+    QString filter(const QtProperty *property) const;
+
+public slots:
+    void setValue(QtProperty *property, const QString &val);
+    void setFilter(QtProperty *property, const QString &filter);
+
+signals:
+    void valueChanged(QtProperty *property, const QString &val);
+    void filterChanged(QtProperty *property, const QString &filter);
+
+protected:
+    QString valueText(const QtProperty *property) const;
+    void initializeProperty(QtProperty *property);
+    void uninitializeProperty(QtProperty *property);
+
+private:
+    QScopedPointer<QtFilePathPropertyManagerPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QtFilePathPropertyManager)
+    Q_DISABLE_COPY_MOVE(QtFilePathPropertyManager)
+};
+
 QT_END_NAMESPACE
 
 #endif

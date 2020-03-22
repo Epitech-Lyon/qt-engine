@@ -206,11 +206,9 @@ bool types::Method::isValid() const
 
 	QStringList parametersName;
 	for (auto &parameter : _parameters) {
-		if (!parameter.second.isEmpty()) {
-			if (parametersName.contains(parameter.second)) { return false; }
+		if (parameter.second.isEmpty() || parametersName.contains(parameter.second)) { return false; }
 
-			parametersName.append(parameter.second);
-		}
+		parametersName.append(parameter.second);
 	}
 	return true;
 }

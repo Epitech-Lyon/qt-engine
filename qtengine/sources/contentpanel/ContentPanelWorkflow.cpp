@@ -62,6 +62,7 @@ void qtengine::ContentPanelWorkflow::init()
 
 	connect(_scene, &FlowSceneWorkflow::objectClassDropped, this, &ContentPanelWorkflow::onObjectClassDropped);
 	connect(_tree, &TreeWidgetWorkflow::classTypeDoubleClicked, this, &ContentPanelWorkflow::onClassTypeDoubleClicked);
+	connect(_tree, &TreeWidgetWorkflow::classTypeDeleted, this, &ContentPanelWorkflow::onClassTypeDeleted);
 
 	onObjectChanged(Manager::instance()->viewManager()->viewObject());
 	connect(Manager::instance()->viewManager(), &ViewManager::viewObjectChanged, this, &ContentPanelWorkflow::onObjectChanged);
@@ -214,9 +215,11 @@ void qtengine::ContentPanelWorkflow::onClassTypeDoubleClicked(types::ClassType *
 		} else if (classType->type() == types::ClassType::SLOT) {
 			auto slot = dynamic_cast<types::Slot*>(classType);
 			return std::unique_ptr<Start>(new Start(slot->parameters()));
-		} else {
-			return std::unique_ptr<Start>(new Start({}));
+		} else if (classType->type() == types::ClassType::CONSTRUCTOR) {
+			auto constructor = dynamic_cast<types::Constructor*>(classType);
+			return std::unique_ptr<Start>(new Start(constructor->parameters()));
 		}
+		return std::unique_ptr<Start>();
 	});
 	tmpRegistry->registerModel<Return>([classType]() {
 		if (classType->type() == types::ClassType::METHOD) {
@@ -261,8 +264,17 @@ void qtengine::ContentPanelWorkflow::onClassTypeDoubleClicked(types::ClassType *
 	_scene->setRegistry(saveRegistry);
 }
 
+void qtengine::ContentPanelWorkflow::onClassTypeDeleted(types::ClassType *classType)
+{
+	if (classType != _currentClassType) { return; }
+
+	_currentClassType = nullptr;
+	_tree->selectDefaultConstructor();
+}
+
 void qtengine::ContentPanelWorkflow::onSaveRequested()
 {
-	if (_currentClassType)
-		_currentClassType->setContent(_scene->saveToJson());
+	if (!_currentClassType) { return; }
+
+	_currentClassType->setContent(_scene->saveToJson());
 }

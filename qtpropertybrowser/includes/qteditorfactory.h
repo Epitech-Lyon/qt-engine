@@ -378,8 +378,7 @@ public:
     ~QtFontEditorFactory();
 protected:
     void connectPropertyManager(QtFontPropertyManager *manager);
-    QWidget *createEditor(QtFontPropertyManager *manager, QtProperty *property,
-                QWidget *parent);
+    QWidget *createEditor(QtFontPropertyManager *manager, QtProperty *property, QWidget *parent);
     void disconnectPropertyManager(QtFontPropertyManager *manager);
 private:
     QScopedPointer<QtFontEditorFactoryPrivate> d_ptr;
@@ -388,6 +387,31 @@ private:
     Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, const QFont &))
     Q_PRIVATE_SLOT(d_func(), void slotEditorDestroyed(QObject *))
     Q_PRIVATE_SLOT(d_func(), void slotSetValue(const QFont &))
+};
+
+class QtFilePathEditorFactoryPrivate;
+
+class QtFilePathEditorFactory : public QtAbstractEditorFactory<QtFilePathPropertyManager>
+{
+    Q_OBJECT
+
+public:
+    QtFilePathEditorFactory(QObject *parent = 0);
+    ~QtFilePathEditorFactory();
+
+protected:
+    void connectPropertyManager(QtFilePathPropertyManager *manager);
+    QWidget *createEditor(QtFilePathPropertyManager *manager, QtProperty *property, QWidget *parent);
+    void disconnectPropertyManager(QtFilePathPropertyManager *manager);
+
+private:
+    QScopedPointer<QtFilePathEditorFactoryPrivate> d_ptr;
+    Q_DECLARE_PRIVATE(QtFilePathEditorFactory)
+    Q_DISABLE_COPY_MOVE(QtFilePathEditorFactory)
+    Q_PRIVATE_SLOT(d_func(), void slotPropertyChanged(QtProperty *, const QString &))
+    Q_PRIVATE_SLOT(d_func(), void slotFilterChanged(QtProperty *, const QString &))
+    Q_PRIVATE_SLOT(d_func(), void slotSetValue(const QString &))
+    Q_PRIVATE_SLOT(d_func(), void slotEditorDestroyed(QObject *))
 };
 
 QT_END_NAMESPACE

@@ -125,6 +125,29 @@ private:
     bool m_textVisible;
 };
 
+class QtFileEdit : public QWidget {
+    Q_OBJECT
+
+public:
+    QtFileEdit(QWidget *parent = 0);
+
+    QString filePath() const;
+    void setFilePath(const QString &filePath);
+
+    QString filter() const { return m_filter; }
+    void setFilter(const QString &filter) { m_filter = filter; }
+
+signals:
+    void filePathChanged(const QString &filePath);
+
+private slots:
+    void onButtonClicked();
+
+private:
+    QLineEdit *_lineEdit;
+    QString m_filter;
+};
+
 QT_END_NAMESPACE
 
 #endif
