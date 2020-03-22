@@ -56,7 +56,7 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EFileSystemModel::li
 {
 	auto libraryFunction = EAbstractItemModel::libraryFunction();
 
-	libraryFunction->addFunctionMenuParent(LibraryFunction::FunctionMenu("setRootPath", FileSystemModel::setRootPath));
+	libraryFunction->addFunctionMenu(LibraryFunction::FunctionMenu("setRootPath", FileSystemModel::setRootPath));
 	return libraryFunction;
 }
 

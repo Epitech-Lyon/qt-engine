@@ -44,6 +44,7 @@ void qtengine::ContentPanelViewExplorer::onViewObjectChanged(libraryObjects::AOb
 	_tree->clear();
 	_tree->createItemFor(viewObject, _tree->invisibleRootItem());
 	_tree->expandAll();
+	_tree->resizeColumnToContents(0);
 }
 
 void qtengine::ContentPanelViewExplorer::onOpenMenuFor(libraryObjects::AObject *object, libraryObjects::AObject *parent, const QPoint &pos)
@@ -76,12 +77,12 @@ void qtengine::ContentPanelViewExplorer::onOpenMenuFor(libraryObjects::AObject *
 
 	auto libraryObject = libraryObjects::LibraryObjectManager::instance()->libraryObjectOf(object->classHierarchy());
 	if (libraryObject) {
-		auto functionsMenuParent = libraryObject->libraryFunction()->functionsMenuParent();
-		if (!menu.isEmpty() && !functionsMenuParent.isEmpty())
+		auto functionsMenu = libraryObject->libraryFunction()->functionsMenu();
+		if (!menu.isEmpty() && !functionsMenu.isEmpty())
 			menu.addSeparator();
-		for (auto functionMenuParent : functionsMenuParent)
-			if (functionMenuParent.isValid)
-				menu.addAction(functionMenuParent.functionName, std::bind(functionMenuParent.function, object));
+		for (auto functionMenu : functionsMenu)
+			if (functionMenu.isValid)
+				menu.addAction(functionMenu.functionName, std::bind(functionMenu.function, object));
 	}
 	if (!menu.isEmpty())
 		menu.exec(pos);
@@ -96,7 +97,6 @@ void qtengine::ContentPanelViewExplorer::onLibraryObjectDropped(libraryObjects::
 	if (!function.isValid) { return; }
 
 	if (reference) {
-		function.functionRemove(parent, reference);
 		auto childItem = _tree->itemFor(reference);
 		auto newParentItem = _tree->itemFor(parent);
 
@@ -106,6 +106,7 @@ void qtengine::ContentPanelViewExplorer::onLibraryObjectDropped(libraryObjects::
 		index = newParentItem == oldParentItem && index > oldIndex ? index - 1 : index;
 		oldParentItem->removeChild(childItem);
 
+		function.functionRemove(reference->parent(), reference);
 		function.functionAdd(parent, index, reference);
 		newParentItem->insertChild(index, childItem);
 		newParentItem->setExpanded(true);

@@ -75,14 +75,14 @@ namespace libraryObjects {
 			FunctionMenuSignature function;
 		} FunctionMenu;
 		
-		void addFunctionMenuParent(const FunctionMenu &functionsMenuParent) { _functionsMenuParent.push_back(functionsMenuParent); }
-		QList<FunctionMenu> functionsMenuParent() const { return _functionsMenuParent; }
+		void addFunctionMenu(const FunctionMenu &functionsMenu) { _functionsMenu.push_back(functionsMenu); }
+		QList<FunctionMenu> functionsMenu() const { return _functionsMenu; }
 		
 		void addFunctionMenuChildren(const FunctionMenu &functionsMenuChildren) { _functionsMenuChildren.push_back(functionsMenuChildren); }
 		QList<FunctionMenu> functionsMenuChildren() const { return _functionsMenuChildren; }
 
 	private:
-		QList<FunctionMenu> _functionsMenuParent;
+		QList<FunctionMenu> _functionsMenu;
 		QList<FunctionMenu> _functionsMenuChildren;
 	};
 }

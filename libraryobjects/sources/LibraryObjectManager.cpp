@@ -18,6 +18,14 @@
 
 #include "EObject.hpp"
 #include "EWidget.hpp"
+#include "ELineEdit.hpp"
+#include "EProgressBar.hpp"
+#include "EComboBox.hpp"
+#include "EFontComboBox.hpp"
+#include "ECheckBox.hpp"
+#include "EPushButton.hpp"
+#include "ERadioButton.hpp"
+#include "EToolButton.hpp"
 #include "ELabel.hpp"
 #include "ELCDNumber.hpp"
 #include "ESplitter.hpp"
@@ -42,6 +50,20 @@ libraryObjects::LibraryObjectManager::LibraryObjectManager()
 
 	// QObject::QAbstractItemModel
 	registerObject<EFileSystemModel>();
+
+	// QObject::QWidget
+	registerObject<ELineEdit>();
+	registerObject<EProgressBar>();
+
+	// QObject::QWidget::QComboBox
+	registerObject<EComboBox>();
+	registerObject<EFontComboBox>();
+
+	// QObject::QWidget::QAbstractButton
+	registerObject<ECheckBox>();
+	registerObject<EPushButton>();
+	registerObject<ERadioButton>();
+	registerObject<EToolButton>();
 
 	// QObject::QWidget::QFrame
 	registerObject<ELabel>();
