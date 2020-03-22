@@ -175,7 +175,7 @@ QString qtengine::Slot::code() const
 	if (_connect) {
 		ret += "E_CODE(0)_E";
 	} else {
-		ret += libraryObjects::ObjectManager::instance()->objectName(_objectId, true) + "->" + _slot->name() + "(";
+		ret += libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->" + _slot->name() + "(";
 		for (int i = 0; i < _inputsFill.size(); i += 1) {
 			if (i > 0)
 				ret += ", ";

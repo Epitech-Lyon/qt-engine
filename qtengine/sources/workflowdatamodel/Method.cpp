@@ -175,7 +175,7 @@ QString qtengine::Method::code() const
 	if (_method->isStatic() && _objectId.isNull())
 		ret = libraryObjects::ObjectManager::instance()->objectClassName(_objectId) + "::" + ret;
 	else
-		ret = libraryObjects::ObjectManager::instance()->objectName(_objectId, true) + "->" + ret;
+		ret = libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->" + ret;
 	if (nPorts(QtNodes::PortType::Out) == 2)
 		ret = _method->returnType() + " E_VAR()_E = " + ret;
 	return ret;

@@ -22,14 +22,14 @@ namespace libraryObjects {
 		void registerObject(AObject *object);
 		void unregisterObject(AObject *object);
 
-		void setObjectAsRoot(AObject *rootObject) { _rootObject = rootObject; }
+		void setObjectAsRoot(AObject *rootObject, const QString &rootObjectClassName) { _rootObject = rootObject; _rootObjectClassName = rootObjectClassName; }
 
 		AObject *object(const QString &objectName) const { return _objects.contains(objectName) ? _objects[objectName] : nullptr; }
 		QString objectName(AObject *object) const { return _objects.key(object); }
 
 		AObject *object(const QUuid &objectId) const { return _objectsId.contains(objectId) ? _objectsId[objectId] : nullptr; }
 		QString objectClassName(const QUuid &objectId) const;
-		QString objectName(const QUuid &objectId, bool returnThis = false) const;
+		QString objectName(const QUuid &objectId) const;
 
 	private slots:
 		void onPropertyUpdated(const QString &propertyName, const QVariant &propertyValue);
@@ -39,5 +39,6 @@ namespace libraryObjects {
 		QMap<QString, AObject*> _objects;
 		QMap<QUuid, AObject *> _objectsId;
 		AObject *_rootObject = nullptr;
+		QString _rootObjectClassName;
 	};
 }

@@ -65,7 +65,7 @@ void qtengine::ViewManager::createView(const QString &viewPath, libraryObjects::
 	_viewPath = fileInfo.filePath();
 	_viewName = fileInfo.baseName();
 	_viewObject = libraryObject->constructor();
-	libraryObjects::ObjectManager::instance()->setObjectAsRoot(_viewObject);
+	libraryObjects::ObjectManager::instance()->setObjectAsRoot(_viewObject, _viewName);
 	_viewObjectClass = new libraryObjects::ObjectClass();
 
 	auto constructor = new types::Constructor();
@@ -136,7 +136,7 @@ void qtengine::ViewManager::onOpenView(const QString &viewPath)
 	}
 	_viewIsOpened = true;
 	_viewObject = libraryObjects::ViewConverter().deserialize(json["Engine"].toObject());
-	libraryObjects::ObjectManager::instance()->setObjectAsRoot(_viewObject);
+	libraryObjects::ObjectManager::instance()->setObjectAsRoot(_viewObject, fileInfo.baseName());
 	if (!_viewObject) { qCritical() << "Impossible to open" << _viewPath; return; }
 	_viewPath = fileInfo.absoluteFilePath();
 	_viewName = fileInfo.baseName();
