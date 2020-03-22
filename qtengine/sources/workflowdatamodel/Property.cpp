@@ -188,7 +188,7 @@ QString qtengine::Property::code() const
 		} else {
 			ret += _property->type() + " E_VAR()_E = ";
 			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->";
-			ret += _property->getterName() + "(" + _property->name() + ");\nE_CODE(0)_E";
+			ret += _property->getterName() + "(\"" + _property->name() + "\").value<" + _property->type() + ">();\nE_CODE(0)_E";
 		}
 	} else {
 		if (_property->isUserType()) {
@@ -196,7 +196,7 @@ QString qtengine::Property::code() const
 			ret += _property->setterName() + "(E_USEVAR(1)_E);\nE_CODE(0)_E";
 		} else {
 			ret += libraryObjects::ObjectManager::instance()->objectName(_objectId) + "->";
-			ret += _property->setterName() + "(" + _property->name() + "QVariant::fromValue(E_USEVAR(1)_E));\nE_CODE(0)_E";
+			ret += _property->setterName() + "(\"" + _property->name() + "\"QVariant::fromValue(E_USEVAR(1)_E));\nE_CODE(0)_E";
 		}
 	}
 	return ret;

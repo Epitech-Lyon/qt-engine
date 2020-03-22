@@ -14,6 +14,8 @@
 #include <QtCore/QTextStream>
 #include <QtCore/QMetaMethod>
 
+#include "ClassTypeExporter.hpp"
+
 #define QT_ENGINE_HEADER								\
 "/***********************************************************\n\
     THIS FILE HAS BEEN GENERATED AUTOMATICLY BY QT-ENGINE\n\
@@ -29,22 +31,27 @@ namespace libraryObjects {
 	class Exporter : public QThread {
 		Q_OBJECT
 
-	public:
-		Exporter(const QString &exportedDirPath, bool generateMain, const QStringList &views);
-		~Exporter();
+		public:
+			Exporter(const QString &exportedDirPath, bool generateMain, const QStringList &views);
+			~Exporter();
 
-		void run() override;
-		void writeObjectSource(QTextStream &stream, QList<QPair<QString, QString>> &vars, const QJsonObject &data, unsigned int tabWidth = 0, const QJsonObject *parent = nullptr);
-		void writeClass(QString sourceFile, QString headerFile, QJsonObject data);
-		QJsonObject loadJson(QString file);
+			void run() override;
+			void writeObjectSource(QTextStream &stream, QList<QPair<QString, QString>> &vars, const QJsonObject &data, unsigned int tabWidth = 0, const QJsonObject *parent = nullptr);
+			void writeMain(QString sourceFile, QString className);
+			void writeClass(QString sourceFile, QString headerFile, QJsonObject data);
+			void writeConstructors(QTextStream &source, const QMap<QMetaMethod::Access, QList<std::shared_ptr<ClassTypeExporter>>> &funs, QString className);
+			void writeMethods(QTextStream &source, const QMap<QMetaMethod::Access, QList<std::shared_ptr<ClassTypeExporter>>> &funs, QString className);
+			void writeSlots(QTextStream &source, const QMap<QMetaMethod::Access, QList<std::shared_ptr<ClassTypeExporter>>> &funs, QString className);
+			void writeProperties(QTextStream &source, const QMap<QMetaMethod::Access, QList<std::shared_ptr<ClassTypeExporter>>> &funs, QString className);
+			QJsonObject loadJson(QString file);
 
-	signals:
-		void currentViewExportedChanged(int index);
-		void error(const QString &errorMessage);
+		signals:
+			void currentViewExportedChanged(int index);
+			void error(const QString &errorMessage);
 
-	private:
-		QString _exportedDirPath;
-		bool _generateMain;
-		QStringList _views;
+		private:
+			QString _exportedDirPath;
+			bool _generateMain;
+			QStringList _views;
 	};
 }

@@ -169,7 +169,7 @@ QString types::Constructor::signature() const
 	if (!isValid()) { return ""; }
 	QString signature;
 	
-	signature += _className + "::" + _className + "(";
+	signature += _className + "(";
 	for (int i = 0; i < _parameters.size(); i += 1) {
 		if (i)
 			signature += ", ";
