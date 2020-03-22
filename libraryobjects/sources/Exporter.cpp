@@ -8,6 +8,9 @@
 #include "moc_Exporter.cpp"
 #include "Exporter.hpp"
 
+#include "ClassType.hpp"
+#include "Method.hpp"
+#include "Slot.hpp"
 #include "ClassTypeExporter.hpp"
 #include "QVariantConverter.hpp"
 
@@ -69,7 +72,10 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 			throw "Malformed Json";
 		if (parent->keys()[0].contains(QRegExp("[Ll]ayout"))) {
 			stream << ";" << Qt::endl;
-			stream << tabs << "_" << name << "->setLayout(_" << p_name << ");" << Qt::endl;
+			if (data.keys()[0].contains(QRegExp("[Ll]ayout")))
+				stream << tabs << "_" << name << "->addLayout(_" << p_name << ");" << Qt::endl;
+			else
+				stream << tabs << "_" << name << "->setLayout(_" << p_name << ");" << Qt::endl;
 		} else
 			stream << "(_" << p_name << ");" << Qt::endl;
 	} else
@@ -93,10 +99,12 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 	vars.append(QPair<QString, QString>(data.keys()[0], name));
 }
 
-void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonObject data)
+void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonObject obj)
 {
 	QFile sourceFile(source);
 	QFile headerFile(header);
+	QJsonObject data = obj["Engine"].toObject();
+	QMap<types::ClassType::Type, QMap<QMetaMethod::Access, QList<std::shared_ptr<ClassTypeExporter>>>> functions;
 
 	if (data.keys().size() != 1)
 		throw "Malformed Json";
@@ -109,6 +117,29 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 	QString className = QFileInfo(sourceFile).baseName();
 	QString type = data.keys()[0];
 
+	// Export functions
+	{
+		QJsonObject jsonClass = obj["Class"].toObject();
+		// auto constructors = jsonClass["constructors"].toArray();
+		auto slot = jsonClass["slots"].toArray();
+		auto signal = jsonClass["signals"].toArray();
+		auto methods = jsonClass["methods"].toArray();
+		// auto properties = jsonClass["properties"].toArray();
+
+		auto fun = [&functions](const QJsonArray &array, types::ClassType::Type type) {
+			for (auto iter : array) {
+				ClassTypeExporter *exporter = new ClassTypeExporter(iter.toObject());
+
+				functions[type][exporter->classType()->access()].push_back(std::shared_ptr<ClassTypeExporter>(exporter));
+			}
+		};
+		// fun(constructors, types::ClassType::Type::CONSTRUCTOR);
+		fun(slot, types::ClassType::Type::SLOT);
+		fun(signal, types::ClassType::Type::SIGNAL);
+		fun(methods, types::ClassType::Type::METHOD);
+	}
+
+	// source file
 	stream << QT_ENGINE_HEADER << Qt::endl << Qt::endl;
 	headerStream << QT_ENGINE_HEADER << Qt::endl << Qt::endl;
 	stream << "#include \"" << QFileInfo(headerFile).fileName() << "\"" << Qt::endl << Qt::endl;
@@ -117,13 +148,71 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 	stream << "{" << Qt::endl;
 	writeObjectSource(stream, vars, data, 1);
 	stream << "}" << Qt::endl << Qt::endl;
+	// TODO add constructors here
 	stream << EXPORT_NAMESPACE << "::" << className << "::~" <<
 		className << "()" << Qt::endl << "{" << Qt::endl;
 	for (const auto &key : vars)
 		stream << "\t" << "delete _" << key.second << ";" << Qt::endl;
 	stream << "}" << Qt::endl;
+	for (const auto &funs : functions[types::ClassType::Type::METHOD]) {
+		for (const auto &iter : funs) {
+			auto a = dynamic_cast<types::Method *>(iter->classType());
+			QString sep = "";
+			QString tabs = "\t";
+			auto body = iter->body().split("\n");
+
+			if (!a)
+				throw "Dynamic cast to 'types::Method *' failed";
+			stream << Qt::endl << (a->isStatic() ? "static " : "") << a->returnType() << " " <<
+				EXPORT_NAMESPACE << "::" << className << "::" << a->name() << "(";
+			for (const auto &params : a->parameters()) {
+				stream << sep << params.first << (params.second.isEmpty() ? "" : " " + params.second);
+				sep = ", ";
+			}
+			stream << ")" << (a->isConst() ? " const" : "") << Qt::endl << "{" << Qt::endl;
+			for (const auto &line : body) {
+				if (line.isEmpty())
+					continue;
+				if (line[0] == '}')
+					tabs.remove(0, 1);
+				if (line[line.size() - 1] == '{')
+					tabs += "\t";
+				stream << tabs << line << Qt::endl;
+			}
+			stream << "}" << Qt::endl;
+		}
+	}
+	for (const auto &funs : functions[types::ClassType::Type::SLOT]) {
+		for (const auto &iter : funs) {
+			auto a = dynamic_cast<types::Slot *>(iter->classType());
+			QString sep = "";
+			QString tabs = "\t";
+			auto body = iter->body().split("\n");
+
+			if (!a)
+				throw "Dynamic cast to 'types::Slot *' failed";
+			stream << Qt::endl << "void " << EXPORT_NAMESPACE << "::" <<
+				className << "::" << a->name() << "(";
+			for (const auto &params : a->parameters()) {
+				stream << sep << params.first << (params.second.isEmpty() ? "" : " " + params.second);
+				sep = ", ";
+			}
+			stream << ")" << (a->isConst() ? " const" : "") << Qt::endl << "{" << Qt::endl;
+			for (const auto &line : body) {
+				if (line.isEmpty())
+					continue;
+				if (line[0] == '}')
+					tabs.remove(0, 1);
+				if (line[line.size() - 1] == '{')
+					tabs += "\t";
+				stream << tabs << line << Qt::endl;
+			}
+			stream << "}" << Qt::endl;
+		}
+	}
 	stream.flush();
 
+	// header file
 	for (const auto &key : vars)
 		headerStream << "#include <QtWidgets/" << key.first << ">" << Qt::endl; // TODO FIXME HACK This only work if the widget is from QT's base classes
 	headerStream << "#include <QtCore/QVariant>" << Qt::endl;
@@ -134,9 +223,25 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 	headerStream << "\t\tpublic:" << Qt::endl;
 	headerStream << "\t\t\t" << className << "(QWidget *parent = nullptr);" << Qt::endl;
 	headerStream << "\t\t\t~" << className << "();" << Qt::endl << Qt::endl;
+	for (const auto &funs : functions) {
+		for (const auto &iter : funs[QMetaMethod::Access::Public]) {
+			headerStream << "\t\t\t" << iter->signature() << ";" << Qt::endl;
+		}
+	}
 	headerStream << "\t\tprivate:" << Qt::endl;
+	for (const auto &funs : functions) {
+		for (const auto &iter : funs[QMetaMethod::Access::Private]) {
+			headerStream << "\t\t\t" << iter->signature() << ";" << Qt::endl;
+		}
+	}
 	for (const auto &key : vars)
 		headerStream << "\t\t\t" << key.first << " *_" << key.second << ";" << Qt::endl;
+	headerStream << "\t\tprotected:" << Qt::endl;
+	for (const auto &funs : functions) {
+		for (const auto &iter : funs[QMetaMethod::Access::Protected]) {
+			headerStream << "\t\t\t" << iter->signature() << ";" << Qt::endl;
+		}
+	}
 	headerStream << "\t};" << Qt::endl;
 	headerStream << "}" << Qt::endl;
 	sourceFile.close();
@@ -156,20 +261,7 @@ void libraryObjects::Exporter::run()
 			QString baseName = QFileInfo(_views[i]).baseName();
 			QJsonObject json = loadJson(QFileInfo(_views[i]).filePath());
 
-			// Export functions
-			{
-				QJsonObject jsonClass = json["Class"].toObject();
-
-				for (auto key : jsonClass.keys())
-					for (auto classTypeJsonRef : jsonClass[key].toArray()) {
-						ClassTypeExporter classTypeExporter(classTypeJsonRef.toObject());
-
-						qDebug() << classTypeExporter.signature();
-						if (classTypeExporter.hasBody())
-							qDebug().noquote() << classTypeExporter.body() << "\n";
-					}
-			}
-			writeClass(_exportedDirPath + "/" + baseName + ".cpp", _exportedDirPath + "/" + baseName + ".hpp", json["Engine"].toObject());
+			writeClass(_exportedDirPath + "/" + baseName + ".cpp", _exportedDirPath + "/" + baseName + ".hpp", json);
 			emit currentViewExportedChanged(i);
 		}
 	} catch (const char *e) {

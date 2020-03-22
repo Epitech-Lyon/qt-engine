@@ -58,6 +58,7 @@ QString libraryObjects::QVariantConverter::toString(const QVariant &value)
 		case QVariant::SizeF:
 		case QVariant::Cursor:
 		case QVariant::SizePolicy:
+		case QVariant::KeySequence:
 		{
 			QString out;
 
@@ -78,7 +79,7 @@ QString libraryObjects::QVariantConverter::toString(const QVariant &value)
 		}
 		default:
 			if (type != QVariant::Bool && type != QVariant::Int && QVariant::Double != type && type != QVariant::String)
-				qDebug() << value;
+				qDebug() << "UNHANDLED QVARIANT ! :" << value;
 			return value.toString();
 	}
 }

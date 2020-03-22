@@ -12,6 +12,7 @@
 #include <QtCore/QFile>
 #include <QtCore/QJsonObject>
 #include <QtCore/QTextStream>
+#include <QtCore/QMetaMethod>
 
 #define QT_ENGINE_HEADER								\
 "/***********************************************************\n\
