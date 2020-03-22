@@ -44,7 +44,10 @@ bool libraryObjects::Menu::insertAction(AObject *parent, int index, AObject *chi
 	auto action = dynamic_cast<QAction*>(child->object());
 	if (!action) { return false; }
 
-	menu->insertAction(menu->actions().at(index), action);
+	if (index >= 0 && index < menu->actions().size())
+		menu->insertAction(menu->actions().at(index), action);
+	else
+		menu->addAction(action);
 	parent->insertChild(index, child);
 	return true;
 }
@@ -70,7 +73,10 @@ bool libraryObjects::Menu::insertMenu(AObject *parent, int index, AObject *child
 	auto subMenu = dynamic_cast<QMenu*>(child->object());
 	if (!subMenu) { return false; }
 
-	menu->insertMenu(menu->actions().at(index), subMenu);
+	if (index >= 0 && index < menu->actions().size())
+		menu->insertMenu(menu->actions().at(index), subMenu);
+	else
+		menu->addMenu(subMenu);
 	parent->insertChild(index, child);
 	return true;
 }
