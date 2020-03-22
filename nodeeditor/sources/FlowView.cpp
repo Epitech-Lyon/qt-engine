@@ -111,29 +111,34 @@ void FlowView::openMenu(const QPoint &pos, bool createIfOnlyOne)
 
 	QMap<QString, QTreeWidgetItem*> itemsParent;
 	QMap<QString, QTreeWidgetItem*> items;
-	for (auto const &cat : _scene->registry().categories()) {
+	for (auto const &assoc : _scene->registry().registeredModelsCategoryAssociation()) {
 		QString catFormated;
 
-		for (auto catSegmented : cat.split("/")) {
-			QString catFormatedParent = catFormated;
-			bool isTopLevel = catFormatedParent.isEmpty();
-			catFormated = isTopLevel ? catSegmented : catFormated + "/" + catSegmented;
-			
-			if (!itemsParent.contains(catFormated)) {
-				auto parentItem = isTopLevel ? treeView->invisibleRootItem() : itemsParent[catFormatedParent];
-				auto item = new QTreeWidgetItem(parentItem);
-				item->setText(0, catSegmented);
-				item->setData(0, Qt::UserRole, skipText);
-				itemsParent[catFormated] = item;
+		for (auto catSegmented : assoc.second.first.split("/"))
+			if (!catSegmented.isEmpty()) {
+				QString catFormatedParent = catFormated;
+				bool isTopLevel = catFormatedParent.isEmpty();
+				catFormated = isTopLevel ? catSegmented : catFormated + "/" + catSegmented;
+				
+				if (!itemsParent.contains(catFormated)) {
+					auto parentItem = isTopLevel ? treeView->invisibleRootItem() : itemsParent[catFormatedParent];
+					auto item = new QTreeWidgetItem(parentItem);
+					item->setText(0, catSegmented);
+					item->setData(0, Qt::UserRole, skipText);
+					itemsParent[catFormated] = item;
+				}
 			}
-		}
-	}
-	for (auto const &assoc : _scene->registry().registeredModelsCategoryAssociation()) {
-		auto parent = itemsParent[assoc.second];
-		auto item   = new QTreeWidgetItem(parent);
-		item->setText(0, assoc.first);
+
+		auto item = new QTreeWidgetItem();
+		item->setText(0, assoc.second.second);
 		item->setData(0, Qt::UserRole, assoc.first);
-		items[assoc.first] = item;
+		items[assoc.second.second] = item;
+
+		auto parent = itemsParent[assoc.second.first];
+		if (parent)
+			parent->addChild(item);
+		else
+			treeView->invisibleRootItem()->insertChild(0, item);
 	}
 
 	connect(treeView, &QTreeWidget::itemClicked, [&](QTreeWidgetItem *item, int)

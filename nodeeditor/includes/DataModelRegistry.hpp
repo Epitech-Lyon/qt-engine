@@ -1,9 +1,7 @@
 #pragma once
 
-#include <set>
 #include <memory>
 #include <functional>
-#include <unordered_map>
 #include <map>
 #include <vector>
 
@@ -22,8 +20,7 @@ namespace QtNodes {
 		using RegistryItemPtr = std::unique_ptr<NodeDataModel>;
 		using RegistryItemCreator = std::function<RegistryItemPtr()>;
 		using RegisteredModelCreatorsMap = std::map<QString, RegistryItemCreator>;
-		using RegisteredModelsCategoryMap = std::map<QString, QString>;
-		using CategoriesSet = std::set<QString>;
+		using RegisteredModelsCreatorsMap = std::map<QString, std::pair<QString, QString>>;
 		using RegisteredTypeConvertersMap = std::map<TypeConverterId, TypeConverter>;
 
 		DataModelRegistry() = default;
@@ -36,12 +33,12 @@ namespace QtNodes {
 		DataModelRegistry &operator=(DataModelRegistry &&) = default;
 
 	public:
-		template<typename ModelType> void registerModel(RegistryItemCreator creator, QString const &category = "Nodes")
+		template<typename ModelType> void registerModel(RegistryItemCreator creator, QString const &category = "")
 		{
 			registerModelImpl<ModelType>(std::move(creator), category);
 		}
 
-		template<typename ModelType> void registerModel(QString const &category = "Nodes")
+		template<typename ModelType> void registerModel(QString const &category = "")
 		{
 			RegistryItemCreator creator = [](){ return std::unique_ptr<ModelType>(new ModelType); };
 			registerModelImpl<ModelType>(std::move(creator), category);
@@ -64,15 +61,12 @@ namespace QtNodes {
 		void concatenate(DataModelRegistry *registry);
 
 		std::unique_ptr<NodeDataModel> create(QString const &modelName);
-		RegisteredModelCreatorsMap const &registeredModelCreators() const;
-		RegisteredModelsCategoryMap const &registeredModelsCategoryAssociation() const;
+		RegisteredModelsCreatorsMap const &registeredModelsCategoryAssociation() const { return _registeredModelsCategory; }
 
-		CategoriesSet const &categories() const;
 		TypeConverter getTypeConverter(NodeDataType const &d1, NodeDataType const &d2) const;
 
 	private:
-		RegisteredModelsCategoryMap _registeredModelsCategory;
-		CategoriesSet _categories;
+		RegisteredModelsCreatorsMap _registeredModelsCategory;
 		RegisteredModelCreatorsMap _registeredItemCreators;
 		RegisteredTypeConvertersMap _registeredTypeConverters;
 
@@ -89,21 +83,21 @@ namespace QtNodes {
 		template<typename ModelType> typename std::enable_if< HasStaticMethodName<ModelType>::value>::type registerModelImpl(RegistryItemCreator creator, QString const &category)
 		{
 			const QString name = ModelType::Name();
+			const QString modelPath = category + name;
 
-			if (_registeredItemCreators.count(name) == 0) {
-				_registeredItemCreators[name] = std::move(creator);
-				_categories.insert(category);
-				_registeredModelsCategory[name] = category;
+			if (_registeredItemCreators.count(modelPath) == 0) {
+				_registeredItemCreators[modelPath] = std::move(creator);
+				_registeredModelsCategory[modelPath] = { category, name};
 			}
 		}
 		template<typename ModelType> typename std::enable_if< !HasStaticMethodName<ModelType>::value>::type registerModelImpl(RegistryItemCreator creator, QString const &category )
 		{
 			const QString name = creator()->name();
+			const QString modelPath = category + name;
 
-			if (_registeredItemCreators.count(name) == 0) {
-				_registeredItemCreators[name] = std::move(creator);
-				_categories.insert(category);
-				_registeredModelsCategory[name] = category;
+			if (_registeredItemCreators.count(modelPath) == 0) {
+				_registeredItemCreators[modelPath] = std::move(creator);
+				_registeredModelsCategory[modelPath] = { category, name};
 			}
 		}
 	};

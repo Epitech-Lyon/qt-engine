@@ -3,6 +3,7 @@
 
 #include <stdexcept>
 #include <utility>
+#include <set>
 
 #include <QtWidgets/QGraphicsSceneMoveEvent>
 #include <QtWidgets/QFileDialog>

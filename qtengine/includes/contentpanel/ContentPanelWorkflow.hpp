@@ -49,7 +49,7 @@ namespace qtengine {
 		void onSaveRequested();
 
 	private:
-		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryBuiltIn() const;
+		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryTypeFunction() const;
 		std::shared_ptr<QtNodes::DataModelRegistry> generateRegistryObjectClass(libraryObjects::ObjectClass *objectClass, QMetaMethod::Access minimumAccess, const QUuid &objectId) const;
 
 		TreeWidgetWorkflow *_tree;

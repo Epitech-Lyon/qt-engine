@@ -29,6 +29,7 @@
 
 #include "Start.hpp"
 #include "Return.hpp"
+#include "Function.hpp"
 #include "If.hpp"
 #include "While.hpp"
 #include "Constructor.hpp"
@@ -74,18 +75,31 @@ void qtengine::ContentPanelWorkflow::init()
 	connect(Manager::instance()->viewManager(), &ViewManager::saveRequested, this, &ContentPanelWorkflow::onSaveRequested);
 }
 
-std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistryBuiltIn() const
+std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::generateRegistryTypeFunction() const
 {
 	auto registry = std::make_shared<QtNodes::DataModelRegistry>();
 
-	for (auto type : types::ClassTypeManager::instance()->types())
-		if (!types::ClassTypeManager::instance()->isCustomType(type))
-			registry->registerModel<BuiltIn>("Built-in", [type]() {
+	for (auto type : types::ClassTypeManager::instance()->types()) {
+		if (type == types::ClassTypeManager::instance()->type(QMetaType::Void)) { continue; }
+
+		if (!types::ClassTypeManager::instance()->isCustomType(type)) {
+			registry->registerModel<BuiltIn>(type, [type]() {
 				auto modelBuiltIn = std::unique_ptr<BuiltIn>(new BuiltIn());
 
 				modelBuiltIn->setData(types::ClassTypeManager::instance()->typeValue(type));
 				return modelBuiltIn;
 			});
+		}
+		for (auto &function : types::ClassTypeManager::instance()->functionsForType(type)) {
+			registry->registerModel<Function>(type, [function]() {
+				auto modelFunction = std::unique_ptr<Function>(new Function());
+
+				modelFunction->setData(function);
+				return modelFunction;
+			});
+		}
+	}
+	registry->addPrefix("Type/");
 	return registry;
 }
 
@@ -163,6 +177,7 @@ std::shared_ptr<QtNodes::DataModelRegistry> qtengine::ContentPanelWorkflow::gene
 			return modelProperty;
 		});
 	}
+	registry->addPrefix("base class/");
 	return registry;
 }
 
@@ -178,8 +193,7 @@ void qtengine::ContentPanelWorkflow::onObjectChanged(libraryObjects::AObject *ob
 	libraryObjects::ObjectClass objectClass(object->object()->metaObject());
 
 	auto registry = generateRegistryObjectClass(&objectClass, QMetaMethod::Protected, object->id());
-	registry->addPrefix("base class/");
-	registry->concatenate(generateRegistryBuiltIn().get());
+	registry->concatenate(generateRegistryTypeFunction().get());
 	registry->registerModel<If>();
 	registry->registerModel<While>();
 
@@ -238,6 +252,7 @@ void qtengine::ContentPanelWorkflow::onClassTypeDoubleClicked(types::ClassType *
 			return std::unique_ptr<Return>(new Return(types::ClassTypeManager::instance()->type(QMetaType::Void)));
 		}
 	});
+	tmpRegistry->registerModel<Function>();
 	tmpRegistry->registerModel<If>();
 	tmpRegistry->registerModel<While>();
 	tmpRegistry->registerModel<BuiltIn>();
