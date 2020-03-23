@@ -88,19 +88,6 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 			deserialize(p_obj[JSON_PROPERTIES_NAME].toObject()[JSON_OBJECT_NAME].toString()).toString();
 
 		stream << tabs << name << " = new " << data.keys()[0] << ";" << Qt::endl;
-		/*
-		if (tabWidth == 2)
-			p_name = "this";
-		if (p_name.isNull() || p_obj.empty())
-			throw "Malformed Json";
-		if (parent->keys()[0].contains(QRegExp("[Ll]ayout"))) {
-			if (data.keys()[0].contains(QRegExp("[Ll]ayout")))
-				stream << tabs << name << "->addLayout(" << p_name << ");" << Qt::endl;
-			else
-				stream << tabs << name << "->setLayout(" << p_name << ");" << Qt::endl;
-		} else
-			stream << tabs << name << "->setParent(" << p_name << ");" << Qt::endl;
-		*/
 	}
 	if (!childs.empty()) {
 		if (parent)
