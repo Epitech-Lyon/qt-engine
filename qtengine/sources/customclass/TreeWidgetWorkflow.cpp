@@ -20,6 +20,7 @@
 #include "LibraryObjectManager.hpp"
 #include "MimeDataObject.hpp"
 #include "types/includes/Constructor.hpp"
+#include "types/includes/Property.hpp"
 
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QPushButton>
@@ -192,6 +193,30 @@ QMimeData *qtengine::TreeWidgetWorkflow::mimeData(const QList<QTreeWidgetItem *>
 	auto classType = types::ClassType::construct(classTypeSelected->type());
 	classType->deserialize(classTypeSelected->serialize());
 	objectClass->addClassType(classType);
+
+	if (classType->type() == types::ClassType::PROPERTY) {
+		auto property = dynamic_cast<types::Property*>(classType);
+		auto functionMetaObject = libraryObjects::LibraryObjectManager::instance()->metaObjectOfType(property->type());
+
+		if (functionMetaObject) {
+			auto metaObject = functionMetaObject();
+
+			libraryObjects::ObjectClass propertyObjectClass(&metaObject);
+			auto reverse = [objectClass, &propertyObjectClass](types::ClassType::Type type) {
+				auto classTypeList = propertyObjectClass.getClassType(type);
+
+				for (auto classType : classTypeList) {
+					propertyObjectClass.removeClassType(classType);
+					objectClass->addClassType(classType);
+				}
+			};
+
+			reverse(types::ClassType::METHOD);
+			reverse(types::ClassType::SLOT);
+			reverse(types::ClassType::SIGNAL);
+			reverse(types::ClassType::PROPERTY);
+		}
+	}
 
 	QMimeData *mimeData = QTreeWidget::mimeData(items);
 	auto mimeDataObject = new MimeDataObject(objectClass, nullptr, classType->type() == types::ClassType::CONSTRUCTOR ? nullptr : _object);

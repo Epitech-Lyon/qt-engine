@@ -23,6 +23,11 @@ namespace libraryObjects {
 
 		~Object() = default;
 
+		static const QMetaObject staticMetaObject()
+		{
+			return Obj::staticMetaObject;
+		}
+
 		static void init(AObject *)
 		{
 		}

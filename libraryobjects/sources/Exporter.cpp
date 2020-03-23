@@ -124,8 +124,7 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 					libraryObjects::QVariantConverter::toString(value) << ");" << Qt::endl;
 		}
 	}
-	if (parent)
-		vars.append(QPair<QString, QString>(data.keys()[0], name));
+	vars.append(QPair<QString, QString>(data.keys()[0], name));
 }
 
 void libraryObjects::Exporter::writeConstructors(QTextStream &stream, const QMap<QMetaMethod::Access, QList<std::shared_ptr<ClassTypeExporter>>> &functions, QString className)
@@ -246,8 +245,8 @@ void libraryObjects::Exporter::writeProperties(QTextStream &stream, const QMap<Q
 			}
 			if (!setter.isEmpty()) {
 				stream << Qt::endl << "void " << EXPORT_NAMESPACE << "::" <<
-					className << "::" << setter << "(const " << a->type() << "& value)" << Qt::endl << "{" << Qt::endl;
-				stream << "\t " << a->name() << " = value;" << Qt::endl << "}" << Qt::endl;
+					className << "::" << setter << "(" << a->type() << " value)" << Qt::endl << "{" << Qt::endl;
+				stream << "\t" << a->name() << " = value;" << Qt::endl << "}" << Qt::endl;
 			}
 		}
 	}
@@ -303,7 +302,7 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 		className << "()" << Qt::endl << "{" << Qt::endl;
 	for (const auto &key : vars)
 		stream << "\t" << "delete " << key.second << ";" << Qt::endl;
-	stream << "}" << Qt::endl;
+	stream << "}" << Qt::endl << Qt::endl;
 	writeConstructors(stream, functions[types::ClassType::Type::CONSTRUCTOR], className);
 	stream << "void " << EXPORT_NAMESPACE << "::" << className << "::__init__()" << Qt::endl;
 	stream << "{" << Qt::endl;
@@ -346,17 +345,15 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 	headerStream << "\t\t\t~" << className << "();" << Qt::endl << Qt::endl;
 
 	auto putGetter = [&headerStream](types::Property *a) {
-		QString getter;
-		QString setter;
-
 		if (!a)
 			throw "Dynamic cast to 'types::Property *' failed";
-		getter = a->getterName();
-		setter = a->setterName();
+
+		QString getter = a->getterName();
+		QString setter = a->setterName();
 		if (!getter.isEmpty())
-			headerStream << Qt::endl << "\t\t\t" << a->type() << " " << getter << "() const;" << Qt::endl;
+			headerStream << "\t\t\t" << a->type() << " " << getter << "() const;" << Qt::endl;
 		if (!setter.isEmpty())
-			headerStream << Qt::endl << "\t\t\tvoid " << setter << "(" << a->type() << " value);" << Qt::endl;
+			headerStream << "\t\t\tvoid " << setter << "(" << a->type() << " value);" << Qt::endl;
 	};
 	for (const auto &funs : functions) {
 		for (const auto &iter : funs[QMetaMethod::Access::Public]) {
@@ -368,7 +365,7 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 	}
 	for (const auto &key : vars)
 		headerStream << "\t\t\t" << key.first << " *" << key.second << ";" << Qt::endl;
-	headerStream << "\t\tprivate:" << Qt::endl;
+	headerStream << Qt::endl << "\t\tprivate:" << Qt::endl;
 	headerStream << "\t\t\tvoid __init__();" << Qt::endl;
 	for (const auto &funs : functions) {
 		for (const auto &iter : funs[QMetaMethod::Access::Private]) {

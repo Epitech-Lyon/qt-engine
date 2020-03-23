@@ -107,12 +107,14 @@ void qtengine::ContentPanelViewExplorer::onLibraryObjectDropped(libraryObjects::
 		oldParentItem->removeChild(childItem);
 
 		function.functionRemove(reference->parent(), reference);
-		function.functionAdd(parent, index, reference);
-		newParentItem->insertChild(index, childItem);
-		newParentItem->setExpanded(true);
-		_tree->expandRecursivelyItemFor(reference);
-		_tree->setCurrentItem(newParentItem);
-		Manager::instance()->viewManager()->setCurrentObject(reference);
+		if (function.functionAdd(parent, index, reference)) {
+			newParentItem->insertChild(index, childItem);
+			newParentItem->setExpanded(true);
+			_tree->expandRecursivelyItemFor(reference);
+			_tree->setCurrentItem(newParentItem);
+			Manager::instance()->viewManager()->setCurrentObject(reference->parent());
+		} else
+			delete reference;
 	} else {
 		auto childObject = child->constructor();
 		if (!childObject) { return; }

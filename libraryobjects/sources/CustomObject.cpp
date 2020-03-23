@@ -29,8 +29,10 @@ void libraryObjects::CustomObject::registerAsLibraryObject(const QString &path)
 
 		if (root) {
 			object = root->object();
-			object->setObjectName(QFileInfo(path).baseName());
-			classHierarchy = root->classHierarchy() + "::" + object->objectName();
+			QString objectName = QFileInfo(path).baseName();
+			objectName = objectName.replace(0, 1, objectName.front().toLower());
+			object->setObjectName(objectName);
+			classHierarchy = root->classHierarchy() + "::" + QFileInfo(path).baseName();
 			root->removeObject();
 			delete root;
 			ret = new CustomObject(object, classHierarchy);
@@ -45,8 +47,9 @@ void libraryObjects::CustomObject::registerAsLibraryObject(const QString &path)
 
 	if (object) {
 		auto librayObject = new LibraryObject(constructor, serializeData, deserializeData, object->classHierarchy(), classIncludePath, QIcon(), new LibraryFunction(), code);
+		auto metaObject = LibraryObjectManager::instance()->metaObjectOf(object->classHierarchy());
 
-		LibraryObjectManager::instance()->registerCustomObject(QFileInfo(path).fileName(), librayObject);
+		LibraryObjectManager::instance()->registerCustomObject(QFileInfo(path).fileName(), librayObject, metaObject);
 		delete object;
 	}
 }

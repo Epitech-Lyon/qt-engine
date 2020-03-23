@@ -15,6 +15,7 @@
 #include "EFileSystemModel.hpp"
 
 #include "EObject.hpp"
+#include "ETimer.hpp"
 #include "EAction.hpp"
 #include "EWidget.hpp"
 #include "ELineEdit.hpp"
@@ -46,6 +47,7 @@ libraryObjects::LibraryObjectManager::LibraryObjectManager()
 {
 	// QObject
 	registerObject<EObject>();
+	registerObject<ETimer>();
 	registerObject<EAction>();
 
 	// QObject::QAbstractItemModel
@@ -160,10 +162,11 @@ libraryObjects::LibraryObject *libraryObjects::LibraryObjectManager::libraryObje
 	return libraryObjectOfClassName(className);
 }
 
-void libraryObjects::LibraryObjectManager::registerCustomObject(const QString &name, LibraryObject *libraryObject)
+void libraryObjects::LibraryObjectManager::registerCustomObject(const QString &name, LibraryObject *libraryObject, FunctionMetaObject functionMetaObject)
 {
 	_customObjects[name] = libraryObject;
 	_libraryObjects.append(libraryObject);
+	_metaObjects[libraryObject] = functionMetaObject;
 	types::ClassTypeManager::instance()->registerType(libraryObject->className() + "*");
 }
 
@@ -172,6 +175,7 @@ void libraryObjects::LibraryObjectManager::unregisterCustomObject(const QString 
 	auto libraryObject = _customObjects.take(name);
 
 	_libraryObjects.removeAll(libraryObject);
+	_metaObjects.remove(libraryObject);
 	types::ClassTypeManager::instance()->unregisterType(libraryObject->className() + "*");
 	delete libraryObject;
 }
@@ -180,8 +184,25 @@ void libraryObjects::LibraryObjectManager::unregisterAllCustomObjects()
 {
 	for (auto libraryObject : _customObjects) {
 		_libraryObjects.removeAll(libraryObject);
+		_metaObjects.remove(libraryObject);
 		types::ClassTypeManager::instance()->unregisterType(libraryObject->className() + "*");
 		delete libraryObject;
 	}
 	_customObjects.clear();
+}
+
+libraryObjects::LibraryObjectManager::FunctionMetaObject libraryObjects::LibraryObjectManager::metaObjectOf(const QString &classHierarchy) const
+{
+	auto libraryObject = libraryObjectOf(classHierarchy);
+	if (!libraryObject) { return nullptr; }
+
+	return _metaObjects[libraryObject];
+}
+
+libraryObjects::LibraryObjectManager::FunctionMetaObject libraryObjects::LibraryObjectManager::metaObjectOfType(const QString &type) const
+{
+	auto libraryObject = libraryObjectOfType(type);
+	if (!libraryObject) { return nullptr; }
+
+	return _metaObjects[libraryObject];
 }
