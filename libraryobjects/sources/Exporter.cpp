@@ -100,14 +100,14 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 		} else
 			stream << tabs << name << "->setParent(" << p_name << ");" << Qt::endl;
 		*/
-	} else
-		stream << ";" << Qt::endl;
-	stream << Qt::endl;
+	}
 	if (!childs.empty()) {
-		stream << tabs << "{" << Qt::endl;
+		if (parent)
+			stream << tabs << "{" << Qt::endl;
 		for (const auto &iter : childs)
-			writeObjectSource(stream, vars, iter.toObject(), tabWidth + 1, &data);
-		stream << tabs << "}" << Qt::endl << Qt::endl;
+			writeObjectSource(stream, vars, iter.toObject(), (parent ? tabWidth + 1 : tabWidth), &data);
+		if (parent)
+			stream << tabs << "}" << Qt::endl << Qt::endl;
 	}
 	if (!props.empty()) {
 		for (auto key : props.keys()) {
@@ -148,9 +148,9 @@ void libraryObjects::Exporter::writeConstructors(QTextStream &stream, const QMap
 					continue;
 				if (line[0] == '}')
 					tabs.remove(0, 1);
+				stream << tabs << line << Qt::endl;
 				if (line[line.size() - 1] == '{')
 					tabs += "\t";
-				stream << tabs << line << Qt::endl;
 			}
 			stream << "}" << Qt::endl;
 		}
