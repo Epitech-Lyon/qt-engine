@@ -76,6 +76,7 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 		deserialize(obj[JSON_PROPERTIES_NAME].toObject()[JSON_OBJECT_NAME].toString()).toString();
 	QJsonArray childs = obj[JSON_CHILD_NAME].toArray();
 	QJsonObject props = obj[JSON_PROPERTIES_NAME].toObject();
+	bool test = false;
 
 	if (name.isNull() || obj.empty())
 		throw "Malformed Json";
@@ -100,29 +101,44 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 		} else
 			stream << tabs << name << "->setParent(" << p_name << ");" << Qt::endl;
 		*/
-	} else
-		stream << ";" << Qt::endl;
-	stream << Qt::endl;
+	}
 	if (!childs.empty()) {
-		stream << tabs << "{" << Qt::endl;
+		if (parent)
+			stream << tabs << "{" << Qt::endl;
 		for (const auto &iter : childs)
-			writeObjectSource(stream, vars, iter.toObject(), tabWidth + 1, &data);
-		stream << tabs << "}" << Qt::endl << Qt::endl;
+			writeObjectSource(stream, vars, iter.toObject(), (parent ? tabWidth + 1 : tabWidth), &data);
+		if (parent)
+			stream << tabs << "}" << Qt::endl << Qt::endl;
 	}
 	if (!props.empty()) {
 		for (auto key : props.keys()) {
 			auto value = libraryObjects::QVariantConverter::deserialize(props[key]);
 
+			if (key == "dynamic")
+				continue;
 			if (!value.isNull())
 				stream << tabs << (parent ? name : "this") << "->setProperty(\"" << key << "\", " <<
 					libraryObjects::QVariantConverter::toString(value) << ");" << Qt::endl;
 		}
 	}
 	for (auto line : obj[JSON_CODE_NAME].toString().split("\n"))
-		if (!line.isEmpty())
+		if (!line.isEmpty()) {
+			if (!test)
+				stream << Qt::endl;
+			test = true;
 			stream << tabs << line << Qt::endl;
+		}
+	test = false;
 	if (parent)
 		vars.append(QPair<QString, QString>(data.keys()[0], name));
+	for (const auto &line : props[JSON_DYNAMIC_PROPERTY].toObject()[JSON_CODE_PROPERTY].toString().split("\n")) {
+		if (!line.isEmpty()) {
+			if (!test)
+				stream << Qt::endl;
+			test = true;
+			stream << tabs << line << Qt::endl;
+		}
+	}
 }
 
 void libraryObjects::Exporter::writeConstructors(QTextStream &stream, const QMap<QMetaMethod::Access, QList<std::shared_ptr<ClassTypeExporter>>> &functions, QString className)
@@ -148,9 +164,9 @@ void libraryObjects::Exporter::writeConstructors(QTextStream &stream, const QMap
 					continue;
 				if (line[0] == '}')
 					tabs.remove(0, 1);
+				stream << tabs << line << Qt::endl;
 				if (line[line.size() - 1] == '{')
 					tabs += "\t";
-				stream << tabs << line << Qt::endl;
 			}
 			stream << "}" << Qt::endl;
 		}

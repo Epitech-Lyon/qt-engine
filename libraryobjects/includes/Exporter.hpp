@@ -23,6 +23,8 @@
  ************************************************************/"
 #define JSON_CHILD_NAME "Children"
 #define JSON_DATA_NAME "Data"
+#define JSON_DYNAMIC_PROPERTY "dynamic"
+#define JSON_CODE_PROPERTY "code"
 #define JSON_PROPERTIES_NAME "Properties"
 #define JSON_CODE_NAME "Code"
 #define JSON_OBJECT_NAME "objectName"
