@@ -113,7 +113,7 @@ std::shared_ptr<QtNodes::NodeData> qtengine::Property::data(QtNodes::PortType po
 			ret = std::shared_ptr<QtNodes::NodeData>(new Type(_property->type()));
 		break;
 	case QtNodes::PortType::Out:
-		if (!_get || !_property->isUserType())
+		if (!_get || (!_property->isUserType() && portIndex == 0))
 			ret = std::shared_ptr<QtNodes::NodeData>(new FlowController());
 		else
 			ret = std::shared_ptr<QtNodes::NodeData>(new Type(_property->type()));
