@@ -105,7 +105,7 @@ void types::ClassTypeManager::registerFunctionOperatorConditionalForType(const Q
 		{type, type},
 		this->type(QMetaType::Bool),
 		"operator" + operatorConditional,
-		this->type(QMetaType::Bool) + " E_USEVAR(1)_E " + operatorConditional + " E_USEVAR(2)_E;\nE_CODE(0)_E"
+		this->type(QMetaType::Bool) + " E_VAR()_E = E_USEVAR(1)_E " + operatorConditional + " E_USEVAR(2)_E;\nE_CODE(0)_E"
 	});
 }
 
