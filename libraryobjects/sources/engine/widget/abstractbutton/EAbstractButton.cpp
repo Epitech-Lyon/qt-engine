@@ -6,6 +6,7 @@
 */
 
 #include "EAbstractButton.hpp"
+#include "EWidget.hpp"
 #include "EObject.hpp"
 
 template<> void libraryObjects::EAbstractButton::init(AObject *object)
@@ -19,4 +20,9 @@ template<> void libraryObjects::EAbstractButton::init(AObject *object)
 template<> libraryObjects::LibraryFunction *libraryObjects::EAbstractButton::libraryFunction()
 {
 	return EObject::libraryFunction();
+}
+
+template<> QString libraryObjects::EAbstractButton::code(AObject *object)
+{
+	return EWidget::code(object);
 }

@@ -10,6 +10,7 @@
 #include "EObject.hpp"
 
 #include "LibraryFunction.hpp"
+#include "ObjectManager.hpp"
 #include "QVariantConverter.hpp"
 #include <QtCore/QJsonArray>
 
@@ -81,6 +82,24 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EToolBox::libraryFun
 	libraryFunction->addFunctionMenuChildren(LibraryFunction::FunctionMenu("setIcon", ToolBox::setIcon));
 	libraryFunction->addFunctionMenuChildren(LibraryFunction::FunctionMenu("setEnable", ToolBox::setEnable));
 	return libraryFunction;
+}
+
+template<> QString libraryObjects::EToolBox::code(AObject *object)
+{
+	QString code = EWidget::code(object);
+
+	auto toolBox = dynamic_cast<QToolBox*>(object->object());
+	if (!toolBox) { return code; }
+
+	for (int i = 0; i < toolBox->count(); i += 1) {
+		if (i)
+			code += "\n";
+		code += ObjectManager::instance()->objectName(object->id()) + "->addItem(" + ObjectManager::instance()->objectName(object->children().at(i)->id()) + ", " + QVariantConverter::toString(toolBox->itemText(i)) + ");\n";
+		code += ObjectManager::instance()->objectName(object->id()) + "->setItemToolTip(" + QString::number(i) + ",  " + QVariantConverter::toString(toolBox->itemToolTip(i)) + ");\n";
+		code += ObjectManager::instance()->objectName(object->id()) + "->setItemIcon(" + QString::number(i) + ",  QIcon(" + QVariantConverter::toString(object->dynamicProperty("Toolbox::" + QString::number(i) + "::itemIcon", "")) + "));\n";
+		code += ObjectManager::instance()->objectName(object->id()) + "->setItemEnabled(" + QString::number(i) + ",  " + QVariantConverter::toString(toolBox->isItemEnabled(i)) + ");\n";
+	}
+	return code;
 }
 
 bool libraryObjects::ToolBox::insertItem(AObject *parent, int index, AObject *child)
@@ -163,6 +182,7 @@ void libraryObjects::ToolBox::setIcon(AObject *object)
 	auto iconPath = QFileDialog::getOpenFileName(nullptr, "Toolbox setIcon", QDir::homePath(), "Image Files (*.png *.jpg *.bmp)");
 	if (iconPath.isEmpty()) { return; }
 
+	parent->addDynamicProperty("Toolbox::" + QString::number(index) + "::itemIcon", iconPath, "");
 	toolBox->setItemIcon(index, QIcon(iconPath));
 }
 

@@ -6,9 +6,11 @@
 */
 
 #include "EComboBox.hpp"
+#include "EWidget.hpp"
 #include "EObject.hpp"
 
 #include "LibraryFunction.hpp"
+#include "ObjectManager.hpp"
 
 #include <QtWidgets/QInputDialog>
 #include <QtCore/QJsonArray>
@@ -63,6 +65,18 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EComboBox::libraryFu
 
 	libraryFunction->addFunctionMenu(LibraryFunction::FunctionMenu("editItems", ComboBox::editItems));
 	return libraryFunction;
+}
+
+template<> QString libraryObjects::EComboBox::code(AObject *object)
+{
+	QString code = EWidget::code(object);
+
+	auto comboBox = dynamic_cast<QComboBox*>(object->object());
+	if (!comboBox) { return code; }
+
+	for (int i = 0; i < comboBox->count(); i += 1)
+		code += ObjectManager::instance()->objectName(object->id()) + "->addItem(\"" + comboBox->itemText(i) + "\");\n";
+	return code;
 }
 
 void libraryObjects::ComboBox::editItems(AObject *object)

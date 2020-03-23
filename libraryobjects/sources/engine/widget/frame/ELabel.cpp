@@ -6,6 +6,7 @@
 */
 
 #include "ELabel.hpp"
+#include "EWidget.hpp"
 #include "EObject.hpp"
 
 template<> void libraryObjects::ELabel::init(AObject *object)
@@ -26,4 +27,9 @@ template<> QIcon libraryObjects::ELabel::icon()
 template<> libraryObjects::LibraryFunction *libraryObjects::ELabel::libraryFunction()
 {
 	return EObject::libraryFunction();
+}
+
+template<> QString libraryObjects::ELabel::code(AObject *object)
+{
+	return EWidget::code(object);
 }

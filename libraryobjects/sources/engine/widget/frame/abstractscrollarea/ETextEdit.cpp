@@ -34,3 +34,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::ETextEdit::libraryFu
 {
 	return EAbstractScrollArea::libraryFunction();
 }
+
+template<> QString libraryObjects::ETextEdit::code(AObject *object)
+{
+	return EAbstractScrollArea::code(object);
+}

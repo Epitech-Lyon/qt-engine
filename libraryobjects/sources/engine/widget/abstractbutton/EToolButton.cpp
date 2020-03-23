@@ -9,6 +9,8 @@
 #include "EAbstractButton.hpp"
 
 #include "LibraryFunction.hpp"
+#include "LibraryObjectManager.hpp"
+#include "ObjectManager.hpp"
 
 #include <QtWidgets/QMenu>
 
@@ -33,6 +35,15 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EToolButton::library
 
 	libraryFunction->addFunctionDrag(Object<QMenu>::classHierarchy(), LibraryFunction::FunctionDrag("setMenu", ToolButton::setMenu, "unsetMenu", ToolButton::unsetMenu));
 	return libraryFunction;
+}
+
+template<> QString libraryObjects::EToolButton::code(AObject *object)
+{
+	QString code = EAbstractButton::code(object);
+
+	if (object->children().size() == 1 && LibraryObjectManager::isSubClassOf(object->children().front()->classHierarchy(), Object<QMenu>::classHierarchy()))
+		code += ObjectManager::instance()->objectName(object->id()) + "->setMenu(" + ObjectManager::instance()->objectName(object->children().front()->id()) + ");\n";
+	return code;
 }
 
 bool libraryObjects::ToolButton::setMenu(AObject *parent, int, AObject *child)

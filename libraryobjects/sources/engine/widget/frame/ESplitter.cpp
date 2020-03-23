@@ -10,6 +10,7 @@
 #include "EObject.hpp"
 
 #include "LibraryFunction.hpp"
+#include "ObjectManager.hpp"
 #include <QtCore/QJsonArray>
 
 #include <QtWidgets/QWidget>
@@ -61,6 +62,15 @@ template<> libraryObjects::LibraryFunction *libraryObjects::ESplitter::libraryFu
 
 	libraryFunction->addFunctionDrag(Object<QWidget>::classHierarchy(), LibraryFunction::FunctionDrag("insertWidget", Splitter::insertWidget, "removeWidget", Splitter::removeWidget));
 	return libraryFunction;
+}
+
+template<> QString libraryObjects::ESplitter::code(AObject *object)
+{
+	QString code = EWidget::code(object);
+
+	for (auto child : object->children())
+		code += ObjectManager::instance()->objectName(object->id()) + "->addWidget(" + ObjectManager::instance()->objectName(child->id()) + ");\n";
+	return code;
 }
 
 bool libraryObjects::Splitter::insertWidget(AObject *parent, int index, AObject *child)

@@ -9,6 +9,8 @@
 #include "EAbstractScrollArea.hpp"
 
 #include "LibraryFunction.hpp"
+#include "LibraryObjectManager.hpp"
+#include "ObjectManager.hpp"
 
 #include <QtWidgets/QWidget>
 
@@ -33,6 +35,15 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EScrollArea::library
 
 	libraryFunction->addFunctionDrag(Object<QWidget>::classHierarchy(), LibraryFunction::FunctionDrag("setWidget", ScrollArea::setWidget, "unsetWidget", ScrollArea::unsetWidget));
 	return libraryFunction;
+}
+
+template<> QString libraryObjects::EScrollArea::code(AObject *object)
+{
+	QString code = EAbstractScrollArea::code(object);
+
+	if (object->children().size() == 1 && LibraryObjectManager::isSubClassOf(object->children().front()->classHierarchy(), Object<QWidget>::classHierarchy()))
+		code += ObjectManager::instance()->objectName(object->id()) + "->setWidget(" + ObjectManager::instance()->objectName(object->children().front()->id()) + ");\n";
+	return code;
 }
 
 bool libraryObjects::ScrollArea::setWidget(AObject *parent, int, AObject *child)
