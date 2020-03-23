@@ -23,9 +23,10 @@ namespace libraryObjects {
 		typedef std::function<AObject *()> Constructor;
 		typedef std::function<QJsonObject (AObject *)> SerializeData;
 		typedef std::function<void (const QJsonObject &, AObject *)> DeserializeData;
+		typedef std::function<QString (AObject *)> Code;
 
 	public:
-		LibraryObject(Constructor constructor, SerializeData funSerialize, DeserializeData funDeserialize, const QString &classHierarchy, const QString &classIncludePath, const QIcon &icon, LibraryFunction *libraryFunction);
+		LibraryObject(Constructor constructor, SerializeData funSerialize, DeserializeData funDeserialize, const QString &classHierarchy, const QString &classIncludePath, const QIcon &icon, LibraryFunction *libraryFunction, Code code);
 		~LibraryObject();
 
 		AObject *constructor() const { return _constructor(); }
@@ -36,6 +37,7 @@ namespace libraryObjects {
 		QString classIncludePath() const { return _classIncludePath; }
 		QIcon icon() const { return _icon; }
 		LibraryFunction *libraryFunction() const { return _libraryFunction; }
+		QString code(AObject *object) const { return _code(object); }
 
 	private:
 		Constructor _constructor;
@@ -46,5 +48,6 @@ namespace libraryObjects {
 		QString _classIncludePath;
 		QIcon _icon;
 		LibraryFunction *_libraryFunction;
+		Code _code;
 	};
 }

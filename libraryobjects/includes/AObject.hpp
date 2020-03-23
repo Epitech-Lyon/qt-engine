@@ -25,7 +25,7 @@ namespace libraryObjects {
 
 		QUuid id() const { return _id; }
 		QObject *object() const { return _object; }
-		void removeObject() { _object = nullptr; for (auto child : _children) child->removeObject(); }
+		void removeObject();
 		QString objectName() const { return _object->objectName(); }
 		QString classHierarchy() const { return _classHierarchy; }
 		QString className() const { return _className; }
@@ -40,6 +40,7 @@ namespace libraryObjects {
 
 	private:
 		QUuid _id;
+		bool _isRegistered;
 		QObject *_object;
 		QString _classHierarchy;
 		QString _className;

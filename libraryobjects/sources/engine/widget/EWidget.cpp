@@ -9,6 +9,8 @@
 #include "EObject.hpp"
 
 #include "LibraryFunction.hpp"
+#include "LibraryObjectManager.hpp"
+#include "ObjectManager.hpp"
 
 #include <QtWidgets/QLayout>
 
@@ -37,6 +39,20 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EWidget::libraryFunc
 
 	libraryFunction->addFunctionDrag(Object<QLayout>::classHierarchy(), LibraryFunction::FunctionDrag("setLayout", Widget::setLayout, "unsetLayout", Widget::unsetLayout));
 	return libraryFunction;
+}
+
+template<> QString libraryObjects::EWidget::code(AObject *object)
+{
+	QString code = EObject::code(object);
+
+	for (AObject *objectParent = object->parent(); objectParent; objectParent = objectParent->parent())
+		if (LibraryObjectManager::isSubClassOf(objectParent->classHierarchy(), Object<QWidget>::classHierarchy())) {
+			code += ObjectManager::instance()->objectName(object->id()) + "->setParent(" + ObjectManager::instance()->objectName(objectParent->id()) + ");\n";
+			break;
+		}
+	if (object->children().size() == 1 && LibraryObjectManager::isSubClassOf(object->children().front()->classHierarchy(), Object<QLayout>::classHierarchy()))
+		code += ObjectManager::instance()->objectName(object->id()) + "->setLayout(" + ObjectManager::instance()->objectName(object->children().front()->id()) + ");\n";
+	return code;
 }
 
 bool libraryObjects::Widget::setLayout(AObject *parent, int, AObject *child)

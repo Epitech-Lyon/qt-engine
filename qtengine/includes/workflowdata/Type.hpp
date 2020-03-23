@@ -26,7 +26,7 @@ namespace qtengine {
 			auto second = libraryObjects::LibraryObjectManager::instance()->libraryObjectOfType(nodeData->type().id);
 
 			if (first && second)
-				return first->classHierarchy().startsWith(second->classHierarchy());
+				return libraryObjects::LibraryObjectManager::isSubClassOf(first, second);
 			else
 				return this->type().id == nodeData->type().id;
 		}

@@ -9,6 +9,8 @@
 #include "EObject.hpp"
 
 #include "LibraryFunction.hpp"
+#include "LibraryObjectManager.hpp"
+#include "ObjectManager.hpp"
 
 #include <QtWidgets/QAction>
 
@@ -34,6 +36,19 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EMenu::libraryFuncti
 	libraryFunction->addFunctionDrag(Object<QAction>::classHierarchy(), LibraryFunction::FunctionDrag("insertAction", Menu::insertAction, "removeAction", Menu::removeAction));
 	libraryFunction->addFunctionDrag(Object<QMenu>::classHierarchy(), LibraryFunction::FunctionDrag("insertMenu", Menu::insertMenu, "removeMenu", Menu::removeMenu));
 	return libraryFunction;
+}
+
+template<> QString libraryObjects::EMenu::code(AObject *object)
+{
+	QString code = EObject::code(object);
+
+	for (auto children : object->children()) {
+		if (LibraryObjectManager::isSubClassOf(children->classHierarchy(), Object<QAction>::classHierarchy()))
+			code += ObjectManager::instance()->objectName(object->id()) + "->addAction(" + ObjectManager::instance()->objectName(children->id()) + ");\n";
+		else if (LibraryObjectManager::isSubClassOf(children->classHierarchy(), Object<QMenu>::classHierarchy()))
+			code += ObjectManager::instance()->objectName(object->id()) + "->addMenu(" + ObjectManager::instance()->objectName(children->id()) + ");\n";
+	}
+	return code;
 }
 
 bool libraryObjects::Menu::insertAction(AObject *parent, int index, AObject *child)

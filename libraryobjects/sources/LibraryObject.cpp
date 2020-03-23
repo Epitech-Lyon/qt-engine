@@ -10,7 +10,7 @@
 
 #include "LibraryFunction.hpp"
 
-libraryObjects::LibraryObject::LibraryObject(Constructor constructor, SerializeData funSerialize, DeserializeData funDeserialize, const QString &classHierarchy, const QString &classIncludePath, const QIcon &icon, LibraryFunction *libraryFunction)
+libraryObjects::LibraryObject::LibraryObject(Constructor constructor, SerializeData funSerialize, DeserializeData funDeserialize, const QString &classHierarchy, const QString &classIncludePath, const QIcon &icon, LibraryFunction *libraryFunction, Code code)
 	: _constructor(constructor)
 	, _funSerialize(funSerialize)
 	, _funDeserialize(funDeserialize)
@@ -19,6 +19,7 @@ libraryObjects::LibraryObject::LibraryObject(Constructor constructor, SerializeD
 	, _classIncludePath(classIncludePath)
 	, _icon(icon)
 	, _libraryFunction(libraryFunction)
+	, _code(code)
 {
 }
 

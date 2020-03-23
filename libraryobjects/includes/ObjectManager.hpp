@@ -19,7 +19,7 @@ namespace libraryObjects {
 		~ObjectManager() = default;
 		static ObjectManager *instance();
 
-		void registerObject(AObject *object);
+		bool registerObject(AObject *object);
 		void unregisterObject(AObject *object);
 
 		void setObjectAsRoot(AObject *rootObject, const QString &rootObjectClassName) { _rootObject = rootObject; _rootObjectClassName = rootObjectClassName; }

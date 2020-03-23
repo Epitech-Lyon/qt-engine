@@ -9,6 +9,7 @@
 #include "EAbstractItemModel.hpp"
 
 #include "LibraryFunction.hpp"
+#include "ObjectManager.hpp"
 
 #include <QtWidgets/QFileDialog>
 #include <QtWidgets/QAbstractItemView>
@@ -58,6 +59,17 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EFileSystemModel::li
 
 	libraryFunction->addFunctionMenu(LibraryFunction::FunctionMenu("setRootPath", FileSystemModel::setRootPath));
 	return libraryFunction;
+}
+
+template<> QString libraryObjects::EFileSystemModel::code(AObject *object)
+{
+	QString code = EAbstractItemModel::code(object);
+	auto fileSystemModel = dynamic_cast<QFileSystemModel*>(object->object());
+	if (!fileSystemModel) { return code; }
+
+	if (!fileSystemModel->rootPath().isEmpty())
+		code += ObjectManager::instance()->objectName(object->id()) + "->setRootPath(\"" + fileSystemModel->rootPath() + "\");\n";
+	return code;
 }
 
 void libraryObjects::FileSystemModel::setRootPath(AObject *object)

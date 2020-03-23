@@ -22,7 +22,7 @@ libraryObjects::AObject::AObject(QObject *object, const QString &classHierarchy)
 	, _parent(nullptr)
 {
 	initProperties(object->metaObject());
-	ObjectManager::instance()->registerObject(this);
+	_isRegistered = ObjectManager::instance()->registerObject(this);
 }
 
 libraryObjects::AObject::~AObject()
@@ -32,7 +32,15 @@ libraryObjects::AObject::~AObject()
 	if (_parent)
 		_parent->_children.removeAll(this);
 	delete _object;
-	ObjectManager::instance()->unregisterObject(this);
+	if (_isRegistered)
+		ObjectManager::instance()->unregisterObject(this);
+}
+
+void libraryObjects::AObject::removeObject()
+{
+	_object = nullptr;
+	for (auto child : _children)
+		child->removeObject();
 }
 
 QJsonObject libraryObjects::AObject::serializeProperties() const
@@ -62,9 +70,10 @@ void libraryObjects::AObject::deserializeProperties(const QJsonObject &json)
 		if (!value.isNull())
 			setPropertyValue(key, value);
 	}
+	if (_isRegistered)
+		ObjectManager::instance()->unregisterObject(this);
 	_id = QUuid(json["id"].toString());
-	ObjectManager::instance()->unregisterObject(this);
-	ObjectManager::instance()->registerObject(this);
+	_isRegistered = ObjectManager::instance()->registerObject(this);
 }
 
 void libraryObjects::AObject::initProperties(const QMetaObject *metaObject)

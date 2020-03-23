@@ -50,6 +50,8 @@ void qtengine::ProjectManager::openProject(const QString &projectPath)
 	QFileInfo fileInfo(projectPath);
 	if (projectPath.isEmpty() || !fileInfo.exists()) { return; }
 
+	onCloseProject();
+
 	_projectIsOpened = true;
 	_projectPath = fileInfo.absoluteFilePath();
 	_projectName = fileInfo.baseName();
@@ -102,6 +104,7 @@ void qtengine::ProjectManager::onNewProject()
 		return;
 	}
 	file.close();
+
 	openProject(fileInfo.absoluteFilePath());
 }
 
@@ -131,13 +134,16 @@ void qtengine::ProjectManager::onSaveProject()
 
 void qtengine::ProjectManager::onExportProject()
 {
-	QString lastOutputPath = QFileInfo::exists(_lastOutputPath) ? _lastOutputPath : QFileInfo(_projectPath).absolutePath() + "/build";
+	QString lastOutputPath = QFileInfo::exists(_lastOutputPath) ? _lastOutputPath : QFileInfo(_projectPath).absolutePath() + "/generated";
 	DialogSettingsExport dialog(lastOutputPath, _lastGenerateMainFrom, _lastDisplayProgress, Manager::instance()->mainWindow());
 
 	if (dialog.exec() == QDialog::Accepted) {
 		_lastOutputPath = dialog.outputPath();
 		_lastGenerateMainFrom = dialog.generateMainFrom();
 		_lastDisplayProgress = dialog.displayProgress();
+
+		onSaveProject();
+
 		auto exporter = new libraryObjects::Exporter(_lastOutputPath, _lastGenerateMainFrom, _views);
 
 		Manager::instance()->viewManager()->onSaveView();

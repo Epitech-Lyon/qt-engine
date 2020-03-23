@@ -27,3 +27,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EAction::libraryFunc
 {
 	return EObject::libraryFunction();
 }
+
+template<> QString libraryObjects::EAction::code(AObject *object)
+{
+	return EObject::code(object);
+}

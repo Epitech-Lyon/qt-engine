@@ -107,6 +107,25 @@ libraryObjects::LibraryObjectManager *libraryObjects::LibraryObjectManager::inst
 	return &libraryObjectManager;
 }
 
+bool libraryObjects::LibraryObjectManager::isSubClassOf(const QString &classHierarchy, const QString &parentClassHierarchy)
+{
+	return classHierarchy.startsWith(parentClassHierarchy);
+}
+
+bool libraryObjects::LibraryObjectManager::isSubClassOf(const AObject *object, const AObject *objectParent)
+{
+	if (!object || !objectParent) { return false; }
+
+	return isSubClassOf(object->classHierarchy(), objectParent->classHierarchy());
+}
+
+bool libraryObjects::LibraryObjectManager::isSubClassOf(const LibraryObject *libraryObject, const LibraryObject *libraryObjectParent)
+{
+	if (!libraryObject || !libraryObjectParent) { return false; }
+
+	return isSubClassOf(libraryObject->classHierarchy(), libraryObjectParent->classHierarchy());
+}
+
 QList<libraryObjects::LibraryObject *> libraryObjects::LibraryObjectManager::libraryObjects() const
 {
 	auto libraryObjects = _libraryObjects;

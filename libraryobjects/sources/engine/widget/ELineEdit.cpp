@@ -30,3 +30,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::ELineEdit::libraryFu
 {
 	return EObject::libraryFunction();
 }
+
+template<> QString libraryObjects::ELineEdit::code(AObject *object)
+{
+	return EObject::code(object);
+}

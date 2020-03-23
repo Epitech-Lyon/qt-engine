@@ -27,3 +27,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EProgressBar::librar
 {
 	return EObject::libraryFunction();
 }
+
+template<> QString libraryObjects::EProgressBar::code(AObject *object)
+{
+	return EObject::code(object);
+}

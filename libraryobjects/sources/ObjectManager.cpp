@@ -15,8 +15,10 @@ libraryObjects::ObjectManager *libraryObjects::ObjectManager::instance()
 	return &objectManager;
 }
 
-void libraryObjects::ObjectManager::registerObject(AObject *object)
+bool libraryObjects::ObjectManager::registerObject(AObject *object)
 {
+	if (_objectsId.contains(object->id())) { return false; }
+
 	auto objectName = object->objectName();
 
 	if (objectName.isEmpty()) {
@@ -34,6 +36,7 @@ void libraryObjects::ObjectManager::registerObject(AObject *object)
 	connect(object, &AObject::propertyUpdated, this, &ObjectManager::onPropertyUpdated);
 	_objects[object->objectName()] = object;
 	_objectsId[object->id()] = object;
+	return true;
 }
 
 void libraryObjects::ObjectManager::unregisterObject(AObject *object)

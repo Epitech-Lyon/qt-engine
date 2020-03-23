@@ -60,5 +60,10 @@ namespace libraryObjects {
 		{
 			return nullptr;
 		}
+
+		static QString code(AObject *)
+		{
+			return "";
+		}
 	};
 }

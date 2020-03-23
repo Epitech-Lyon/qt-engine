@@ -6,11 +6,12 @@
 */
 
 #include "LibraryFunction.hpp"
+#include "LibraryObjectManager.hpp"
 
 libraryObjects::LibraryFunction::FunctionDrag libraryObjects::LibraryFunction::functionDragFor(const QString &classHierarchy) const
 {
 	for (auto functionDragAcceptedFor : _functionsDrag.keys())
-		if (classHierarchy.startsWith(functionDragAcceptedFor))
+		if (LibraryObjectManager::isSubClassOf(classHierarchy, functionDragAcceptedFor))
 			return _functionsDrag[functionDragAcceptedFor];
 	return FunctionDrag();
 }

@@ -60,6 +60,7 @@ void libraryObjects::Exporter::writeMain(QString path, QString className)
 	stream << "#include <QtWidgets/QApplication>" << Qt::endl;
 	stream << "#include \"" + className + ".hpp\"" << Qt::endl << Qt::endl;
 	stream << "int main(int ac, char **av)" << Qt::endl << "{" << Qt::endl;
+	stream << "\tsetenv(\"FONTCONFIG_PATH\", \"/etc/fonts\", 0);" << Qt::endl << Qt::endl;
 	stream << "\tQApplication app(ac, av);" << Qt::endl;
 	stream << "\t" << EXPORT_NAMESPACE << "::" << className << " _" << className << ";" << Qt::endl << Qt::endl;
 	stream << "\t_" << className << ".show();" << Qt::endl;
@@ -86,6 +87,7 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 			deserialize(p_obj[JSON_PROPERTIES_NAME].toObject()[JSON_OBJECT_NAME].toString()).toString();
 
 		stream << tabs << name << " = new " << data.keys()[0] << ";" << Qt::endl;
+		/*
 		if (tabWidth == 2)
 			p_name = "this";
 		if (p_name.isNull() || p_obj.empty())
@@ -97,6 +99,7 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 				stream << tabs << name << "->setLayout(" << p_name << ");" << Qt::endl;
 		} else
 			stream << tabs << name << "->setParent(" << p_name << ");" << Qt::endl;
+		*/
 	} else
 		stream << ";" << Qt::endl;
 	stream << Qt::endl;
@@ -115,6 +118,9 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 					libraryObjects::QVariantConverter::toString(value) << ");" << Qt::endl;
 		}
 	}
+	for (auto line : obj[JSON_CODE_NAME].toString().split("\n"))
+		if (!line.isEmpty())
+			stream << tabs << line << Qt::endl;
 	if (parent)
 		vars.append(QPair<QString, QString>(data.keys()[0], name));
 }

@@ -20,6 +20,11 @@ template<> libraryObjects::LibraryFunction *libraryObjects::ELayout::libraryFunc
 	return EObject::libraryFunction();
 }
 
+template<> QString libraryObjects::ELayout::code(AObject *object)
+{
+	return EObject::code(object);
+}
+
 bool libraryObjects::Layout::removeWidget(AObject *parent, AObject *child)
 {
 	auto layout = dynamic_cast<QLayout*>(parent->object());

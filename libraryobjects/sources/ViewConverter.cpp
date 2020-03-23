@@ -25,6 +25,7 @@ QJsonObject libraryObjects::ViewConverter::serialize(AObject *object)
 
 	QJsonObject jsonBody;
 	jsonBody["Children"] = childJsonArray;
+	jsonBody["Code"] = libraryObject->code(object);
 	jsonBody["Data"] = libraryObject->serializeData(object);
 	jsonBody["Properties"] = object->serializeProperties();
 

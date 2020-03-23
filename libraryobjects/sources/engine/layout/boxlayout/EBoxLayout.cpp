@@ -9,6 +9,8 @@
 #include "ELayout.hpp"
 
 #include "LibraryFunction.hpp"
+#include "LibraryObjectManager.hpp"
+#include "ObjectManager.hpp"
 
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QLayout>
@@ -25,6 +27,19 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EBoxLayout::libraryF
 	libraryFunction->addFunctionDrag(Object<QWidget>::classHierarchy(), LibraryFunction::FunctionDrag("insertWidget", BoxLayout::insertWidget, "removeWidget", Layout::removeWidget));
 	libraryFunction->addFunctionDrag(Object<QLayout>::classHierarchy(), LibraryFunction::FunctionDrag("insertLayout", BoxLayout::insertLayout, "removeLayout", Layout::removeLayout));
 	return libraryFunction;
+}
+
+template<> QString libraryObjects::EBoxLayout::code(AObject *object)
+{
+	QString code = ELayout::code(object);
+
+	for (auto children : object->children()) {
+		if (LibraryObjectManager::isSubClassOf(children->classHierarchy(), Object<QWidget>::classHierarchy()))
+			code += ObjectManager::instance()->objectName(object->id()) + "->addWidget(" + ObjectManager::instance()->objectName(children->id()) + ");\n";
+		else if (LibraryObjectManager::isSubClassOf(children->classHierarchy(), Object<QLayout>::classHierarchy()))
+			code += ObjectManager::instance()->objectName(object->id()) + "->addLayout(" + ObjectManager::instance()->objectName(children->id()) + ");\n";
+	}
+	return code;
 }
 
 bool libraryObjects::BoxLayout::insertWidget(AObject *parent, int index, AObject *child)

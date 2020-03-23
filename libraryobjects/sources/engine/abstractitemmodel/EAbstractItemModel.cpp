@@ -17,3 +17,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EAbstractItemModel::
 {
 	return EObject::libraryFunction();
 }
+
+template<> QString libraryObjects::EAbstractItemModel::code(AObject *object)
+{
+	return EObject::code(object);
+}

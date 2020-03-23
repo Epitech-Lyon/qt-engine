@@ -93,7 +93,7 @@ void types::ClassTypeManager::registerFunctionOperatorForType(const QString &typ
 		{type, type},
 		type,
 		QString("operator") + characOperator,
-		type + " E_VAR()_E = E_USEVAR(1)_E " + characOperator + " E_USEVAR(2);\nE_CODE(0)_E"
+		type + " E_VAR()_E = E_USEVAR(1)_E " + characOperator + " E_USEVAR(2)_E;\nE_CODE(0)_E"
 	});
 }
 
@@ -105,7 +105,7 @@ void types::ClassTypeManager::registerFunctionOperatorConditionalForType(const Q
 		{type, type},
 		this->type(QMetaType::Bool),
 		"operator" + operatorConditional,
-		this->type(QMetaType::Bool) + " E_USEVAR(1)_E " + operatorConditional + " E_USEVAR(2);\nE_CODE(0)_E"
+		this->type(QMetaType::Bool) + " E_USEVAR(1)_E " + operatorConditional + " E_USEVAR(2)_E;\nE_CODE(0)_E"
 	});
 }
 

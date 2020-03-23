@@ -20,6 +20,10 @@ namespace libraryObjects {
 		~LibraryObjectManager();
 		static LibraryObjectManager *instance();
 
+		static bool isSubClassOf(const QString &classHierarchy, const QString &parentClassHierarchy);
+		static bool isSubClassOf(const AObject *object, const AObject *objectParent);
+		static bool isSubClassOf(const LibraryObject *libraryObject, const LibraryObject *libraryObjectParent);
+
 		QList<LibraryObject *> libraryObjects() const;
 		LibraryObject *libraryObjectOf(const QString &classHierarchy) const;
 		LibraryObject *libraryObjectOfClassName(const QString &className) const;
@@ -31,12 +35,13 @@ namespace libraryObjects {
 		void unregisterCustomObject(const QString &name);
 		void unregisterAllCustomObjects();
 
+
 	private:
 		LibraryObjectManager();
 		template <typename Object> void registerObject()
 		{
 			auto constructor = []() { auto object = new Object(); Object::init(object); return object; };
-			auto libraryObject = new LibraryObject(constructor, Object::serializeData, Object::deserializeData, Object::classHierarchy(), Object::classIncludePath(), Object::icon(), Object::libraryFunction());
+			auto libraryObject = new LibraryObject(constructor, Object::serializeData, Object::deserializeData, Object::classHierarchy(), Object::classIncludePath(), Object::icon(), Object::libraryFunction(), Object::code);
 
 			_libraryObjects << libraryObject;
 			types::ClassTypeManager::instance()->registerType(libraryObject->className() + "*");

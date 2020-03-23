@@ -27,3 +27,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EHBoxLayout::library
 {
 	return EBoxLayout::libraryFunction();
 }
+
+template<> QString libraryObjects::EHBoxLayout::code(AObject *object)
+{
+	return EBoxLayout::code(object);
+}

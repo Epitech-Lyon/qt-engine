@@ -54,7 +54,7 @@ QWidget *qtengine::DialogSettingsExport::initBody()
 	QStringList compatibleViewNames = { "NONE" };
 	auto libraryObjectQWidget = libraryObjects::LibraryObjectManager::instance()->libraryObjectOfClassName("QWidget");
 	for (auto libraryObject : libraryObjects::LibraryObjectManager::instance()->customObjects())
-		if (libraryObjectQWidget && libraryObject->classHierarchy().startsWith(libraryObjectQWidget->classHierarchy()))
+		if (libraryObjects::LibraryObjectManager::isSubClassOf(libraryObject, libraryObjectQWidget))
 			compatibleViewNames.append(libraryObject->className());
 	cBoxGenerateMainFrom->addItems(compatibleViewNames);
 	connect(cBoxGenerateMainFrom, QOverload<const QString &>::of(&QComboBox::currentIndexChanged), [this, compatibleViewNames](const QString &name) {

@@ -27,3 +27,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EObject::libraryFunc
 {
 	return new LibraryFunction();
 }
+
+template<> QString libraryObjects::EObject::code(AObject *)
+{
+	return "";
+}
