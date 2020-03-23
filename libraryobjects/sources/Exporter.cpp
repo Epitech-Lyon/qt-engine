@@ -25,9 +25,9 @@
 #include <QtCore/QJsonArray>
 #include <QtCore/QFileInfo>
 
-libraryObjects::Exporter::Exporter(const QString &exportedDirPath, bool generateMain, const QStringList &views)
+libraryObjects::Exporter::Exporter(const QString &exportedDirPath, const QString &generateMainFrom, const QStringList &views)
 	: _exportedDirPath(exportedDirPath)
-	, _generateMain(generateMain)
+	, _generateMainFrom(generateMainFrom)
 	, _views(views)
 {
 }
@@ -402,15 +402,12 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 	headerStream << "}" << Qt::endl;
 	sourceFile.close();
 	headerFile.close();
-	if (_generateMain)
-		writeMain(_exportedDirPath + "/Main.cpp", className);
 }
 
 void libraryObjects::Exporter::run()
 {
 	QDir dir;
 
-	qDebug() << "Export" << _views << "to" << _exportedDirPath << (_generateMain ? "with main" : "without main");
 	if (!dir.exists(_exportedDirPath))
 		if (!dir.mkpath(_exportedDirPath))
 			return (void)(qCritical() << "Error, could not create directory : " << _exportedDirPath);
@@ -422,6 +419,8 @@ void libraryObjects::Exporter::run()
 			writeClass(_exportedDirPath + "/" + baseName + ".cpp", _exportedDirPath + "/" + baseName + ".hpp", json);
 			emit currentViewExportedChanged(i);
 		}
+		if (!_generateMainFrom.isEmpty())
+			writeMain(_exportedDirPath + "/Main.cpp", _generateMainFrom);
 	} catch (const char *e) {
 		qCritical() << "Error:" << e;
 		emit error(e);

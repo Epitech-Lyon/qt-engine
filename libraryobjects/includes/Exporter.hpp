@@ -32,7 +32,7 @@ namespace libraryObjects {
 		Q_OBJECT
 
 		public:
-			Exporter(const QString &exportedDirPath, bool generateMain, const QStringList &views);
+			Exporter(const QString &exportedDirPath, const QString &generateMainFrom, const QStringList &views);
 			~Exporter();
 
 			void run() override;
@@ -51,7 +51,7 @@ namespace libraryObjects {
 
 		private:
 			QString _exportedDirPath;
-			bool _generateMain;
+			QString _generateMainFrom;
 			QStringList _views;
 	};
 }

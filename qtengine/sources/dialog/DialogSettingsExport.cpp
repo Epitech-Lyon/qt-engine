@@ -9,13 +9,17 @@
 #include <QtWidgets/QFileIconProvider>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QCheckBox>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QFileDialog>
+#include <QtCore/QFileInfo>
 
-qtengine::DialogSettingsExport::DialogSettingsExport(const QString &outputPath, QWidget *parent)
+#include "LibraryObjectManager.hpp"
+
+qtengine::DialogSettingsExport::DialogSettingsExport(const QString &outputPath, const QString &generateMainFrom, bool displayProgress, QWidget *parent)
 	: DialogBase("Export settings", parent)
 	, _outputPath(outputPath)
-	, _generateMain(true)
-	, _displayProgress(true)
+	, _generateMainFrom(generateMainFrom)
+	, _displayProgress(displayProgress)
 {
 	_mainLayout->insertWidget(0, initBody());
 
@@ -33,7 +37,7 @@ QWidget *qtengine::DialogSettingsExport::initBody()
 	auto btnOutputPath = new QPushButton(QFileIconProvider().icon(QFileIconProvider::Folder), "", widgetOutputPath);
 	btnOutputPath->setFixedSize(btnOutputPath->minimumSizeHint());
 	connect(btnOutputPath, &QPushButton::clicked, [this, lblOutputPath]() {
-		auto outputPath = QFileDialog::getExistingDirectory(this, "Choose output path");
+		auto outputPath = QFileDialog::getExistingDirectory(this, "Choose output path", _outputPath);
 
 		if (!outputPath.isEmpty()) {
 			_outputPath = outputPath;
@@ -46,12 +50,21 @@ QWidget *qtengine::DialogSettingsExport::initBody()
 	widgetOutputPath->layout()->setMargin(0);
 	addWidgetTo(widgetOutputPath, "Output path", mainLayout);
 
-	auto checkBoxGenerateMain = new QCheckBox(mainWidget);
-	checkBoxGenerateMain->setCheckState(_generateMain ? Qt::Checked : Qt::Unchecked);
-	connect(checkBoxGenerateMain, &QCheckBox::stateChanged, [this](int state) {
-		_generateMain = state == Qt::Checked;
+	auto cBoxGenerateMainFrom = new QComboBox(mainWidget);
+	QStringList compatibleViewNames = { "NONE" };
+	auto libraryObjectQWidget = libraryObjects::LibraryObjectManager::instance()->libraryObjectOfClassName("QWidget");
+	for (auto libraryObject : libraryObjects::LibraryObjectManager::instance()->customObjects())
+		if (libraryObjectQWidget && libraryObject->classHierarchy().startsWith(libraryObjectQWidget->classHierarchy()))
+			compatibleViewNames.append(libraryObject->className());
+	cBoxGenerateMainFrom->addItems(compatibleViewNames);
+	connect(cBoxGenerateMainFrom, QOverload<const QString &>::of(&QComboBox::currentIndexChanged), [this, compatibleViewNames](const QString &name) {
+		_generateMainFrom = name != compatibleViewNames.front() ? name : "";
 	});
-	addWidgetTo(checkBoxGenerateMain, "Generate main", mainLayout);
+	if (compatibleViewNames.contains(_generateMainFrom))
+		cBoxGenerateMainFrom->setCurrentText(_generateMainFrom);
+	else
+		_generateMainFrom = "";
+	addWidgetTo(cBoxGenerateMainFrom, "Generate main from", mainLayout);
 
 	auto checkBoxDisplayProgress = new QCheckBox(mainWidget);
 	checkBoxDisplayProgress->setCheckState(_displayProgress ? Qt::Checked : Qt::Unchecked);

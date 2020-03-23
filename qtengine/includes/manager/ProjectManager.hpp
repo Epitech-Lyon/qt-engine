@@ -54,6 +54,9 @@ namespace qtengine {
 		QString _projectPath;
 		QString _projectName;
 		QStringList _recentsProject;
+		QString _lastOutputPath;
+		QString _lastGenerateMainFrom;
+		bool _lastDisplayProgress;
 
 	// Views management
 	public:

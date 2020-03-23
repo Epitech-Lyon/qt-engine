@@ -72,6 +72,9 @@ void qtengine::ProjectManager::openProject(const QString &projectPath)
 		_views.append(fileInfo.absoluteFilePath());
 		libraryObjects::CustomObject::registerAsLibraryObject(fileInfo.absoluteFilePath());
 	}
+	_lastOutputPath = json["outputPath"].toString();
+	_lastGenerateMainFrom = json["generateMainFrom"].toString();
+	_lastDisplayProgress = json["displayProgress"].toBool(true);
 
 	emit projectOpened(_projectIsOpened);
 	emit projectPathChanged(_projectPath);
@@ -115,6 +118,9 @@ void qtengine::ProjectManager::onSaveProject()
 
 	QJsonObject json;
 	json["Views"] = jsonViews;
+	json["outputPath"] = _lastOutputPath;
+	json["generateMainFrom"] = _lastGenerateMainFrom;
+	json["displayProgress"] = _lastDisplayProgress;
 
 	QFile file(_projectPath);
 	if (file.open(QIODevice::WriteOnly)) {
@@ -125,14 +131,17 @@ void qtengine::ProjectManager::onSaveProject()
 
 void qtengine::ProjectManager::onExportProject()
 {
-	QFileInfo fileInfo(_projectPath);
-	DialogSettingsExport dialog(fileInfo.absolutePath() + "/build", Manager::instance()->mainWindow());
+	QString lastOutputPath = QFileInfo::exists(_lastOutputPath) ? _lastOutputPath : QFileInfo(_projectPath).absolutePath() + "/build";
+	DialogSettingsExport dialog(lastOutputPath, _lastGenerateMainFrom, _lastDisplayProgress, Manager::instance()->mainWindow());
 
 	if (dialog.exec() == QDialog::Accepted) {
-		auto exporter = new libraryObjects::Exporter(dialog.outputPath(), dialog.generateMain(), _views);
+		_lastOutputPath = dialog.outputPath();
+		_lastGenerateMainFrom = dialog.generateMainFrom();
+		_lastDisplayProgress = dialog.displayProgress();
+		auto exporter = new libraryObjects::Exporter(_lastOutputPath, _lastGenerateMainFrom, _views);
 
 		Manager::instance()->viewManager()->onSaveView();
-		if (dialog.displayProgress()) {
+		if (_lastDisplayProgress) {
 			auto progressDialog = new QProgressDialog(Manager::instance()->mainWindow());
 			connect(exporter, &libraryObjects::Exporter::currentViewExportedChanged, [this, progressDialog](int index) {
 				progressDialog->setLabelText("Export " + QFileInfo(_views[index]).completeBaseName());
