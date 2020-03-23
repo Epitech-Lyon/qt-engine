@@ -322,17 +322,19 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 			headerStream << lib->classIncludePath() << Qt::endl;
 	}
 	for (const auto &funs : functions) {
-		for (const auto &iter : funs[QMetaMethod::Access::Public]) {
-			if (iter->classType()->type() != types::ClassType::Type::PROPERTY)
-				continue;
-			auto a = dynamic_cast<types::Property *>(iter->classType());
+		for (const auto &fun : funs) {
+			for (const auto &iter : fun) {
+				if (iter->classType()->type() != types::ClassType::Type::PROPERTY)
+					continue;
+				auto a = dynamic_cast<types::Property *>(iter->classType());
 
-			if (!a)
-				continue;
-			auto lib = libraryObjects::LibraryObjectManager::instance()->libraryObjectOfClassName(a->type());
+				if (!a)
+					continue;
+				auto lib = libraryObjects::LibraryObjectManager::instance()->libraryObjectOfType(a->type());
 
-			if (lib)
-				headerStream << lib->classIncludePath() << Qt::endl;
+				if (lib)
+					headerStream << lib->classIncludePath() << Qt::endl;
+			}
 		}
 	}
 	headerStream << "#include <QtCore/QVariant>" << Qt::endl;
@@ -344,17 +346,17 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 	headerStream << "\t\t\t~" << className << "();" << Qt::endl << Qt::endl;
 
 	auto putGetter = [&headerStream](types::Property *a) {
-			QString getter;
-			QString setter;
+		QString getter;
+		QString setter;
 
-			if (!a)
-				throw "Dynamic cast to 'types::Property *' failed";
-			getter = a->getterName();
-			setter = a->setterName();
-			if (!getter.isEmpty())
-				headerStream << Qt::endl << "\t\t\t" << a->type() << " " << getter << "() const;" << Qt::endl;
-			if (!setter.isEmpty())
-				headerStream << Qt::endl << "\t\t\tvoid " << setter << "(" << a->type() << " value);" << Qt::endl;
+		if (!a)
+			throw "Dynamic cast to 'types::Property *' failed";
+		getter = a->getterName();
+		setter = a->setterName();
+		if (!getter.isEmpty())
+			headerStream << Qt::endl << "\t\t\t" << a->type() << " " << getter << "() const;" << Qt::endl;
+		if (!setter.isEmpty())
+			headerStream << Qt::endl << "\t\t\tvoid " << setter << "(" << a->type() << " value);" << Qt::endl;
 	};
 	for (const auto &funs : functions) {
 		for (const auto &iter : funs[QMetaMethod::Access::Public]) {
@@ -362,8 +364,6 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 				iter->classType()->type() == types::ClassType::Type::SIGNAL)
 				continue;
 			headerStream << "\t\t\t" << iter->signature() << ";" << Qt::endl;
-			if (iter->classType()->type() == types::ClassType::Type::PROPERTY)
-				putGetter(dynamic_cast<types::Property *>(iter->classType()));
 		}
 	}
 	for (const auto &key : vars)
@@ -376,8 +376,6 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 				iter->classType()->type() == types::ClassType::Type::SIGNAL)
 				continue;
 			headerStream << "\t\t\t" << iter->signature() << ";" << Qt::endl;
-			if (iter->classType()->type() == types::ClassType::Type::PROPERTY)
-				putGetter(dynamic_cast<types::Property *>(iter->classType()));
 		}
 	}
 	bool test = false;
@@ -391,7 +389,12 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 				headerStream << "\t\tprotected:" << Qt::endl;
 			test = true;
 			headerStream << "\t\t\t" << iter->signature() << ";" << Qt::endl;
-			if (iter->classType()->type() == types::ClassType::Type::PROPERTY)
+		}
+	}
+	if (functions[types::ClassType::Type::PROPERTY].size()) {
+		headerStream << Qt::endl << "\t\tpublic:" << Qt::endl;
+		for (const auto &funs : functions[types::ClassType::Type::PROPERTY]) {
+			for (const auto &iter : funs)
 				putGetter(dynamic_cast<types::Property *>(iter->classType()));
 		}
 	}
