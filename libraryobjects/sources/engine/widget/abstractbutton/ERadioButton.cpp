@@ -27,3 +27,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::ERadioButton::librar
 {
 	return EAbstractButton::libraryFunction();
 }
+
+template<> QString libraryObjects::ERadioButton::code(AObject *object)
+{
+	return EAbstractButton::code(object);
+}

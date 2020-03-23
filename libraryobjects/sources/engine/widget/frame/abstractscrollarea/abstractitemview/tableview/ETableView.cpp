@@ -31,3 +31,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::ETableView::libraryF
 
 	return libraryFunction;
 }
+
+template<> QString libraryObjects::ETableView::code(AObject *object)
+{
+	return EAbstractItemView::code(object);
+}

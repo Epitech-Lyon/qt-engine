@@ -18,3 +18,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EAbstractScrollArea:
 {
 	return EObject::libraryFunction();
 }
+
+template<> QString libraryObjects::EAbstractScrollArea::code(AObject *object)
+{
+	return EWidget::code(object);
+}

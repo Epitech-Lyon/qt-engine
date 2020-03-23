@@ -25,6 +25,11 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EAbstractItemView::l
 	return libraryFunction;
 }
 
+template<> QString libraryObjects::EAbstractItemView::code(AObject *object)
+{
+	return EAbstractScrollArea::code(object);
+}
+
 bool libraryObjects::AbstractItemView::setModel(AObject *parent, int, AObject *child)
 {
 	auto abstractItemView = dynamic_cast<QAbstractItemView*>(parent->object());

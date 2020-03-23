@@ -85,11 +85,16 @@ namespace libraryObjects {
 		QVariant propertyValue(const QString &propertyName) const { return _object->property(propertyName.toStdString().c_str()); }
 		void setPropertyValue(const QString &propertyName, const QVariant &propertyValue);
 
+		QVariant dynamicProperty(const QString &propertyName, const QVariant &defautlValue = QVariant()) const;
+		void addDynamicProperty(const QString &propertyName, const QVariant &value, const QString &code = "");
+		void removeDynamicProperty(const QString &propertyName);
+
 	signals:
 		void propertyUpdated(const QString &propertyName, const QVariant &propertyValue) const;
 
 	private:
 		void initProperties(const QMetaObject *);
 		QMap<QString, QList<Property>> _properties;
+		QMap<QString, QPair<QVariant, QString>> _dynamicProperties;
 	};
 }

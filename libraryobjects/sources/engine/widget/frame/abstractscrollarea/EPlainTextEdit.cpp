@@ -30,3 +30,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EPlainTextEdit::libr
 {
 	return EAbstractScrollArea::libraryFunction();
 }
+
+template<> QString libraryObjects::EPlainTextEdit::code(AObject *object)
+{
+	return EAbstractScrollArea::code(object);
+}

@@ -28,3 +28,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::ELCDNumber::libraryF
 {
 	return EObject::libraryFunction();
 }
+
+template<> QString libraryObjects::ELCDNumber::code(AObject *object)
+{
+	return EWidget::code(object);
+}

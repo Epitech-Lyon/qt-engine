@@ -27,3 +27,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EPushButton::library
 {
 	return EAbstractButton::libraryFunction();
 }
+
+template<> QString libraryObjects::EPushButton::code(AObject *object)
+{
+	return EAbstractButton::code(object);
+}

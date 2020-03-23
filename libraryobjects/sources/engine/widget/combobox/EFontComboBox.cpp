@@ -7,6 +7,7 @@
 
 #include "EFontComboBox.hpp"
 #include "EComboBox.hpp"
+#include "EWidget.hpp"
 #include "EObject.hpp"
 
 template<> void libraryObjects::EFontComboBox::init(AObject *object)
@@ -27,4 +28,9 @@ template<> QIcon libraryObjects::EFontComboBox::icon()
 template<> libraryObjects::LibraryFunction *libraryObjects::EFontComboBox::libraryFunction()
 {
 	return EObject::libraryFunction();
+}
+
+template<> QString libraryObjects::EFontComboBox::code(AObject *object)
+{
+	return EWidget::code(object);
 }

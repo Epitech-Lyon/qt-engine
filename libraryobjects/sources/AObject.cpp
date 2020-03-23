@@ -56,14 +56,26 @@ QJsonObject libraryObjects::AObject::serializeProperties() const
 			else
 				json[property.name] = value;
 		}
-	json["id"] = _id.toString();
+
+	QJsonObject jsonDynamic;
+	QString code;
+	for (auto key : _dynamicProperties.keys()) {
+		QJsonObject jsonDynamicProperty;
+		jsonDynamicProperty["value"] = QVariantConverter::serialize(_dynamicProperties[key].first);
+		jsonDynamicProperty["code"] = _dynamicProperties[key].second;
+		jsonDynamic[key] = jsonDynamicProperty;
+		code += _dynamicProperties[key].second;
+	}
+	jsonDynamic["id"] = _id.toString();
+	jsonDynamic["code"] = code;
+	json["dynamic"] = jsonDynamic;
 	return json;
 }
 
 void libraryObjects::AObject::deserializeProperties(const QJsonObject &json)
 {
 	for (auto key : json.keys()) {
-		if (key == "id") { continue; }
+		if (key == "dynamic") { continue; }
 
 		auto value = QVariantConverter::deserialize(json[key]);
 
@@ -72,7 +84,16 @@ void libraryObjects::AObject::deserializeProperties(const QJsonObject &json)
 	}
 	if (_isRegistered)
 		ObjectManager::instance()->unregisterObject(this);
-	_id = QUuid(json["id"].toString());
+
+	QJsonObject jsonDynamic = json["dynamic"].toObject();
+	for (auto key : jsonDynamic.keys()) {
+		if (key == "code" || key == "id") { continue; }
+
+		QJsonObject jsonDynamicProperty = jsonDynamic[key].toObject();
+		addDynamicProperty(key, QVariantConverter::deserialize(jsonDynamicProperty["value"]), jsonDynamicProperty["code"].toString());
+	}
+	_id = QUuid(jsonDynamic["id"].toString());
+
 	_isRegistered = ObjectManager::instance()->registerObject(this);
 }
 
@@ -126,4 +147,19 @@ void libraryObjects::AObject::removeChild(AObject *child)
 
 	_children.removeAll(child);
 	child->_parent = nullptr;
+}
+
+QVariant libraryObjects::AObject::dynamicProperty(const QString &propertyName, const QVariant &defautlValue) const
+{
+	return _dynamicProperties.contains(propertyName) ? _dynamicProperties[propertyName].first : defautlValue;
+}
+
+void libraryObjects::AObject::addDynamicProperty(const QString &propertyName, const QVariant &value, const QString &code)
+{
+	_dynamicProperties[propertyName] = {value, code};
+}
+
+void libraryObjects::AObject::removeDynamicProperty(const QString &propertyName)
+{
+	_dynamicProperties.remove(propertyName);
 }

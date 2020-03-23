@@ -10,6 +10,7 @@
 #include "EObject.hpp"
 
 #include "LibraryFunction.hpp"
+#include "ObjectManager.hpp"
 
 #include <QtWidgets/QWidget>
 
@@ -34,6 +35,15 @@ template<> libraryObjects::LibraryFunction *libraryObjects::EStackedWidget::libr
 
 	libraryFunction->addFunctionDrag(Object<QWidget>::classHierarchy(), LibraryFunction::FunctionDrag("insertWidget", StackedWidget::insertWidget, "removeWidget", StackedWidget::removeWidget));
 	return libraryFunction;
+}
+
+template<> QString libraryObjects::EStackedWidget::code(AObject *object)
+{
+	QString code = EWidget::code(object);
+
+	for (auto child : object->children())
+		code += ObjectManager::instance()->objectName(object->id()) + "->addWidget(" + ObjectManager::instance()->objectName(child->id()) + ");\n";
+	return code;
 }
 
 bool libraryObjects::StackedWidget::insertWidget(AObject *parent, int index, AObject *child)

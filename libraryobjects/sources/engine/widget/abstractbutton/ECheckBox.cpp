@@ -27,3 +27,8 @@ template<> libraryObjects::LibraryFunction *libraryObjects::ECheckBox::libraryFu
 {
 	return EAbstractButton::libraryFunction();
 }
+
+template<> QString libraryObjects::ECheckBox::code(AObject *object)
+{
+	return EAbstractButton::code(object);
+}
