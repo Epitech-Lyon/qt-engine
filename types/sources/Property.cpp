@@ -21,6 +21,7 @@ types::Property::Property()
 	: ClassType(QMetaMethod::Access::Private, Type::PROPERTY)
 	, _userType(true)
 	, _type(ClassTypeManager::instance()->type(QMetaType::QString))
+	, _id(QUuid::createUuid())
 {
 }
 
@@ -31,6 +32,7 @@ types::Property::Property(const QMetaProperty &metaProperty)
 	, _name(metaProperty.name())
 	, _setterName(metaProperty.isWritable() ? "setProperty" : "")
 	, _getterName(metaProperty.isReadable() ? "property" : "")
+	, _id(QUuid::createUuid())
 {
 }
 
@@ -42,6 +44,7 @@ QJsonObject types::Property::serialize() const
 	json["name"] = _name;
 	json["setterName"] = _setterName;
 	json["getterName"] = _getterName;
+	json["id"] = _id.toString();
 	return json;
 }
 
@@ -53,6 +56,7 @@ void types::Property::deserialize(const QJsonObject &json)
 	_name = json["name"].toString();
 	_setterName = json["setterName"].toString();
 	_getterName = json["getterName"].toString();
+	_id = QUuid(json["id"].toString());
 }
 
 QWidget *types::Property::initEditor()

@@ -11,6 +11,7 @@
 #include <QtCore/QMetaMethod>
 #include <QtCore/QMetaType>
 #include <QtCore/QString>
+#include <QtCore/QUuid>
 
 namespace types {
 	class Property : public ClassType {
@@ -45,6 +46,8 @@ namespace types {
 		QString getterName() const { return _getterName; }
 		void setGetterName(const QString &getterName) { setValue(_getterName, getterName, std::bind(&Property::getterNameChanged, this, _getterName)); }
 
+		QUuid id() const { return _id; }
+
 	signals:
 		void typeChanged(const QString &type);
 		void nameChanged(const QString &name);
@@ -57,6 +60,7 @@ namespace types {
 		QString _name;
 		QString _setterName;
 		QString _getterName;
+		QUuid _id;
 	};
 }
 

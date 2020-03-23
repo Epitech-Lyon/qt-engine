@@ -45,6 +45,7 @@ namespace qtengine {
 		void onObjectClassChanged(libraryObjects::ObjectClass *objectClass);
 		void onObjectClassDropped(const QPointF &pos, libraryObjects::ObjectClass *objectClass, libraryObjects::AObject *reference, QObject *source);
 		void onClassTypeDoubleClicked(types::ClassType *classType);
+		void onClassTypeAdded(types::ClassType *classType);
 		void onClassTypeDeleted(types::ClassType *classType);
 		void onSaveRequested();
 

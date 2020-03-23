@@ -18,6 +18,8 @@
 #include "AObject.hpp"
 
 #include "ObjectClass.hpp"
+#include "LibraryObjectManager.hpp"
+#include "ObjectManager.hpp"
 #include "ClassTypeManager.hpp"
 #include "types/includes/Constructor.hpp"
 #include "types/includes/Method.hpp"
@@ -64,6 +66,7 @@ void qtengine::ContentPanelWorkflow::init()
 
 	connect(_scene, &FlowSceneWorkflow::objectClassDropped, this, &ContentPanelWorkflow::onObjectClassDropped);
 	connect(_tree, &TreeWidgetWorkflow::classTypeDoubleClicked, this, &ContentPanelWorkflow::onClassTypeDoubleClicked);
+	connect(_tree, &TreeWidgetWorkflow::classTypeAdded, this, &ContentPanelWorkflow::onClassTypeAdded);
 	connect(_tree, &TreeWidgetWorkflow::classTypeDeleted, this, &ContentPanelWorkflow::onClassTypeDeleted);
 
 	onObjectChanged(Manager::instance()->viewManager()->viewObject());
@@ -214,6 +217,22 @@ void qtengine::ContentPanelWorkflow::onObjectClassDropped(const QPointF &pos, li
 	auto tmpRegistry = generateRegistryObjectClass(objectClass, minimumAccess, reference ? reference->id() : "");
 	auto saveRegistry = _scene->takeRegistry();
 
+	if (tmpRegistry->registeredModelsCategoryAssociation().size() == 1 && objectClass->getClassType(types::ClassType::PROPERTY).size() == 1) {
+		auto property = dynamic_cast<types::Property*>(objectClass->getClassType(types::ClassType::PROPERTY).front());
+		auto functionMetaObject = libraryObjects::LibraryObjectManager::instance()->metaObjectOfType(property->type());
+
+		if (functionMetaObject) {
+			auto metaObject = functionMetaObject();
+
+			libraryObjects::ObjectClass propertyObjectClass(&metaObject);
+			for (auto classType : propertyObjectClass.getClassType(types::ClassType::CONSTRUCTOR)) {
+				propertyObjectClass.removeClassType(classType);
+				delete classType;
+			}
+			tmpRegistry->concatenate(generateRegistryObjectClass(&propertyObjectClass, QMetaMethod::Private, property->id()).get());
+		}
+	}
+
 	_scene->setRegistry(tmpRegistry);
 	_view->openMenu(_view->mapFromScene(pos), true);
 	_scene->setRegistry(saveRegistry);
@@ -288,8 +307,25 @@ void qtengine::ContentPanelWorkflow::onClassTypeDoubleClicked(types::ClassType *
 	_scene->setRegistry(saveRegistry);
 }
 
+void qtengine::ContentPanelWorkflow::onClassTypeAdded(types::ClassType *classType)
+{
+	if (classType->type() == types::ClassType::PROPERTY) {
+		auto property = dynamic_cast<types::Property*>(classType);
+		auto libraryObject = libraryObjects::LibraryObjectManager::instance()->libraryObjectOfType(property->type());
+
+		if (libraryObject)
+			libraryObjects::ObjectManager::instance()->registerCustomObject(property->id(), libraryObject->className(), property->name());
+	}
+}
+
 void qtengine::ContentPanelWorkflow::onClassTypeDeleted(types::ClassType *classType)
 {
+	if (classType->type() == types::ClassType::PROPERTY) {
+		auto property = dynamic_cast<types::Property*>(classType);
+
+		libraryObjects::ObjectManager::instance()->unregisterCustomObject(property->id());
+	}
+
 	if (classType != _currentClassType) { return; }
 
 	_currentClassType = nullptr;

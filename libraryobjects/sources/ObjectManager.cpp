@@ -50,6 +50,16 @@ void libraryObjects::ObjectManager::unregisterObject(AObject *object)
 	}
 }
 
+void libraryObjects::ObjectManager::registerCustomObject(const QUuid &objectId, const QString &objectClassName, const QString &objectName)
+{
+	_customObjectsId[objectId] = {objectClassName, objectName};
+}
+
+void libraryObjects::ObjectManager::unregisterCustomObject(const QUuid &objectId)
+{
+	_customObjectsId.remove(objectId);
+}
+
 void libraryObjects::ObjectManager::onPropertyUpdated(const QString &propertyName, const QVariant &propertyValue)
 {
 	if (propertyName == "objectName") {
@@ -70,14 +80,22 @@ void libraryObjects::ObjectManager::onPropertyUpdated(const QString &propertyNam
 
 QString libraryObjects::ObjectManager::objectClassName(const QUuid &objectId) const
 {
-	auto object = this->object(objectId);
+	if (_customObjectsId.contains(objectId))
+		return _customObjectsId[objectId].first;
+	else {
+		auto object = this->object(objectId);
 
-	return object ? _rootObject == object ? _rootObjectClassName : object->className() : "";
+		return object ? _rootObject == object ? _rootObjectClassName : object->className() : "";
+	}
 }
 
 QString libraryObjects::ObjectManager::objectName(const QUuid &objectId) const
 {
-	auto object = this->object(objectId);
+	if (_customObjectsId.contains(objectId))
+		return _customObjectsId[objectId].second;
+	else {
+		auto object = this->object(objectId);
 
-	return object ? _rootObject == object ? "this" : object->objectName() : "";
+		return object ? _rootObject == object ? "this" : object->objectName() : "";
+	}
 }

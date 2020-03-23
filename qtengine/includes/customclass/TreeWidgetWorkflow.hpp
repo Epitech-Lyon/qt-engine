@@ -45,6 +45,7 @@ namespace qtengine {
 
 	signals:
 		void classTypeDoubleClicked(types::ClassType *classType);
+		void classTypeAdded(types::ClassType *classType);
 		void classTypeDeleted(types::ClassType *classType);
 
 	private slots:

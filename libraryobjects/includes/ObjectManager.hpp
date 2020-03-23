@@ -22,6 +22,9 @@ namespace libraryObjects {
 		bool registerObject(AObject *object);
 		void unregisterObject(AObject *object);
 
+		void registerCustomObject(const QUuid &objectId, const QString &objectClassName, const QString &objectName);
+		void unregisterCustomObject(const QUuid &objectId);
+
 		void setObjectAsRoot(AObject *rootObject, const QString &rootObjectClassName) { _rootObject = rootObject; _rootObjectClassName = rootObjectClassName; }
 
 		AObject *object(const QString &objectName) const { return _objects.contains(objectName) ? _objects[objectName] : nullptr; }
@@ -38,6 +41,7 @@ namespace libraryObjects {
 		ObjectManager() = default;
 		QMap<QString, AObject*> _objects;
 		QMap<QUuid, AObject *> _objectsId;
+		QMap<QUuid, QPair<QString, QString>> _customObjectsId;
 		AObject *_rootObject = nullptr;
 		QString _rootObjectClassName;
 	};

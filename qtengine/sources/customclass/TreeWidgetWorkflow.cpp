@@ -17,7 +17,6 @@
 #include "MainWindow.hpp"
 
 #include "AObject.hpp"
-#include "LibraryObjectManager.hpp"
 #include "MimeDataObject.hpp"
 #include "types/includes/Constructor.hpp"
 #include "types/includes/Property.hpp"
@@ -138,6 +137,7 @@ void qtengine::TreeWidgetWorkflow::addTypeItem(types::ClassType *classType)
 	auto parentItem = _items[classType->type()][classType->access()];
 	auto item = new QTreeWidgetItem(parentItem, { classType->signature() });
 
+	emit classTypeAdded(classType);
 	setCurrentItem(item);
 	_childItems[item] = classType;
 }
@@ -149,9 +149,9 @@ void qtengine::TreeWidgetWorkflow::onAddClicked(types::ClassType *classType)
 	if (dialog.exec() == QDialog::Accepted && classType->isValid()) {
 		auto classTypeRet = _objectClass->addClassType(classType);
 
-		if (classType == classTypeRet)
+		if (classType == classTypeRet) {
 			addTypeItem(classType);
-		else {
+		} else {
 			delete classType;
 			if (classTypeRet)
 				setCurrentItem(_childItems.key(classTypeRet));
@@ -193,30 +193,6 @@ QMimeData *qtengine::TreeWidgetWorkflow::mimeData(const QList<QTreeWidgetItem *>
 	auto classType = types::ClassType::construct(classTypeSelected->type());
 	classType->deserialize(classTypeSelected->serialize());
 	objectClass->addClassType(classType);
-
-	if (classType->type() == types::ClassType::PROPERTY) {
-		auto property = dynamic_cast<types::Property*>(classType);
-		auto functionMetaObject = libraryObjects::LibraryObjectManager::instance()->metaObjectOfType(property->type());
-
-		if (functionMetaObject) {
-			auto metaObject = functionMetaObject();
-
-			libraryObjects::ObjectClass propertyObjectClass(&metaObject);
-			auto reverse = [objectClass, &propertyObjectClass](types::ClassType::Type type) {
-				auto classTypeList = propertyObjectClass.getClassType(type);
-
-				for (auto classType : classTypeList) {
-					propertyObjectClass.removeClassType(classType);
-					objectClass->addClassType(classType);
-				}
-			};
-
-			reverse(types::ClassType::METHOD);
-			reverse(types::ClassType::SLOT);
-			reverse(types::ClassType::SIGNAL);
-			reverse(types::ClassType::PROPERTY);
-		}
-	}
 
 	QMimeData *mimeData = QTreeWidget::mimeData(items);
 	auto mimeDataObject = new MimeDataObject(objectClass, nullptr, classType->type() == types::ClassType::CONSTRUCTOR ? nullptr : _object);
