@@ -288,6 +288,7 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 	// source file
 	stream << QT_ENGINE_HEADER << Qt::endl << Qt::endl;
 	headerStream << QT_ENGINE_HEADER << Qt::endl << Qt::endl;
+	headerStream << "#pragma once" << Qt::endl;
 	stream << "#include \"" << QFileInfo(headerFile).fileName() << "\"" << Qt::endl << Qt::endl;
 	stream << EXPORT_NAMESPACE << "::" << className << "::~" <<
 		className << "()" << Qt::endl << "{" << Qt::endl;
