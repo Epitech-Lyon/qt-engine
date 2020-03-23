@@ -110,6 +110,22 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 		if (parent)
 			stream << tabs << "}" << Qt::endl << Qt::endl;
 	}
+	for (auto line : obj[JSON_CODE_NAME].toString().split("\n"))
+		if (!line.isEmpty()) {
+			if (!test)
+				stream << Qt::endl;
+			test = true;
+			stream << tabs << line << Qt::endl;
+		}
+	test = false;
+	for (const auto &line : props[JSON_DYNAMIC_PROPERTY].toObject()[JSON_CODE_PROPERTY].toString().split("\n")) {
+		if (!line.isEmpty()) {
+			if (!test)
+				stream << Qt::endl;
+			test = true;
+			stream << tabs << line << Qt::endl;
+		}
+	}
 	if (!props.empty()) {
 		for (auto key : props.keys()) {
 			auto value = libraryObjects::QVariantConverter::deserialize(props[key]);
@@ -121,24 +137,8 @@ void libraryObjects::Exporter::writeObjectSource(QTextStream &stream, QList<QPai
 					libraryObjects::QVariantConverter::toString(value) << ");" << Qt::endl;
 		}
 	}
-	for (auto line : obj[JSON_CODE_NAME].toString().split("\n"))
-		if (!line.isEmpty()) {
-			if (!test)
-				stream << Qt::endl;
-			test = true;
-			stream << tabs << line << Qt::endl;
-		}
-	test = false;
 	if (parent)
 		vars.append(QPair<QString, QString>(data.keys()[0], name));
-	for (const auto &line : props[JSON_DYNAMIC_PROPERTY].toObject()[JSON_CODE_PROPERTY].toString().split("\n")) {
-		if (!line.isEmpty()) {
-			if (!test)
-				stream << Qt::endl;
-			test = true;
-			stream << tabs << line << Qt::endl;
-		}
-	}
 }
 
 void libraryObjects::Exporter::writeConstructors(QTextStream &stream, const QMap<QMetaMethod::Access, QList<std::shared_ptr<ClassTypeExporter>>> &functions, QString className)
@@ -310,7 +310,7 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 	// source file
 	stream << QT_ENGINE_HEADER << Qt::endl << Qt::endl;
 	headerStream << QT_ENGINE_HEADER << Qt::endl << Qt::endl;
-	headerStream << "#pragma once" << Qt::endl;
+	headerStream << "#pragma once" << Qt::endl << Qt::endl;
 	stream << "#include \"" << QFileInfo(headerFile).fileName() << "\"" << Qt::endl << Qt::endl;
 	stream << EXPORT_NAMESPACE << "::" << className << "::~" <<
 		className << "()" << Qt::endl << "{" << Qt::endl;
@@ -334,6 +334,20 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 		if (lib)
 			headerStream << lib->classIncludePath() << Qt::endl;
 	}
+	for (const auto &funs : functions) {
+		for (const auto &iter : funs[QMetaMethod::Access::Public]) {
+			if (iter->classType()->type() != types::ClassType::Type::PROPERTY)
+				continue;
+			auto a = dynamic_cast<types::Property *>(iter->classType());
+
+			if (!a)
+				continue;
+			auto lib = libraryObjects::LibraryObjectManager::instance()->libraryObjectOfClassName(a->type());
+
+			if (lib)
+				headerStream << lib->classIncludePath() << Qt::endl;
+		}
+	}
 	headerStream << "#include <QtCore/QVariant>" << Qt::endl;
 	headerStream << "#include <QtCore/QLocale>" << Qt::endl << Qt::endl;
 	headerStream << "namespace " << EXPORT_NAMESPACE << " {" << Qt::endl;
@@ -351,9 +365,9 @@ void libraryObjects::Exporter::writeClass(QString source, QString header, QJsonO
 			getter = a->getterName();
 			setter = a->setterName();
 			if (!getter.isEmpty())
-				headerStream << Qt::endl << a->type() << " " << getter << "() const;" << Qt::endl;
+				headerStream << Qt::endl << "\t\t\t" << a->type() << " " << getter << "() const;" << Qt::endl;
 			if (!setter.isEmpty())
-				headerStream << Qt::endl << "void " << setter << "(const " << a->type() << "& value);" << Qt::endl;
+				headerStream << Qt::endl << "\t\t\tvoid " << setter << "(" << a->type() << " value);" << Qt::endl;
 	};
 	for (const auto &funs : functions) {
 		for (const auto &iter : funs[QMetaMethod::Access::Public]) {
